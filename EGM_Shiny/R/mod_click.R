@@ -1,3 +1,14 @@
+update_plotly_colors <- function(session, colors, line_colors, trace_index){
+    # Update the plot without re-rendering
+    plotlyProxy("egm_plot", session) %>%
+        plotlyProxyInvoke("restyle", list(
+            marker.color = list(colors),
+            marker.line.color = list(line_colors)
+        ),
+        list(trace_index)
+    )
+}
+
 ###### modular ui and server functions
 mod_click_ui <- function(id) {
   ns <- NS(id)
@@ -19,20 +30,23 @@ mod_click_server <- function(id, plot_source_name, x_col, y_col) {
 
                 if (!is.null(click_data)) {
                     # get the clicked data
-                    # print(click_data$customdata)
                     clicked_x <- click_data$customdata[[1]][1]
                     clicked_y <- click_data$customdata[[1]][2]
                     trace_id <- click_data$customdata[[1]][3]
+                    trace_index <- egm_index_list[[trace_id]]
+
+                    # print(click_data$customdata)
+                    # print(trace_index)
 
                     # update the plot colors
-                    # Create color vector
-                    colors <- rep(egm_colors_list[[trace_id]], nrow(egm_counts_list[[trace_id]]))
-                    colors[click_data$pointNumber + 1] <- "#ff7f0e"
-
-                    # Update the plot without re-rendering
-                    plotlyProxy("egm_plot", session) %>%
-                        plotlyProxyInvoke("restyle", list(marker.color = list(colors)))
-
+                    # Create the original color vectors but replace the clicked point with black
+                    for (name in names(egm_index_list)) {
+                        trace_idx <- egm_index_list[[name]]
+                        colors <- rep(egm_colors_list[[name]], nrow(egm_counts_list[[name]]))
+                        line_colors <- rep(egm_colors_list[[name]], nrow(egm_counts_list[[name]]))
+                        if (trace_idx == trace_index) line_colors[click_data$pointNumber + 1] <- "black"
+                        update_plotly_colors(session, colors, line_colors, trace_idx)
+                    }
 
                     # filter the dataframe to the papers that were in the clicked point
                     clicked_df <- df_list[[trace_id]] %>%

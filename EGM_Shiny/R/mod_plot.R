@@ -88,7 +88,11 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_titl
         sizes = c(5, 100),   # controls min/max bubble size
         marker = list(
             color = color,
-            opacity = 0.7
+            opacity = 0.7,
+            line = list(
+                color = color,
+                width = 2
+            )
         ),
         # tooltips
         text = ~paste(
@@ -103,8 +107,8 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_titl
 
 ###### modular ui and server functions
 mod_plot_ui <- function(id) {
-  ns <- NS(id)
-  plotlyOutput(ns("egm_plot"),  height = "800px") # could use the same height as calculated in the server
+    ns <- NS(id)
+    plotlyOutput(ns("egm_plot"),  height = "800px") # could use the same height as calculated in the server
 }
 
 
@@ -133,10 +137,12 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             # plot using numerical values
             x_levels <- levels(factor(egm_counts_all[[x_col]]))
             y_levels <- levels(factor(egm_counts_all[[y_col]]))
+            # this needs to be in the same order as the egm_index_list for the re-coloring to work
             egm_counts_all <- add_to_counts_df_for_plotly(egm_counts_all, x_col, y_col, x_levels, y_levels, "all", 0, 0)
-            egm_counts_high <- add_to_counts_df_for_plotly(egm_counts_high, x_col, y_col, x_levels, y_levels, "high", -0.35, 0.35)
+            egm_counts_high <- add_to_counts_df_for_plotly(egm_counts_high, x_col, y_col, x_levels, y_levels,"high", 0.35, 0.35)
             egm_counts_medium <- add_to_counts_df_for_plotly(egm_counts_medium, x_col, y_col, x_levels, y_levels, "medium", 0, 0.35)
-            egm_counts_low <- add_to_counts_df_for_plotly(egm_counts_low, x_col, y_col, x_levels, y_levels, "low", 0.35, 0.35)
+            egm_counts_low <- add_to_counts_df_for_plotly(egm_counts_low, x_col, y_col, x_levels, y_levels, "low", -0.35, 0.35)
+            egm_counts_ongoing <- add_to_counts_df_for_plotly(egm_counts_ongoing, x_col, y_col, x_levels, y_levels, "ongoing", -0.17, -0.35)
 
             # create the plotly figure
             egm_spec <- plot_ly(
@@ -151,6 +157,7 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_high, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$high)
             egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_medium, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$medium)
             egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_low, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$low)
+            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_ongoing, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$ongoing)
 
 
             # configure the plot layout
@@ -193,7 +200,7 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
                 ),
                 # my grid (defined above)
                 shapes = shapes_for_plotly(n_x, n_y),
-                # count of included papers
+                # count of included papers in upper-left of figure
                 annotations = list(
                     list(
                         x = -0.262,
