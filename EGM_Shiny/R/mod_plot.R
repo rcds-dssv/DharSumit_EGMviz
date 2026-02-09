@@ -41,7 +41,7 @@ shapes_for_plotly <- function(n_x, n_y){
       type = "rect",
       xref = "x", yref = "paper",
       x0 = i - 0.5, x1 = i + 0.5,
-      y0 = 0.99, y1 = 1.05, #magic numbers
+      y0 = 1.01, y1 = 1.072, #magic numbers
       line = list(color = "black", width = 1),
       fillcolor = "transparent"
     )
@@ -64,6 +64,43 @@ shapes_for_plotly <- function(n_x, n_y){
   
 }
 
+add_to_counts_df_for_plotly <- function(count_df, x_col, y_col, x_levels, y_levels, label, x_offset, y_offset){
+    # add numeric values and customdata for handling clicks to the counts datafram
+
+    count_df$x_num <- match(count_df[[x_col]], x_levels) - 1 + x_offset
+    count_df$y_num <- match(count_df[[y_col]], y_levels) - 1 + y_offset
+    count_df <- count_df %>%
+        mutate(
+            customdata = Map(list, .[[x_col]], .[[y_col]], label)
+        )
+}
+
+add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_title, clean_y_title, color){
+    spec <- spec %>% add_trace(
+        # scatter plot
+        data = df,
+        x = ~x_num,
+        y = ~y_num,
+        size = ~.data[[n_col]],
+        customdata = ~customdata,
+        type = "scatter",
+        mode = "markers",
+        sizes = c(5, 100),   # controls min/max bubble size
+        marker = list(
+            color = color,
+            opacity = 0.7
+        ),
+        # tooltips
+        text = ~paste(
+            clean_x_title,":", df[[x_col]],
+            "<br>",
+            clean_y_title,":", df[[y_col]],
+            "<br>Papers:", df[[n_col]]
+        ),
+        hoverinfo = "text"
+    )
+}
+
 ###### modular ui and server functions
 mod_plot_ui <- function(id) {
   ns <- NS(id)
@@ -77,8 +114,8 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
         function(input, output, session) {
           
             # Get the number of unique levels for each axis
-            n_x <- length(unique(batch3_egm_counts[[x_col]]))
-            n_y <- length(unique(batch3_egm_counts[[y_col]]))
+            n_x <- length(unique(egm_counts_all[[x_col]]))
+            n_y <- length(unique(egm_counts_all[[y_col]]))
             
             # set the sizing to make square boxes, 
             # trial and error ... (there must be a better way)
@@ -90,53 +127,94 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             clean_x_title <- str_replace_all(x_col,fixed(".")," ")
             clean_y_title <- str_replace_all(y_col,fixed(".")," ")
             
+            # count the total number of entries
+            n_total <- sum(egm_counts_all$n)
+
+            # plot using numerical values
+            x_levels <- levels(factor(egm_counts_all[[x_col]]))
+            y_levels <- levels(factor(egm_counts_all[[y_col]]))
+            egm_counts_all <- add_to_counts_df_for_plotly(egm_counts_all, x_col, y_col, x_levels, y_levels, "all", 0, 0)
+            egm_counts_high <- add_to_counts_df_for_plotly(egm_counts_high, x_col, y_col, x_levels, y_levels, "high", -0.35, 0.35)
+            egm_counts_medium <- add_to_counts_df_for_plotly(egm_counts_medium, x_col, y_col, x_levels, y_levels, "medium", 0, 0.35)
+            egm_counts_low <- add_to_counts_df_for_plotly(egm_counts_low, x_col, y_col, x_levels, y_levels, "low", 0.35, 0.35)
+
             # create the plotly figure
             egm_spec <- plot_ly(
-                data = batch3_egm_counts,
-                x = batch3_egm_counts[[x_col]],
-                y = batch3_egm_counts[[y_col]],
-                size = batch3_egm_counts[[n_col]],
-                type = "scatter",
-                mode = "markers",
-                sizes = c(5, 100),   # controls min/max bubble size
-                marker = list(
-                  color = "#1f77b4",
-                  opacity = 0.7
-                ),
-                text = ~paste(
-                    clean_x_title,":", batch3_egm_counts[[x_col]],
-                    "<br>",
-                    clean_y_title,":", batch3_egm_counts[[y_col]],
-                    "<br>Papers:", batch3_egm_counts[[n_col]]
-                ),
-                hoverinfo = "text",
+                # global settings
                 height = plot_height,
                 width = plot_width,
                 source = plot_source_name
-            ) %>%
-            layout(
+            ) 
+
+            # add all the traces
+            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_all, x_col, y_col, n_col, clean_x_title, clean_y_title, "#1f77b4")
+            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_high, x_col, y_col, n_col, clean_x_title, clean_y_title, "#46A040")
+            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_medium, x_col, y_col, n_col, clean_x_title, clean_y_title, "#FDB915")
+            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_low, x_col, y_col, n_col, clean_x_title, clean_y_title, "#CC3D3D")
+
+
+            # configure the plot layout
+            egm_spec <- egm_spec %>% layout(
+                # spacing, axis titles, legend
                 margin = list(t = 100),
+                showlegend = FALSE,
                 xaxis = list(
-                  title = list(
-                    text = clean_x_title, 
-                    standoff = 10
-                  ),
-                  side = "top", 
-                  tickangle = 0, 
-                  showgrid = FALSE
+                    # restore the labels
+                    type = "linear",
+                    tickmode = "array",
+                    tickvals = seq(0, length(x_levels) - 1),
+                    ticktext = x_levels,
+                    range = c(-0.5, length(x_levels) - 0.5),
+                    title = list(
+                        text = clean_x_title, 
+                        standoff = 10
+                    ),
+                    side = "top", 
+                    tickangle = 0, 
+                    showgrid = FALSE,
+                    zeroline = FALSE,
+                    # silly fix to move the labels up
+                    ticklen = 7,
+                    tickcolor = 'white'
                 ),
                 yaxis = list(
-                  title = list(
-                    text = clean_y_title,
-                    standoff = 20  
-                  ),
-                  showgrid = FALSE
+                    # restore the labels
+                    type = "linear",
+                    tickmode = "array",
+                    tickvals = seq(0, length(y_levels) - 1),
+                    ticktext = y_levels,
+                    range = c(-0.5, length(y_levels) - 0.5),
+                    title = list(
+                        text = clean_y_title,
+                        standoff = 20  
+                    ),
+                    showgrid = FALSE,
+                    zeroline = FALSE
                 ),
+                # my grid (defined above)
                 shapes = shapes_for_plotly(n_x, n_y),
-                showlegend = FALSE
+                # count of included papers
+                annotations = list(
+                    list(
+                        x = -0.262,
+                        y = 1.072,
+                        xref = "paper",
+                        yref = "paper",
+                        text = paste0("<b>Total N:</b> ", n_total),
+                        showarrow = FALSE,
+                        xanchor = "left",
+                        yanchor = "top",
+                        align = "left",
+                        bgcolor = "rgba(255,255,255,0.85)",
+                        bordercolor = "black",
+                        borderwidth = 1,
+                        borderpad = 10,
+                        font = list(size = 12)
+                    )
+                )
             )
 
-            # fix the axis labels
+            # fix (wrap) the axis labels
             emg_build <- plotly_build(egm_spec)
             xaxis <- emg_build$x$layout$xaxis
             yaxis <- emg_build$x$layout$yaxis
