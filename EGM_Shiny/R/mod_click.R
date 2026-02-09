@@ -26,7 +26,7 @@ mod_click_server <- function(id, plot_source_name, x_col, y_col) {
 
                     # update the plot colors
                     # Create color vector
-                    colors <- rep("#1f77b4", nrow(egm_counts_list[[trace_id]]))
+                    colors <- rep(egm_colors_list[[trace_id]], nrow(egm_counts_list[[trace_id]]))
                     colors[click_data$pointNumber + 1] <- "#ff7f0e"
 
                     # Update the plot without re-rendering

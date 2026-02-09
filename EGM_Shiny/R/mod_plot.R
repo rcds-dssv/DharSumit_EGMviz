@@ -147,10 +147,10 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             ) 
 
             # add all the traces
-            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_all, x_col, y_col, n_col, clean_x_title, clean_y_title, "#1f77b4")
-            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_high, x_col, y_col, n_col, clean_x_title, clean_y_title, "#46A040")
-            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_medium, x_col, y_col, n_col, clean_x_title, clean_y_title, "#FDB915")
-            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_low, x_col, y_col, n_col, clean_x_title, clean_y_title, "#CC3D3D")
+            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_all, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$all)
+            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_high, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$high)
+            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_medium, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$medium)
+            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_low, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$low)
 
 
             # configure the plot layout

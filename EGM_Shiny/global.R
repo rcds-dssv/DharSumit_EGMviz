@@ -50,3 +50,10 @@ egm_counts_list <- list(
     medium = egm_counts_medium,
     low = egm_counts_low
 )
+
+egm_colors_list <-list(
+    all = "#1f77b4",
+    high = "#46A040",
+    medium = "#FDB915",
+    low = "#CC3D3D"
+)
