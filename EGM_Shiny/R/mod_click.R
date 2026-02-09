@@ -33,23 +33,23 @@ mod_click_server <- function(id, plot_source_name, x_col, y_col) {
                     clicked_x <- click_data$customdata[[1]][1]
                     clicked_y <- click_data$customdata[[1]][2]
                     trace_id <- click_data$customdata[[1]][3]
-                    trace_index <- egm_index_list[[trace_id]]
+                    trace_index <- egm_data[[trace_id]]$index
 
                     # print(click_data$customdata)
                     # print(trace_index)
 
                     # update the plot colors
                     # Create the original color vectors but replace the clicked point with black
-                    for (name in names(egm_index_list)) {
-                        trace_idx <- egm_index_list[[name]]
-                        colors <- rep(egm_colors_list[[name]], nrow(egm_counts_list[[name]]))
-                        line_colors <- rep(egm_colors_list[[name]], nrow(egm_counts_list[[name]]))
+                    for (name in names(egm_data)) {
+                        trace_idx <- egm_data[[name]]$index
+                        colors <- rep(egm_data[[name]]$color, nrow(egm_data[[name]]$counts))
+                        line_colors <- rep(egm_data[[name]]$color, nrow(egm_data[[name]]$counts))
                         if (trace_idx == trace_index) line_colors[click_data$pointNumber + 1] <- "black"
                         update_plotly_colors(session, colors, line_colors, trace_idx)
                     }
 
                     # filter the dataframe to the papers that were in the clicked point
-                    clicked_df <- df_list[[trace_id]] %>%
+                    clicked_df <- egm_data[[trace_id]]$df %>%
                         filter(.[[x_col]] == clicked_x & .[[y_col]] == clicked_y)
 
                     # and display as a table

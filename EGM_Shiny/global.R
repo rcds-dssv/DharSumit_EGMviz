@@ -33,39 +33,12 @@ create_counts <- function(df){
             Theme.Assignment = fct_relevel(factor(Theme.Assignment),  "None Given", "Other")
         )
 }
-egm_counts_all <- create_counts(df_all)
-egm_counts_high <- create_counts(df_high)
-egm_counts_medium <- create_counts(df_medium)
-egm_counts_low <- create_counts(df_low)
-egm_counts_ongoing <- create_counts(df_ongoing)
 
-# map the trace id (defined in my plot module) to these dataframes
-df_list <- list(
-    all = df_all,
-    high = df_high,
-    medium = df_medium,
-    low = df_low,
-    ongoing = df_ongoing
-)
-egm_counts_list <- list(
-    all = egm_counts_all,
-    high = egm_counts_high,
-    medium = egm_counts_medium,
-    low = egm_counts_low,
-    ongoing = egm_counts_ongoing
-)
-egm_colors_list <-list(
-    all = "#1f77b4",
-    high = "#46A040",
-    medium = "#FDB915",
-    low = "#CC3D3D",
-    ongoing = "#FFC0CB"
-)
-
-egm_index_list <- list(
-    all = 0,
-    high = 1,
-    medium = 2,
-    low = 3,
-    ongoing = 4
+# create a list of lists to map the dataframes and values to the trace ids
+egm_data <- list(
+    all = list(df = df_all, counts = create_counts(df_all), color = "#1f77b4", index = 0, offset_x = 0, offset_y = 0),
+    high = list(df = df_high, counts = create_counts(df_high), color = "#46A040", index = 1, offset_x = 0.35, offset_y = 0.35),
+    medium = list(df = df_medium, counts = create_counts(df_medium), color = "#FDB915", index = 2, offset_x = 0, offset_y = 0.35),
+    low = list(df = df_low, counts = create_counts(df_low), color = "#CC3D3D", index = 3, offset_x = -0.35, offset_y = 0.35),
+    ongoing = list(df = df_ongoing, counts = create_counts(df_ongoing), color = "#FFC0CB", index = 4, offset_x = -0.17, offset_y = -0.35)
 )

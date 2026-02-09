@@ -85,7 +85,7 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_titl
         customdata = ~customdata,
         type = "scatter",
         mode = "markers",
-        sizes = c(5, 100),   # controls min/max bubble size
+        sizes = c(5, 125),   # controls min/max point size
         marker = list(
             color = color,
             opacity = 0.7,
@@ -118,8 +118,8 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
         function(input, output, session) {
           
             # Get the number of unique levels for each axis
-            n_x <- length(unique(egm_counts_all[[x_col]]))
-            n_y <- length(unique(egm_counts_all[[y_col]]))
+            n_x <- length(unique(egm_data$all$counts[[x_col]]))
+            n_y <- length(unique(egm_data$all$counts[[y_col]]))
             
             # set the sizing to make square boxes, 
             # trial and error ... (there must be a better way)
@@ -132,17 +132,24 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             clean_y_title <- str_replace_all(y_col,fixed(".")," ")
             
             # count the total number of entries
-            n_total <- sum(egm_counts_all$n)
+            n_total <- sum(egm_data$all$counts$n)
 
             # plot using numerical values
-            x_levels <- levels(factor(egm_counts_all[[x_col]]))
-            y_levels <- levels(factor(egm_counts_all[[y_col]]))
-            # this needs to be in the same order as the egm_index_list for the re-coloring to work
-            egm_counts_all <- add_to_counts_df_for_plotly(egm_counts_all, x_col, y_col, x_levels, y_levels, "all", 0, 0)
-            egm_counts_high <- add_to_counts_df_for_plotly(egm_counts_high, x_col, y_col, x_levels, y_levels,"high", 0.35, 0.35)
-            egm_counts_medium <- add_to_counts_df_for_plotly(egm_counts_medium, x_col, y_col, x_levels, y_levels, "medium", 0, 0.35)
-            egm_counts_low <- add_to_counts_df_for_plotly(egm_counts_low, x_col, y_col, x_levels, y_levels, "low", -0.35, 0.35)
-            egm_counts_ongoing <- add_to_counts_df_for_plotly(egm_counts_ongoing, x_col, y_col, x_levels, y_levels, "ongoing", -0.17, -0.35)
+            x_levels <- levels(factor(egm_data$all$counts[[x_col]]))
+            y_levels <- levels(factor(egm_data$all$counts[[y_col]]))
+            # this needs to be in the same order as the egm_data list for the re-coloring to work
+            for (name in names(egm_data)) {
+                egm_data[[name]]$counts <- add_to_counts_df_for_plotly(
+                    egm_data[[name]]$counts, 
+                    x_col, 
+                    y_col, 
+                    x_levels, 
+                    y_levels, 
+                    name, 
+                    egm_data[[name]]$offset_x, 
+                    egm_data[[name]]$offset_y
+                )
+            }
 
             # create the plotly figure
             egm_spec <- plot_ly(
@@ -153,12 +160,9 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             ) 
 
             # add all the traces
-            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_all, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$all)
-            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_high, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$high)
-            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_medium, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$medium)
-            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_low, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$low)
-            egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_counts_ongoing, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_colors_list$ongoing)
-
+            for (name in names(egm_data)) {
+                egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_data[[name]]$counts, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_data[[name]]$color)
+            }
 
             # configure the plot layout
             egm_spec <- egm_spec %>% layout(
