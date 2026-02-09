@@ -1,33 +1,27 @@
-message("global.R has been sourced")
-
 library(shiny)
 library(tidyverse)
 library(plotly)
 library(stringr)
 library(DT)
 
-# Read data and do initial cleaning
+# Read data
+# any data cleaning needed?
 df_all <- read_csv("data/batch3_resolved_amgedit.csv") %>%
-    distinct(Phase, Assignment, Directory, .keep_all = TRUE) %>% #!!! THIS NEEDS TO BE UPDATED
-    mutate(internal_id = row_number()) %>%
     mutate(
-      WorkType = replace_na(WorkType, "None Given"),
-      Theme.Assignment = replace_na(Theme.Assignment, "None Given"),
+        WorkType = replace_na(WorkType, "None Given"),
+        Theme.Assignment = replace_na(Theme.Assignment, "None Given")
     )
 df_high <- df_all %>% filter(review_confidence == 3)
 df_medium <- df_all %>% filter(review_confidence == 2)
 df_low <- df_all %>% filter(review_confidence == 1)
 df_ongoing <- df_all %>% filter(in_progress == 1)
 
-# !!!!!
-# I will also need to ensure that each doc is only included once with the correct values
-# currently I'm just taking the first entry
-# !!!
 
 # create new dataframes that can be used for the egm plot
 create_counts <- function(df){
     df %>%
         count(WorkType, Theme.Assignment) %>%
+        # re-order
         mutate(
             WorkType = fct_relevel(factor(WorkType), "Other", "None Given", after = Inf),
             Theme.Assignment = fct_relevel(factor(Theme.Assignment),  "None Given", "Other")
@@ -42,3 +36,5 @@ egm_data <- list(
     low = list(df = df_low, counts = create_counts(df_low), color = "#CC3D3D", index = 3, offset_x = -0.35, offset_y = 0.35),
     ongoing = list(df = df_ongoing, counts = create_counts(df_ongoing), color = "#FFC0CB", index = 4, offset_x = -0.17, offset_y = -0.35)
 )
+
+message("global.R sourced successfully")
