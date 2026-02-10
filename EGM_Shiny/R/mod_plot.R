@@ -157,7 +157,20 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
                 height = plot_height,
                 width = plot_width,
                 source = plot_source_name
-            ) 
+            ) %>% 
+                config(
+                    displayModeBar = TRUE,
+                    modeBarButtonsToRemove = c(
+                        "select2d",
+                        "lasso2d",
+                        "zoomIn2d",
+                        "zoomOut2d",
+                        "autoScale2d",
+                        "hoverClosestCartesian",
+                        "hoverCompareCartesian",
+                        "toggleSpikelines"
+                    )
+                )
 
             # add all the traces
             for (name in names(egm_data)) {
@@ -167,7 +180,7 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             # configure the plot layout
             egm_spec <- egm_spec %>% layout(
                 # spacing, axis titles, legend
-                margin = list(t = 100),
+                margin = list(t = 120),
                 showlegend = FALSE,
                 xaxis = list(
                     # restore the labels
@@ -186,7 +199,7 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
                     zeroline = FALSE,
                     # silly fix to move the labels up
                     ticklen = 7,
-                    tickcolor = 'white'
+                    tickcolor = "rgba(0,0,0,0)"
                 ),
                 yaxis = list(
                     # restore the labels
@@ -216,7 +229,7 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
                         xanchor = "left",
                         yanchor = "top",
                         align = "left",
-                        bgcolor = "rgba(255,255,255,0.85)",
+                        bgcolor = "rgba(0,0,0,0)",
                         bordercolor = "black",
                         borderwidth = 1,
                         borderpad = 10,

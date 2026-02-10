@@ -1,0 +1,470 @@
+/* these styles are from a collaboration between Aaron + claude.ai + ChatGPT*/
+
+/* ------------------------------------------- */
+/* BASE STYLES */
+/* ------------------------------------------- */
+
+/* Apply dark theme to the entire app body */
+body {
+    background: #0a0e27 !important;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Reset Shiny default container padding */
+.container-fluid {
+    padding: 0 !important;
+    max-width: 100% !important;
+}
+
+.design-container {
+    max-width: 1600px;
+    margin: 10px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}
+
+/* ------------------------------------------- */
+/* TITLE AND INSTRUCTIONS */
+/* ------------------------------------------- */
+.header-title {
+    text-align: center; 
+    margin-bottom: 50px; 
+    color: white; 
+    font-size: 42px; 
+    letter-spacing: 2px;
+}
+
+.header-instructions {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+}
+
+.header-instructions h2 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+}
+
+.header-instructions p {
+    opacity: 0.95;
+    font-size: 15px;
+    line-height: 1.5;
+}
+/* ------------------------------------------- */
+/* TOP CONTROL BAR */
+/* ------------------------------------------- */
+.controls-bar {
+    background: #141b3d;
+    padding: 15px 20px;
+    align-items: center;
+    border-bottom: 1px solid #1e2a5a;
+    display: grid;
+    grid-template-columns: 60% 40%;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+.controls-bar h3{
+    margin: 0 0 20px 0;
+    font-family: sans-serif;
+    font-size: 15px;
+}
+
+/* ------------------------------------------- */
+/* filters */
+
+.filters {
+    display: flex;
+    flex-direction: column;
+}
+
+.filters-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+/* Individual control groups (pairs of label + input) */
+.filters-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Labels in the control bar */
+.filters-item label,
+.controls-bar label {
+    font-size: 12px;
+    color: #7c8db5;
+    font-weight: 500;
+    margin-bottom: 0 !important;
+    width: 60px;
+}
+
+/* Select dropdowns in control bar */
+.shiny-input-container{
+    width:150px !important;
+    font-size: 12px;
+}
+
+.filters-item select,
+.controls-bar select,
+.controls-bar .selectize-input {
+    background: #0a0e27 !important;
+    border: 1px solid #1e2a5a !important;
+    color: white !important;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: none !important;
+}
+
+.controls-bar .selectize-dropdown {
+    background: #141b3d;
+    border: 1px solid #1e2a5a;
+    color: white;
+}
+
+.controls-bar .selectize-dropdown-content .option {
+    color: white;
+    padding: 8px 12px;
+}
+
+.controls-bar .selectize-dropdown-content .option:hover {
+    background: #1e2a5a;
+}
+
+/* ------------------------------------------- */
+/* toggle buttons */
+
+.toggles {
+    display: flex;
+    flex-direction: column;
+    padding-left: 20px;
+    border-left: 1px solid gray;
+}
+
+.toggles-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+    gap: 10px;
+}
+
+.toggle-btn {
+    background: #1e2a5a !important;
+    border: none !important;
+    color: #7c8db5 !important;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    width: 75px;
+}
+
+.toggle-btn:hover {
+    background: #273a6e !important;
+    color: #a8b8d8 !important;
+}
+
+.toggle-btn.active {
+    background: #4f46e5 !important;
+    color: white !important;
+}
+
+/* ------------------------------------------- */
+/* MAIN SPLIT LAYOUT */
+/* ------------------------------------------- */
+
+.main-area {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    transition: grid-template-columns 0.3s ease;
+    align-items: start; 
+}
+
+/* When table is hidden, collapse the right column */
+.main-area.table-hidden {
+    grid-template-columns: 1fr 0;
+}
+
+/* ------------------------------------------- */
+/* PLOT SECTION (LEFT) */
+/* ------------------------------------------- */
+
+.plot-section {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    background: #0a0e27;
+}
+
+/* Header area above the plot */
+.plot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.plot-header h2,
+.plot-header h3 {
+    font-size: 20px;
+    color: white;
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Expand/fullscreen button */
+.expand-btn {
+    background: transparent !important;
+    border: 1px solid #1e2a5a !important;
+    color: #7c8db5 !important;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.expand-btn:hover {
+    background: #141b3d !important;
+    border-color: #4f46e5 !important;
+    color: #a78bfa !important;
+}
+
+/* ------------------------------------------- */
+/* inside the plot */
+.plot-container {
+    flex: 1;
+    position: relative;
+    background: #141b3d;
+    border: 1px solid #1e2a5a;
+    border-radius: 8px;
+    padding: 40px;
+}
+
+/* Style the plotly plot itself */
+.plot-container .plotly {
+    /* background: rgba(79, 70, 229, 0.05) !important; */
+    /* border-radius: 8px; */
+    border: none !important;
+}
+
+/* Override plotly's default styles */
+.plot-container .plotly .main-svg {
+    background: transparent !important;
+}
+.plot-container .plotly .main-svg text {
+    fill: #7c8db5 !important;
+}
+.plot-container .plotly .main-svg .shapelayer path {
+    stroke: #3c4b6c !important;
+    stroke-width: 1px !important;
+}
+.plot-container .plotly .main-svg .annotation rect {
+    stroke: #3c4b6c !important;
+    stroke-width: 4px !important;
+}
+.plot-container .plotly .modebar-group {
+    background: transparent !important;
+}
+.plot-container .plotly .modebar-btn svg path {
+    fill:  #3c4b6c !important;
+}
+/* tooltips */
+.plot-container .plotly .hoverlayer text {
+    fill: white !important;
+}
+.plot-container .plotly .hoverlayer path {
+    stroke: white !important;
+}
+/* ------------------------------------------- */
+/* TABLE SECTION (RIGHT) */
+/* ------------------------------------------- */
+
+.table-section {
+    background: #0f1629;
+    border-left: 1px solid #1e2a5a;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+/* When hidden */
+.table-section.hidden {
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.table-header {
+    flex: 0 0 auto;
+    padding: 20px;
+    background: #141b3d;
+    border-bottom: 1px solid #1e2a5a;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table-header h3 {
+    font-size: 14px;
+    color: #a78bfa;
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+.table-header p {
+    font-size: 12px;
+    color: #7c8db5;
+    margin: 0;
+}
+
+.table-header .info {
+    font-style: italic;
+}
+/* ------------------------------------------- */
+/* inside the table */
+.paper-list {
+    padding: 4px;
+    flex: 1 1 auto;
+    height: 870px; /* THIS PROBABLY SHOULD NOT BE HARDCODED -- INSTEAD BASED ON FIGURE HEIGHT */
+    overflow-y: auto;
+}
+        
+.paper-card {
+    background: #141b3d;
+    border: 1px solid #1e2a5a;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+}
+
+.paper-card:hover {
+    border-color: #4f46e5;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.paper-card h4 {
+    font-size: 13px;
+    color: white;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.paper-meta {
+    font-size: 11px;
+    color: #7c8db5;
+    margin-bottom: 4px;
+}
+.paper-card-label {
+    font-weight: 700;
+}
+
+.paper-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.paper-tags .tag {
+    background: rgba(79, 70, 229, 0.3);
+    color: #a78bfa;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+}
+
+.tag.high {
+    background:#46A040 !important;
+    color:#252a36 !important;
+}
+.tag.medium {
+    background:#FDB915 !important;
+    color:#252a36 !important;
+}
+.tag.low {
+    background:#CC3D3D !important;
+    color:#252a36 !important;
+}
+.tag.ongoing {
+    background:#FFC0CB !important;
+    color:#252a36 !important;
+}
+/* ------------------------------------------- */
+/* SHINY SPECIFIC OVERRIDES */
+/* ------------------------------------------- */
+
+
+/* Remove default Shiny well styling */
+.well {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Style shiny inputs in the controls bar */
+.controls-bar .shiny-input-container {
+    margin-bottom: 0 !important;
+}
+
+/* Remove default margins from Shiny rows and columns */
+.main-area .row {
+    margin: 0 !important;
+}
+
+.main-area [class*="col-"] {
+    padding: 0 !important;
+}
+
+/* ------------------------------------------- */
+/* RESPONSIVE ADJUSTMENTS */
+/* ------------------------------------------- */
+
+/* could include later */
+
+/* ------------------------------------------- */
+/* UTILITY CLASSES */
+/* ------------------------------------------- */
+/* Hide element */
+.hidden {
+    display: none !important;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* Loading state */
+.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Text utilities for the dark theme */
+.text-primary {
+    color: #a78bfa !important;
+}
+
+.text-secondary {
+    color: #7c8db5 !important;
+}
+
+.text-muted {
+    color: #64748b !important;
+}
