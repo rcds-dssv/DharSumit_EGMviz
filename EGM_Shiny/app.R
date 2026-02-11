@@ -91,9 +91,9 @@ ui <- fluidPage(
                     actionButton("expand_plot", "⛶ Fullscreen", class = "expand-btn")
                 ),
 
-                # plot container
+                # plot 
                 div(
-                    class = "plot-container",
+                    class = "plot-wrapper",
                     mod_plot_ui("egm")
                 )
             ),
@@ -111,10 +111,8 @@ ui <- fluidPage(
                 ),
                 
                 # Paper list
-                div(
-                    class = "paper-list",
-                    mod_click_ui("egm")
-                )
+                mod_click_ui("egm")
+                
             )
         )
     )

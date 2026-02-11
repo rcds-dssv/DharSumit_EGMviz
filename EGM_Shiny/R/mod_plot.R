@@ -180,7 +180,7 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             # configure the plot layout
             egm_spec <- egm_spec %>% layout(
                 # spacing, axis titles, legend
-                margin = list(t = 120),
+                margin = list(t = 120, b = 0, l = 0, r = 0, pad = 10),
                 showlegend = FALSE,
                 xaxis = list(
                     # restore the labels
@@ -196,10 +196,10 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
                     side = "top", 
                     tickangle = 0, 
                     showgrid = FALSE,
-                    zeroline = FALSE,
+                    zeroline = FALSE
                     # silly fix to move the labels up
-                    ticklen = 7,
-                    tickcolor = "rgba(0,0,0,0)"
+                    # ticklen = 7,
+                    # tickcolor = "rgba(0,0,0,0)"
                 ),
                 yaxis = list(
                     # restore the labels

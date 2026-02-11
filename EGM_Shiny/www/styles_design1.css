@@ -185,7 +185,9 @@ body {
     display: grid;
     grid-template-columns: auto 1fr;
     transition: grid-template-columns 0.3s ease;
-    align-items: start; 
+    align-items: stretch; 
+    /* height: calc(100vh - 370px); */
+    height: 900px;
 }
 
 /* When table is hidden, collapse the right column */
@@ -202,6 +204,8 @@ body {
     display: flex;
     flex-direction: column;
     background: #0a0e27;
+    /* height: calc(100% - 80px); */
+    height: 900px;
 }
 
 /* Header area above the plot */
@@ -240,48 +244,49 @@ body {
 
 /* ------------------------------------------- */
 /* inside the plot */
-.plot-container {
+.plot-wrapper {
     flex: 1;
     position: relative;
     background: #141b3d;
     border: 1px solid #1e2a5a;
     border-radius: 8px;
     padding: 40px;
+    min-height: 0;
 }
 
 /* Style the plotly plot itself */
-.plot-container .plotly {
+.plot-container.plotly {
     /* background: rgba(79, 70, 229, 0.05) !important; */
     /* border-radius: 8px; */
     border: none !important;
 }
 
 /* Override plotly's default styles */
-.plot-container .plotly .main-svg {
+.plot-container.plotly .main-svg {
     background: transparent !important;
 }
-.plot-container .plotly .main-svg text {
+.plot-container.plotly .main-svg text {
     fill: #7c8db5 !important;
 }
-.plot-container .plotly .main-svg .shapelayer path {
+.plot-container.plotly .main-svg .shapelayer path {
     stroke: #3c4b6c !important;
     stroke-width: 1px !important;
 }
-.plot-container .plotly .main-svg .annotation rect {
+.plot-container.plotly .main-svg .annotation rect {
     stroke: #3c4b6c !important;
     stroke-width: 4px !important;
 }
-.plot-container .plotly .modebar-group {
+.plot-container.plotly .modebar-group {
     background: transparent !important;
 }
-.plot-container .plotly .modebar-btn svg path {
+.plot-container.plotly .modebar-btn svg path {
     fill:  #3c4b6c !important;
 }
 /* tooltips */
-.plot-container .plotly .hoverlayer text {
+.plot-container.plotly .hoverlayer text {
     fill: white !important;
 }
-.plot-container .plotly .hoverlayer path {
+.plot-container.plotly .hoverlayer path {
     stroke: white !important;
 }
 /* ------------------------------------------- */
@@ -293,7 +298,7 @@ body {
     border-left: 1px solid #1e2a5a;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 900px;
     transition: all 0.3s ease;
 }
 
@@ -335,8 +340,9 @@ body {
 .paper-list {
     padding: 4px;
     flex: 1 1 auto;
-    height: 870px; /* THIS PROBABLY SHOULD NOT BE HARDCODED -- INSTEAD BASED ON FIGURE HEIGHT */
     overflow-y: auto;
+    min-height:0;
+    height:790px;
 }
         
 .paper-card {
