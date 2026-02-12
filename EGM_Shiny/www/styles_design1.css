@@ -1,3 +1,5 @@
+/* color vars are imported via app.R */
+
 /* these styles are from a collaboration between Aaron + claude.ai + ChatGPT*/
 
 /* ------------------------------------------- */
@@ -6,8 +8,8 @@
 
 /* Apply dark theme to the entire app body */
 body {
-    background: #0a0e27 !important;
-    color: white;
+    background: var(--color-body-bg) !important;
+    color: var(--color-body-text);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     margin: 0;
     padding: 0;
@@ -21,12 +23,11 @@ body {
 }
 
 .design-container {
-    max-width: 1600px;
     margin: 10px;
     background: white;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: inset 0 1px 1px rgba(0,0,0,0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: inset 0 1px 1px var(--color-container-shadow1), 0 0 8px var(--color-container-shadow2);
 }
 
 /* ------------------------------------------- */
@@ -35,14 +36,14 @@ body {
 .header-title {
     text-align: center; 
     margin-bottom: 20px; 
-    color: white; 
+    color:var(--color-body-text); 
     font-size: 42px; 
     letter-spacing: 2px;
 }
 
 .header-instructions {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--color-top-gradient1) 0%, var(--color-top-gradient2) 100%);
+    color: var(--color-body-text);
     padding: 20px;
 }
 
@@ -60,10 +61,10 @@ body {
 /* TOP CONTROL BAR */
 /* ------------------------------------------- */
 .controls-bar {
-    background: #141b3d;
+    background: var(--color-container-bg);
     padding: 15px 20px;
     align-items: center;
-    border-bottom: 1px solid #1e2a5a;
+    border-bottom: 1px solid var(--color-container-border);
     display: grid;
     grid-template-columns: 60% 40%;
     gap: 1rem;
@@ -101,7 +102,7 @@ body {
 .filters-item label,
 .controls-bar label {
     font-size: 12px;
-    color: #7c8db5;
+    color: var(--color-container-text);
     font-weight: 500;
     margin-bottom: 0 !important;
     width: 60px;
@@ -116,9 +117,9 @@ body {
 .filters-item select,
 .controls-bar select,
 .controls-bar .selectize-input {
-    background: #0a0e27 !important;
-    border: 1px solid #1e2a5a !important;
-    color: white !important;
+    background: var(--color-body-bg) !important;
+    border: 1px solid var(--color-container-border) !important;
+    color: var(--color-body-text) !important;
     padding: 6px 12px;
     border-radius: 4px;
     font-size: 12px;
@@ -126,18 +127,18 @@ body {
 }
 
 .controls-bar .selectize-dropdown {
-    background: #141b3d;
-    border: 1px solid #1e2a5a;
-    color: white;
+    background: var(--color-body-bg);
+    border: 1px solid var(--color-container-border);
+    color: var(--color-body-text);
 }
 
 .controls-bar .selectize-dropdown-content .option {
-    color: white;
+    color: var(--color-body-text);
     padding: 8px 12px;
 }
 
 .controls-bar .selectize-dropdown-content .option:hover {
-    background: #1e2a5a;
+    background: var(--color-container-border);
 }
 
 /* ------------------------------------------- */
@@ -157,9 +158,9 @@ body {
 }
 
 .toggle-btn {
-    background: #1e2a5a !important;
+    background: var(--color-container-border) !important;
     border: none !important;
-    color: #7c8db5 !important;
+    color: var(--color-container-text) !important;
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
@@ -169,13 +170,13 @@ body {
 }
 
 .toggle-btn:hover {
-    background: #273a6e !important;
-    color: #a8b8d8 !important;
+    background: var(--color-toggle-hover-bg) !important;
+    color: var(--color-toggle-hover-text) !important;
 }
 
 .toggle-btn.active {
-    background: #4f46e5 !important;
-    color: white !important;
+    background: var(--color-toggle-active-bg) !important;
+    color: var(--color-body-text) !important;
 }
 
 /* ------------------------------------------- */
@@ -204,7 +205,7 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    background: #0a0e27;
+    background: var(--color-body-bg);
     /* height: calc(100% - 80px); */
     height: 900px;
     width: 740px;
@@ -221,7 +222,7 @@ body {
 .plot-header h2,
 .plot-header h3 {
     font-size: 20px;
-    color: white;
+    color: var(--color-body-text);
     margin: 0;
     font-weight: 600;
 }
@@ -229,8 +230,8 @@ body {
 /* Expand/fullscreen button */
 .expand-btn {
     background: transparent !important;
-    border: 1px solid #1e2a5a !important;
-    color: #7c8db5 !important;
+    border: 1px solid var(--color-container-border) !important;
+    color: var(--color-container-text) !important;
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
@@ -239,9 +240,9 @@ body {
 }
 
 .expand-btn:hover {
-    background: #141b3d !important;
-    border-color: #4f46e5 !important;
-    color: #a78bfa !important;
+    background: var(--color-container-bg) !important;
+    border-color: var(--color-toggle-active-bg) !important;
+    color: var(--color-button-text) !important;
 }
 
 /* ------------------------------------------- */
@@ -249,8 +250,8 @@ body {
 .plot-wrapper {
     flex: 1;
     position: relative;
-    background: #141b3d;
-    border: 1px solid #1e2a5a;
+    background: var(--color-container-bg);
+    border: 1px solid var(--color-container-border);
     border-radius: 8px;
     padding: 40px;
     min-height: 0;
@@ -268,36 +269,36 @@ body {
     background: transparent !important;
 }
 .plot-container.plotly .main-svg text {
-    fill: #7c8db5 !important;
+    fill: var(--color-container-text) !important;
 }
 .plot-container.plotly .main-svg .shapelayer path {
-    stroke: #3c4b6c !important;
+    stroke: var(--color-plot-path) !important;
     stroke-width: 1px !important;
 }
 .plot-container.plotly .main-svg .annotation rect {
-    stroke: #3c4b6c !important;
+    stroke: var(--color-plot-path) !important;
     stroke-width: 4px !important;
 }
 .plot-container.plotly .modebar-group {
     background: transparent !important;
 }
 .plot-container.plotly .modebar-btn svg path {
-    fill:  #3c4b6c !important;
+    fill:  var(--color-plot-path) !important;
 }
 /* tooltips */
 .plot-container.plotly .hoverlayer text {
-    fill: white !important;
+    fill: var(--color-body-text) !important;
 }
 .plot-container.plotly .hoverlayer path {
-    stroke: white !important;
+    stroke: var(--color-body-text) !important;
 }
 /* ------------------------------------------- */
 /* TABLE SECTION (RIGHT) */
 /* ------------------------------------------- */
 
 .table-section {
-    background: #0f1629;
-    border-left: 1px solid #1e2a5a;
+    background: var(--color-table-bg);
+    border-left: 1px solid var(--color-container-border);
     display: flex;
     flex-direction: column;
     height: 900px;
@@ -314,8 +315,8 @@ body {
 .table-header {
     flex: 0 0 auto;
     padding: 20px;
-    background: #141b3d;
-    border-bottom: 1px solid #1e2a5a;
+    background: var(--color-container-bg);
+    border-bottom: 1px solid var(--color-container-border);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -323,14 +324,14 @@ body {
 
 .table-header h3 {
     font-size: 14px;
-    color: #a78bfa;
+    color: var(--color-button-text);
     margin: 0 0 5px 0;
     font-weight: 600;
 }
 
 .table-header p {
     font-size: 12px;
-    color: #7c8db5;
+    color: var(--color-container-text);
     margin: 0;
 }
 
@@ -348,8 +349,8 @@ body {
 }
         
 .paper-card {
-    background: #141b3d;
-    border: 1px solid #1e2a5a;
+    background: var(--color-container-bg);
+    border: 1px solid var(--color-container-border);
     border-radius: 6px;
     padding: 16px;
     margin-bottom: 12px;
@@ -357,20 +358,20 @@ body {
 }
 
 .paper-card:hover {
-    border-color: #4f46e5;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    border-color: var(--color-toggle-active-bg);
+    box-shadow: 0 4px 12px var(--color-table-shadow);
 }
 
 .paper-card h4 {
     font-size: 13px;
-    color: white;
+    color: var(--color-body-text);
     margin-bottom: 8px;
     line-height: 1.4;
 }
 
 .paper-meta {
     font-size: 11px;
-    color: #7c8db5;
+    color: var(--color-container-text);
     margin-bottom: 4px;
 }
 .paper-card-label {
@@ -385,28 +386,28 @@ body {
 }
 
 .paper-tags .tag {
-    background: rgba(79, 70, 229, 0.3);
-    color: #a78bfa;
+    background: var(--color-tag-default);
+    color: var(--color-button-text);
     padding: 3px 8px;
     border-radius: 3px;
     font-size: 10px;
 }
 
 .tag.high {
-    background:#46A040 !important;
-    color:#252a36 !important;
+    background: var(--color-high_confidence) !important;
+    color: var(--color-tag-special-text) !important;
 }
 .tag.medium {
-    background:#FDB915 !important;
-    color:#252a36 !important;
+    background: var(--color-medium_confidence) !important;
+    color:var(--color-tag-special-text) !important;
 }
 .tag.low {
-    background:#CC3D3D !important;
-    color:#252a36 !important;
+    background: var(--color-low_confidence) !important;
+    color:var(--color-tag-special-text) !important;
 }
 .tag.ongoing {
-    background:#FFC0CB !important;
-    color:#252a36 !important;
+    background:var(--color-in_progress) !important;
+    color:var(--color-tag-special-text) !important;
 }
 
 /* paper section scrollbar */
@@ -418,16 +419,16 @@ body {
         height: 8px;
     }
     .paper-list::-webkit-scrollbar-track {
-        background: #1e1e1e;
+        background: var(--color-scroll-bg);
         border-radius: 4px;
     }
     .paper-list::-webkit-scrollbar-thumb {
-        background-color: #3c4b6c;
+        background-color: var(--color-plot-path);
         border-radius: 4px;
-        border: 2px solid #1e1e1e;
+        border: 2px solid var(--color-scroll-bg);
     }
     .paper-list::-webkit-scrollbar-thumb:hover {
-        background-color: #7c8db5;
+        background-color: var(--color-container-text);
     }
     /* removes arrows */
     .paper-list::-webkit-scrollbar-button {
@@ -440,7 +441,7 @@ body {
 @-moz-document url-prefix() {
     .paper-list {
         scrollbar-width: thin;
-        scrollbar-color: #505b74 #1e1e1e;
+        scrollbar-color: var(--color-plot-path) var(--color-scroll-bg);
     }
 }
 
@@ -470,9 +471,6 @@ body {
     padding: 0 !important;
 }
 
-
-
-
 /* ------------------------------------------- */
 /* RESPONSIVE ADJUSTMENTS */
 /* ------------------------------------------- */
@@ -495,23 +493,4 @@ body {
 
 .fade-in {
     animation: fadeIn 0.3s ease-in;
-}
-
-/* Loading state */
-.loading {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-/* Text utilities for the dark theme */
-.text-primary {
-    color: #a78bfa !important;
-}
-
-.text-secondary {
-    color: #7c8db5 !important;
-}
-
-.text-muted {
-    color: #64748b !important;
 }

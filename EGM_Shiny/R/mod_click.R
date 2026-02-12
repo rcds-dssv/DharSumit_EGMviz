@@ -114,7 +114,7 @@ mod_click_server <- function(id, plot_source_name, x_col, y_col) {
                     meta <- lapply(names(row), function(col) {
                         if (!is.na(row[[col]]) && !(col %in% special)) {
                             div(class = "paper-meta",
-                                span(class = "paper-card-label", paste0(col, ":")),
+                                span(class = "paper-card-label", paste0(trimws(gsub("([A-Z])", " \\1", col)), ":")),
                                 span(class = "paper-card-value", as.character(row[[col]]))
                             )
                         }

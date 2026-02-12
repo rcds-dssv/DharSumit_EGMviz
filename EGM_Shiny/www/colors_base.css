@@ -1,0 +1,21 @@
+:root {
+    --color-body-bg: #0a0e27;
+    --color-body-text: white;
+    --color-container-shadow1: rgba(0,0,0,0.075);
+    --color-container-shadow2: rgba(102, 175, 233, 0.6);
+    --color-top-gradient1: #667eea;
+    --color-top-gradient2: #764ba2;
+    --color-container-bg: #141b3d;
+    --color-container-border: #1e2a5a;
+    --color-container-text: #7c8db5;
+    --color-toggle-hover-bg: #273a6e;
+    --color-toggle-hover-text: #a8b8d8;
+    --color-toggle-active-bg: #4f46e5;
+    --color-button-text: #a78bfa;
+    --color-plot-path: #3c4b6c;
+    --color-table-bg: #0f1629;
+    --color-table-shadow: rgba(79, 70, 229, 0.2);
+    --color-tag-default: rgba(79, 70, 229, 0.3);
+    --color-tag-special-text: #252a36;
+    --color-scroll-bg: #1e1e1e;
+}

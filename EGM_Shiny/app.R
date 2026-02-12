@@ -4,11 +4,9 @@ ui <- fluidPage(
     
     # include the style sheet
     tags$head(
-        tags$link(
-            rel = "stylesheet",
-            type = "text/css",
-            href = "styles_design1.css"
-        )
+        tags$link(rel = "stylesheet", type = "text/css", href = "colors_base.css"),
+        tags$link(rel = "stylesheet", type = "text/css", href = "colors_runtime.css"),
+        tags$link(rel = "stylesheet", type = "text/css", href = "styles_design1.css")
     ),
   
     # title
