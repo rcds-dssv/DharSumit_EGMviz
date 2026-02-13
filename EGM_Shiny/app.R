@@ -6,7 +6,8 @@ ui <- fluidPage(
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "colors_base.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "colors_runtime.css"),
-        tags$link(rel = "stylesheet", type = "text/css", href = "styles_design1.css")
+        tags$link(rel = "stylesheet", type = "text/css", href = "styles_design1.css"),
+        tags$script(src="toggles.js")
     ),
   
     # title
@@ -66,9 +67,9 @@ ui <- fluidPage(
                 div(
                     class = "toggles-group",
             
-                    actionButton("toggle_1", "Toggle 1", class = "toggle-btn active"),
-                    actionButton("toggle_2", "Toggle 2", class = "toggle-btn active"),
-                    actionButton("toggle_table", "Table →", class = "toggle-btn active")
+                    # actionButton("toggle_1", "Toggle 1", class = "toggle-btn active"),
+                    # actionButton("toggle_2", "Toggle 2", class = "toggle-btn active"),
+                    actionButton("toggle_table", "Table", class = "toggle-btn active")
                 ),
             )
         ),
@@ -81,12 +82,13 @@ ui <- fluidPage(
             # figure (left)
             div(
                 class = "plot-section",
+                id = "plot_section",
 
                 # plot header
                 div(
                     class = "plot-header",
                     tags$h2("Evidence Gap Map"),
-                    actionButton("expand_plot", "⛶ Fullscreen", class = "expand-btn")
+                    # actionButton("expand_plot", "⛶ Fullscreen", class = "expand-btn")
                 ),
 
                 # plot 

@@ -36,31 +36,32 @@ shapes_for_plotly <- function(n_x, n_y){
     })
   
     # boxes around x-axis labels (above the plot)
-    x_label_boxes <- lapply(0:(n_x-1), function(i) {
-        list(
-            type = "rect",
-            xref = "x", yref = "paper",
-            x0 = i - 0.5, x1 = i + 0.5,
-            y0 = 1.01, y1 = 1.072, #magic numbers
-            line = list(color = "black", width = 1),
-            fillcolor = "transparent"
-        )
-    })
+    # x_label_boxes <- lapply(0:(n_x-1), function(i) {
+    #     list(
+    #         type = "rect",
+    #         xref = "x", yref = "paper",
+    #         x0 = i - 0.5, x1 = i + 0.5,
+    #         y0 = 1.01, y1 = 1.072, #magic numbers
+    #         line = list(color = "black", width = 1),
+    #         fillcolor = "transparent"
+    #     )
+    # })
   
-    # boxes around y-axis labels (left of the plot)
-    y_label_boxes <- lapply(0:(n_y-1), function(i) {
-        list(
-            type = "rect",
-            xref = "paper", yref = "y",
-            x0 = -0.015, x1 = -0.45,  # magic numbers
-            y0 = i - 0.5, y1 = i + 0.5,
-            line = list(color = "black", width = 1),
-            fillcolor = "transparent"
-        )
-    })
+    # # boxes around y-axis labels (left of the plot)
+    # y_label_boxes <- lapply(0:(n_y-1), function(i) {
+    #     list(
+    #         type = "rect",
+    #         xref = "paper", yref = "y",
+    #         x0 = -0.015, x1 = -0.45,  # magic numbers
+    #         y0 = i - 0.5, y1 = i + 0.5,
+    #         line = list(color = "black", width = 1),
+    #         fillcolor = "transparent"
+    #     )
+    # })
   
     # Combine all shapes
-    all_shapes <- c(vlines, hlines, x_label_boxes, y_label_boxes)
+    # all_shapes <- c(vlines, hlines, x_label_boxes, y_label_boxes)
+    all_shapes <- c(vlines, hlines)
   
 }
 
@@ -108,7 +109,7 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_titl
 ###### modular ui and server functions
 mod_plot_ui <- function(id) {
     ns <- NS(id)
-    plotlyOutput(ns("egm_plot"),  height = "800px") # could use the same height as calculated in the server
+    plotlyOutput(ns("egm_plot"),  height = "100%", width = "100%") 
 }
 
 
@@ -123,6 +124,7 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             
             # set the sizing to make square boxes, 
             # trial and error ... (there must be a better way)
+            # for now, this is only used in a relative sense to draw the lines.  The actual plot size is responsive.
             cell_px <- 60
             plot_width  <- n_x * cell_px + 260
             plot_height <- n_y * cell_px
@@ -154,11 +156,12 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             # create the plotly figure
             egm_spec <- plot_ly(
                 # global settings
-                height = plot_height,
-                width = plot_width,
-                source = plot_source_name
+                # height = plot_height,
+                # width = plot_width,
+                source = plot_source_name,
             ) %>% 
                 config(
+                    responsive = TRUE,
                     displayModeBar = TRUE,
                     modeBarButtonsToRemove = c(
                         "select2d",
@@ -181,6 +184,7 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             egm_spec <- egm_spec %>% layout(
                 # spacing, axis titles, legend
                 margin = list(t = 120, b = 0, l = 0, r = 0, pad = 10),
+                autosize = TRUE,
                 showlegend = FALSE,
                 xaxis = list(
                     # restore the labels
@@ -260,8 +264,6 @@ mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
             }
             
             output$egm_plot <- renderPlotly(emg_build)
-            
-            
 
         }
     )

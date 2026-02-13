@@ -207,10 +207,13 @@ body {
     flex-direction: column;
     background: var(--color-body-bg);
     /* height: calc(100% - 80px); */
-    height: 900px;
-    width: 740px;
+    height: 900px; 
+    width: 740px; 
+    transition: width 0.25s ease-in-out;
 }
-
+.plot-section.grow{
+    width: calc(100vw - 36px) !important;
+}
 /* Header area above the plot */
 .plot-header {
     display: flex;
@@ -284,6 +287,11 @@ body {
 }
 .plot-container.plotly .modebar-btn svg path {
     fill:  var(--color-plot-path) !important;
+}
+.plot-container.plotly .ytitle,
+.plot-container.plotly .xtitle {
+    font-size: 18px !important;
+    font-weight: bold !important;
 }
 /* tooltips */
 .plot-container.plotly .hoverlayer text {
