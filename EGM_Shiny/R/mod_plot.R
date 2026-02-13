@@ -89,10 +89,10 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_titl
         sizes = c(5, 125),   # controls min/max point size
         marker = list(
             color = color,
-            opacity = 0.7,
+            opacity = 1,
             line = list(
                 color = color,
-                width = 2
+                width = 1
             )
         ),
         # tooltips

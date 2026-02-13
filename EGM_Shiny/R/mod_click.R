@@ -9,6 +9,16 @@ update_plotly_colors <- function(session, colors, line_colors, trace_index){
     )
 }
 
+update_plotly_opacities <- function(session, opacities, line_opacities, trace_index){
+    # Update the plot without re-rendering
+    plotlyProxy("egm_plot", session) %>%
+        plotlyProxyInvoke("restyle", list(
+            marker.opacity = list(opacities),
+            marker.line.opacity = list(line_opacities)
+        ),
+        list(trace_index)
+    )
+}
 ###### modular ui and server functions
 mod_click_ui <- function(id, header_only = FALSE) {
     ns <- NS(id)
@@ -60,14 +70,21 @@ mod_click_server <- function(id, plot_source_name, x_col, y_col) {
             observe({
                 info <- clicked_info()
                 if (is.null(info)) return()
+
                 # Create the original color vectors but replace the clicked point with black
                 for (name in names(egm_data)) {
                     trace_idx <- egm_data[[name]]$index
                     colors <- rep(egm_data[[name]]$color, nrow(egm_data[[name]]$counts))
                     line_colors <- rep(egm_data[[name]]$color, nrow(egm_data[[name]]$counts))
-                    if (trace_idx == info$trace_index) line_colors[info$pointNumber + 1] <- "white"
-                    
+                    opacities <- rep(0.4, nrow(egm_data[[name]]$counts))
+                    line_opacities <- rep(0.4, nrow(egm_data[[name]]$counts))
+                    if (trace_idx == info$trace_index) {
+                        line_colors[info$pointNumber + 1] <- "white"
+                        opacities[info$pointNumber + 1] <- 1;
+                        line_opacities[info$pointNumber + 1] <- 1;
+                    }
                     update_plotly_colors(session, colors, line_colors, trace_idx)
+                    update_plotly_opacities(session, opacities, line_opacities, trace_idx)
                 }
             })
 

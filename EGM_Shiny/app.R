@@ -7,7 +7,8 @@ ui <- fluidPage(
         tags$link(rel = "stylesheet", type = "text/css", href = "colors_base.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "colors_runtime.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "styles_design1.css"),
-        tags$script(src="toggles.js")
+        tags$script(src="toggles.js"),
+        tags$script(src="plot_clicks.js")
     ),
   
     # title
@@ -94,6 +95,7 @@ ui <- fluidPage(
                 # plot 
                 div(
                     class = "plot-wrapper",
+                    id = "plot_wrapper",
                     mod_plot_ui("egm")
                 )
             ),
