@@ -1,49 +1,68 @@
+// flag to track if a point was clicked (vs. background click)
 
+var pointClicked = false;
 handlePlotlyClicks =  function(eventData) {
     // eventData.points is an array of points clicked
     if ("points" in eventData){
-        // user clicked a point
-        // add a persistent tooltip
-        var point = eventData.points[0];
+        if (eventData.points.length > 0){
+            pointClicked = true;
+            // reset the flag after a brief delay
+            setTimeout(function() { pointClicked = false; }, 50);
 
-        // Data coordinates
-        var x_data = point.x;
-        var y_data = point.y;
+            // user clicked a point
+            // add a persistent tooltip
+            var point = eventData.points[0];
 
-        // Optional: page coordinates of the mouse
-        var pageX = eventData.event.pageX;
-        var pageY = eventData.event.pageY;
+            // Data coordinates
+            var x_data = point.x;
+            var y_data = point.y;
 
-        console.log(pageX, pageY)
-    } else {
-        // user did not click a point
-        // reset the figure and remove the tooltip
+            // Optional: page coordinates of the mouse
+            var pageX = eventData.event.pageX;
+            var pageY = eventData.event.pageY;
 
-        console.log('user did not click a point')
+            console.log(pageX, pageY)
+
+            // add the tooltip
+
+            // Send to Shiny
+            // Shiny.setInputValue('plot_click_info', {
+            //     x_data: x_data,
+            //     y_data: y_data,
+            //     pageX: pageX,
+            //     pageY: pageY,
+            //     nonce: Math.random()  // ensures Shiny detects changes even if same coords
+            // });
+        }
+    } 
+}
+handlePlotBackgroundClick =  function(event) {
+    if (!pointClicked) {
+        console.log('user did not click a point');
+        // remove the tooltip
+
+        // reset the plot colors
     }
-
-    // Send to Shiny
-    // Shiny.setInputValue('plot_click_info', {
-    //     x_data: x_data,
-    //     y_data: y_data,
-    //     pageX: pageX,
-    //     pageY: pageY,
-    //     nonce: Math.random()  // ensures Shiny detects changes even if same coords
-    // });
 }
 
-// attach a click listener to plot when shiny connects
-// Wait a bit for plot to render
-setTimeout(function() {
+// attach a click listener to plot when shiny finishes with the plot
+function attachPlotlyClickHandler() {
     var plot = document.getElementById("egm-egm_plot");
-    console.log('Plot element:', plot);
     
-    if (plot) {
-        plot.on('plotly_click', handlePlotlyClicks);
-        console.log('Listener attached');
+    if (plot){
+        if (typeof plot.on === "function") {
+            plot.on("plotly_click", handlePlotlyClicks);
+            console.log("Plotly handler attached");
+            return;
+        } 
     }
-}, 500);
+
+    // Plotly not ready yet, retry
+    console.log('waiting for plotly to load')
+    setTimeout(attachPlotlyClickHandler, 500);
+}
+attachPlotlyClickHandler();
+
 document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("plot_wrapper").addEventListener("click", handlePlotlyClicks);
+    document.getElementById("plot_wrapper").addEventListener("click", handlePlotBackgroundClick);    
 })
-console.log('loaded')
