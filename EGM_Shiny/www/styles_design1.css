@@ -261,6 +261,14 @@ body {
     min-height: 0;
 }
 
+/* point marker div */
+#clicked_point_marker {
+    position: absolute;
+    width:20px;
+    height:20px;
+    border-radius: 10px;
+    background-color: red;
+}
 /* Style the plotly plot itself */
 .plot-container.plotly {
     /* background: rgba(79, 70, 229, 0.05) !important; */

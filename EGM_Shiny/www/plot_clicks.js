@@ -1,6 +1,6 @@
 // flag to track if a point was clicked (vs. background click)
-
 var pointClicked = false;
+
 handlePlotlyClicks =  function(eventData) {
     // eventData.points is an array of points clicked
     if ("points" in eventData){
@@ -9,21 +9,20 @@ handlePlotlyClicks =  function(eventData) {
             // reset the flag after a brief delay
             setTimeout(function() { pointClicked = false; }, 50);
 
-            // user clicked a point
-            // add a persistent tooltip
-            var point = eventData.points[0];
+            // // Data coordinates
+            // var point = eventData.points[0];
+            // var x_data = point.x;
+            // var y_data = point.y;
 
-            // Data coordinates
-            var x_data = point.x;
-            var y_data = point.y;
-
-            // Optional: page coordinates of the mouse
-            var pageX = eventData.event.pageX;
-            var pageY = eventData.event.pageY;
-
-            console.log(pageX, pageY)
+            console.log(eventData)
 
             // add the tooltip
+            const tooltip = document.getElementById('clicked_point_marker');
+            const bbox = tooltip.getBoundingClientRect()
+            console.log(eventData.event.pageY, bbox.height)
+            tooltip.style.top = eventData.event.pageY - bbox.height/2. + "px";
+            tooltip.style.left = eventData.event.pageX + "px";
+            tooltip.classList.remove("hidden");
 
             // Send to Shiny
             // Shiny.setInputValue('plot_click_info', {
@@ -40,7 +39,8 @@ handlePlotBackgroundClick =  function(event) {
     if (!pointClicked) {
         console.log('user did not click a point');
         // remove the tooltip
-
+        const tooltip = document.getElementById('clicked_point_marker');
+        tooltip.classList.add("hidden");
         // reset the plot colors
     }
 }
@@ -64,5 +64,12 @@ function attachPlotlyClickHandler() {
 attachPlotlyClickHandler();
 
 document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("plot_wrapper").addEventListener("click", handlePlotBackgroundClick);    
+    // create a hidden div for the tooltip
+    const el = document.createElement("div");
+    el.id = "clicked_point_marker";
+    el.classList.add("hidden");
+    document.body.appendChild(el);
+
+    // attach the off-click listener
+    wrapper.addEventListener("click", handlePlotBackgroundClick);    
 })
