@@ -70,6 +70,7 @@ ui <- fluidPage(
             
                     # actionButton("toggle_1", "Toggle 1", class = "toggle-btn active"),
                     # actionButton("toggle_2", "Toggle 2", class = "toggle-btn active"),
+                    # this button toggles the table on/off and is controlled in javascript within toggles.js
                     actionButton("toggle_table", "Table", class = "toggle-btn active")
                 ),
             )
@@ -89,7 +90,7 @@ ui <- fluidPage(
                 div(
                     class = "plot-header",
                     tags$h2("Evidence Gap Map"),
-                    # actionButton("expand_plot", "⛶ Fullscreen", class = "expand-btn")
+                    mod_click_reset_ui("egm")
                 ),
 
                 # plot 
@@ -109,11 +110,11 @@ ui <- fluidPage(
                 div(
                     class = "table-header",
                     tags$h3("Selected papers"),
-                    mod_click_ui("egm", header_only = TRUE)
+                    mod_click_plot_ui("egm", header_only = TRUE)
                 ),
                 
                 # Paper list
-                mod_click_ui("egm")
+                mod_click_plot_ui("egm")
                 
             )
         )
@@ -138,6 +139,7 @@ server <- function(input, output, session) {
         x_col = "WorkType", 
         y_col = "Theme.Assignment"
     )
+
 }
 
 shinyApp(ui, server)

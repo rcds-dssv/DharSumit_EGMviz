@@ -22,26 +22,19 @@ handlePlotlyClicks =  function(eventData) {
             console.log(eventData.event.pageY, bbox.height)
             tooltip.style.top = eventData.event.pageY - bbox.height/2. + "px";
             tooltip.style.left = eventData.event.pageX + "px";
-            tooltip.classList.remove("hidden");
+            // COMMENTING OUT UNTIL I DECIDE TO USE THIS MARKER
+            // tooltip.classList.remove("hidden");
 
-            // Send to Shiny
-            // Shiny.setInputValue('plot_click_info', {
-            //     x_data: x_data,
-            //     y_data: y_data,
-            //     pageX: pageX,
-            //     pageY: pageY,
-            //     nonce: Math.random()  // ensures Shiny detects changes even if same coords
-            // });
         }
     } 
 }
 handlePlotBackgroundClick =  function(event) {
     if (!pointClicked) {
-        console.log('user did not click a point');
         // remove the tooltip
         const tooltip = document.getElementById('clicked_point_marker');
         tooltip.classList.add("hidden");
-        // reset the plot colors
+        // reset the plot colors and table
+        Shiny.setInputValue("egm-reset_plot", Math.random(), {priority: "event"});
     }
 }
 
@@ -71,5 +64,5 @@ document.addEventListener("DOMContentLoaded", function() {
     document.body.appendChild(el);
 
     // attach the off-click listener
-    wrapper.addEventListener("click", handlePlotBackgroundClick);    
+    document.getElementById("plot_wrapper").addEventListener("click", handlePlotBackgroundClick);    
 })
