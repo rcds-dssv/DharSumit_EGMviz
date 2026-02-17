@@ -14,16 +14,20 @@ handlePlotlyClicks =  function(eventData) {
             // var x_data = point.x;
             // var y_data = point.y;
 
-            console.log(eventData)
 
             // add the tooltip
-            const tooltip = document.getElementById('clicked_point_marker');
-            const bbox = tooltip.getBoundingClientRect()
-            console.log(eventData.event.pageY, bbox.height)
-            tooltip.style.top = eventData.event.pageY - bbox.height/2. + "px";
-            tooltip.style.left = eventData.event.pageX + "px";
-            // COMMENTING OUT UNTIL I DECIDE TO USE THIS MARKER
-            // tooltip.classList.remove("hidden");
+            var tooltip = document.getElementById('clicked_point_marker');
+            var wrapper = tooltip.parentElement;
+
+            // Convert page coordinates to container-relative
+            var wrapperBbox = wrapper.getBoundingClientRect();
+            var tooltipBbox = tooltip.getBoundingClientRect()
+            
+            tooltip.classList.remove("hidden");
+            tooltip.style.left = (eventData.event.pageX - wrapperBbox.left - window.scrollX) + 'px';
+            tooltip.style.top = (eventData.event.pageY - wrapperBbox.top - window.scrollY - tooltipBbox.height/2.) + 'px';
+
+
 
         }
     } 
@@ -44,8 +48,17 @@ function attachPlotlyClickHandler() {
     
     if (plot){
         if (typeof plot.on === "function") {
+            // attach the click handler
             plot.on("plotly_click", handlePlotlyClicks);
             console.log("Plotly handler attached");
+
+            // create a hidden div for the tooltip to mark clicks
+            const el = document.createElement("div");
+            el.id = "clicked_point_marker";
+            el.classList.add("hidden");
+            // document.body.appendChild(el);
+            plot.querySelector(".svg-container").appendChild(el);
+
             return;
         } 
     }
@@ -57,12 +70,6 @@ function attachPlotlyClickHandler() {
 attachPlotlyClickHandler();
 
 document.addEventListener("DOMContentLoaded", function() {
-    // create a hidden div for the tooltip
-    const el = document.createElement("div");
-    el.id = "clicked_point_marker";
-    el.classList.add("hidden");
-    document.body.appendChild(el);
-
     // attach the off-click listener
     document.getElementById("plot_wrapper").addEventListener("click", handlePlotBackgroundClick);    
 })

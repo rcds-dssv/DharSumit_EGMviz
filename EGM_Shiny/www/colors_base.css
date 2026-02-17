@@ -18,4 +18,5 @@
     --color-tag-default: rgba(79, 70, 229, 0.3);
     --color-tag-special-text: #252a36;
     --color-scroll-bg: #1e1e1e;
+    --color-clicked-point-marker: white;
 }

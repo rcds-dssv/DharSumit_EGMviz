@@ -96,11 +96,12 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_titl
             )
         ),
         # tooltips
-        text = ~paste(
-            clean_x_title,":", df[[x_col]],
-            "<br>",
-            clean_y_title,":", df[[y_col]],
-            "<br>Papers:", df[[n_col]]
+        text = ~paste0(
+            paste0("<b>",clean_x_title,":</b><br>"),
+            wrap_for_plotly(df[[x_col]], 20),
+            paste0("<br><br><b>",clean_y_title,":</b><br>"),
+            wrap_for_plotly(df[[y_col]], 20),
+            "<br><br><b>N Papers:</b><br>", df[[n_col]]
         ),
         hoverinfo = "text"
     )

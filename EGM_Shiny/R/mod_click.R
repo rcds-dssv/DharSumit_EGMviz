@@ -84,6 +84,7 @@ create_table_header_html <- function(info, df){
         tagList(
             tags$p(paste("Number of papers:", n)),
             tags$div(class = "paper-tags",
+                tags$p("Selection attributes:"),
                 tags$span(class = "tag", info$clicked_x),
                 tags$span(class = "tag", info$clicked_y),
                 if (!is.null(display_text)) tags$span(class = paste("tag", info$trace_id), display_text)

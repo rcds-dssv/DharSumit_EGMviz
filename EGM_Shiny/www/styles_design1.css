@@ -261,14 +261,26 @@ body {
     min-height: 0;
 }
 
-/* point marker div */
+/* point marker div (left pointing arrow) */
 #clicked_point_marker {
     position: absolute;
-    width:20px;
-    height:20px;
-    border-radius: 10px;
-    background-color: red;
+    z-index: 2;
+    margin-left: 10px;
+    width: 40px;
+    height: 20px;
+    background: var(--color-clicked-point-marker);
+    clip-path: polygon(
+        0% 50%,    /* tip of arrow */
+        40% 0%,    /* top-left corner of triangle head */
+        40% 30%,   /* top of tail */
+        100% 30%,  /* top-right of tail */
+        100% 70%,  /* bottom-right of tail */
+        40% 70%,   /* bottom of tail */
+        40% 100%,  /* bottom-left corner of triangle head */
+        0% 50%     /* back to tip */
+    );
 }
+
 /* Style the plotly plot itself */
 .plot-container.plotly {
     /* background: rgba(79, 70, 229, 0.05) !important; */
@@ -308,6 +320,9 @@ body {
 }
 .plot-container.plotly .hoverlayer path {
     stroke: var(--color-body-text) !important;
+}
+.plot-container.plotly .hoverlayer .hovertext {
+    z-index:10 !important;
 }
 /* ------------------------------------------- */
 /* TABLE SECTION (RIGHT) */
