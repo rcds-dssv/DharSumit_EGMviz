@@ -170,6 +170,7 @@ mod_click_server <- function(id, plot_source_name, x_col, y_col) {
 
         observeEvent(input$reset_plot, {
             clicked_info(NULL)
+            session$sendCustomMessage("hideArrow", list())
         })
 
         # update the plot colors and opacities

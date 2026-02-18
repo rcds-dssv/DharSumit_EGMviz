@@ -106,3 +106,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // attach the off-click listener
     document.getElementById("plot_wrapper").addEventListener("click", handlePlotBackgroundClick);    
 })
+
+// for the reset button
+Shiny.addCustomMessageHandler("hideArrow", function(_) {
+    document.getElementById("clicked_point_marker")?.classList.add("hidden");
+});
