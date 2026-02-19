@@ -25,10 +25,7 @@ df_all <- read_csv("data/batch3_resolved_amgedit.csv") %>%
         WorkType = replace_na(WorkType, "None Given"),
         Theme.Assignment = replace_na(Theme.Assignment, "None Given")
     )
-df_high <- df_all %>% filter(review_confidence == 3)
-df_medium <- df_all %>% filter(review_confidence == 2)
-df_low <- df_all %>% filter(review_confidence == 1)
-df_ongoing <- df_all %>% filter(in_progress == 1)
+
 
 
 # create new dataframes that can be used for the egm plot
@@ -43,12 +40,22 @@ create_counts <- function(df){
 }
 
 # create a list of lists to map the dataframes and values to the trace ids
-egm_data <- list(
-    all = list(display_text = NULL, df = df_all, counts = create_counts(df_all), color = colors$all_points, index = 0, offset_x = 0, offset_y = 0),
-    high = list(display_text = "High Confidence", df = df_high, counts = create_counts(df_high), color = colors$high_confidence, index = 1, offset_x = 0.35, offset_y = 0.35),
-    medium = list(display_text = "Medium Confidence", df = df_medium, counts = create_counts(df_medium), color = colors$medium_confidence, index = 2, offset_x = 0, offset_y = 0.35),
-    low = list(display_text = "Low Confidence", df = df_low, counts = create_counts(df_low), color = colors$low_confidence, index = 3, offset_x = -0.35, offset_y = 0.35),
-    ongoing = list(display_text = "In Progress", df = df_ongoing, counts = create_counts(df_ongoing), color = colors$in_progress, index = 4, offset_x = -0.17, offset_y = -0.35)
-)
+create_egm_data <- function(df_in){
+    df_high <- df_in %>% filter(review_confidence == 3)
+    df_medium <- df_in %>% filter(review_confidence == 2)
+    df_low <- df_in %>% filter(review_confidence == 1)
+    df_ongoing <- df_in %>% filter(in_progress == 1)
+
+    egm_data <- list(
+        all = list(display_text = NULL, df = df_in, counts = create_counts(df_in), color = colors$all_points, index = 0, offset_x = 0, offset_y = 0),
+        high = list(display_text = "High Confidence", df = df_high, counts = create_counts(df_high), color = colors$high_confidence, index = 1, offset_x = 0.35, offset_y = 0.35),
+        medium = list(display_text = "Medium Confidence", df = df_medium, counts = create_counts(df_medium), color = colors$medium_confidence, index = 2, offset_x = 0, offset_y = 0.35),
+        low = list(display_text = "Low Confidence", df = df_low, counts = create_counts(df_low), color = colors$low_confidence, index = 3, offset_x = -0.35, offset_y = 0.35),
+        ongoing = list(display_text = "In Progress", df = df_ongoing, counts = create_counts(df_ongoing), color = colors$in_progress, index = 4, offset_x = -0.17, offset_y = -0.35)
+    )
+}
+
+# this is the initial data set that will be used to initialize a reactiveVal in app.R
+initial_egm_data <- create_egm_data(df_all)
 
 message("global.R sourced successfully")

@@ -38,11 +38,9 @@ ui <- fluidPage(
 
                 div(
                     class = "filters-group",
-                    div(
-                        class = "filters-item",
-                        tags$label("Filter 1:"),
-                        selectInput("filter1", label = NULL, choices = c("Option 1", "Option 2"))
-                    ),
+                    # example filter for the GenderReported column
+                    # later I will replace the rest of these divs with the module
+                    mod_filter_ui("egm"),
                     div(
                         class = "filters-item",
                         tags$label("Filter 2:"),
@@ -123,9 +121,16 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
+    # initialize the reactiveVal for the data set
+    egm_data <- reactiveVal(initial_egm_data)
+
+    # initialize the reactiveVal to trigger a reste of the plot and table
+    reset_egm_trigger <- reactiveVal(0)
+
     # server module for the plot
     mod_plot_server(
         "egm", 
+        egm_data = egm_data,
         plot_source_name = "egm_scatter_plot",
         x_col = "WorkType", 
         y_col = "Theme.Assignment", 
@@ -135,9 +140,18 @@ server <- function(input, output, session) {
     # server module to handle clicks on the plot and display the table
     mod_click_server(
         "egm", 
+        egm_data = egm_data,
+        reset_egm_trigger = reset_egm_trigger,
         plot_source_name = "egm_scatter_plot",
         x_col = "WorkType", 
         y_col = "Theme.Assignment"
+    )
+
+    # server module to handle the filters
+    mod_filter_server(
+        "egm",
+        egm_data = egm_data,
+        reset_egm_trigger = reset_egm_trigger
     )
 
 }

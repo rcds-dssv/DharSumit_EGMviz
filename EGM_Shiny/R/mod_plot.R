@@ -77,17 +77,35 @@ add_to_counts_df_for_plotly <- function(count_df, x_col, y_col, x_levels, y_leve
 }
 
 add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_title, clean_y_title, color){
+    # Pre-compute sizes as actual pixel values to lock the size for points to pixels (and don't use plotly's internal scaling)
+    # will use area to scale points, and clamp the pixel range
+    desired_max_px <- 14
+    desired_min_px <- 1
+    size_cap <- quantile(initial_egm_data$all$counts[[n_col]], 0.99, na.rm = TRUE)
+    print(size_cap)
+    df <- df %>%
+        mutate(
+            clamped = pmin(.data[[n_col]], size_cap),
+            marker_size = scales::rescale(
+                sqrt(clamped),           # sqrt for area-proportional perception, suggested by Claude
+                to = c(desired_min_px, desired_max_px),
+                from = c(0, sqrt(size_cap))
+            )
+        )
+    print(df$marker_size)
+
     spec <- spec %>% add_trace(
         # scatter plot
         data = df,
         x = ~x_num,
         y = ~y_num,
-        size = ~.data[[n_col]],
         customdata = ~customdata,
         type = "scatter",
         mode = "markers",
-        sizes = c(5, 125),   # controls min/max point size
         marker = list(
+            size = ~marker_size,   # explicit pixel sizes, not scaled
+            sizemode = "diameter",
+            sizemin = 1,
             color = color,
             opacity = 1,
             line = list(
@@ -107,12 +125,12 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_titl
     )
 }
 
-create_egm_figure = function(plot_source_name, x_col, y_col, n_col){
+create_egm_figure = function(egm_data, plot_source_name, x_col, y_col, n_col){
     # main function to generate the evidence gap map figure
 
-    # Get the number of unique levels for each axis
-    n_x <- length(unique(egm_data$all$counts[[x_col]]))
-    n_y <- length(unique(egm_data$all$counts[[y_col]]))
+    # Get the number of unique levels for each axis (use the initial df so the axes are always the same)
+    n_x <- length(unique(initial_egm_data$all$counts[[x_col]]))
+    n_y <- length(unique(initial_egm_data$all$counts[[y_col]]))
     
     # set the sizing to make square boxes, 
     # trial and error ... (there must be a better way)
@@ -125,12 +143,11 @@ create_egm_figure = function(plot_source_name, x_col, y_col, n_col){
     clean_x_title <- str_replace_all(x_col,fixed(".")," ")
     clean_y_title <- str_replace_all(y_col,fixed(".")," ")
     
-    # count the total number of entries
-    n_total <- sum(egm_data$all$counts$n)
+    # plot using numerical values, using the initial df
+    x_levels <- levels(factor(initial_egm_data$all$counts[[x_col]]))
+    y_levels <- levels(factor(initial_egm_data$all$counts[[y_col]]))
 
-    # plot using numerical values
-    x_levels <- levels(factor(egm_data$all$counts[[x_col]]))
-    y_levels <- levels(factor(egm_data$all$counts[[y_col]]))
+
     # this needs to be in the same order as the egm_data list for the re-coloring to work
     for (name in names(egm_data)) {
         egm_data[[name]]$counts <- add_to_counts_df_for_plotly(
@@ -144,6 +161,9 @@ create_egm_figure = function(plot_source_name, x_col, y_col, n_col){
             egm_data[[name]]$offset_y
         )
     }
+
+    # count the total number of entries in current df
+    n_total <- sum(egm_data$all$counts$n)
 
     # create the plotly figure
     egm_spec <- plot_ly(
@@ -265,9 +285,14 @@ mod_plot_ui <- function(id) {
 }
 
 
-mod_plot_server <- function(id, plot_source_name, x_col, y_col, n_col) {
+mod_plot_server <- function(id, egm_data, plot_source_name, x_col, y_col, n_col) {
     moduleServer(id, function(input, output, session) {  
-        egm_build <- create_egm_figure(plot_source_name, x_col, y_col, n_col)
-        output$egm_plot <- renderPlotly(egm_build)
+
+        output$egm_plot <- renderPlotly({
+            df <- egm_data()   # reactive dependency
+            req(df)
+            create_egm_figure(df, plot_source_name, x_col, y_col, n_col)
+        })
+
     })
 }

@@ -1,4 +1,4 @@
-update_plotly_colors_opacities <- function(session, info){
+update_plotly_colors_opacities <- function(session, egm_data, info){
     # Create the original color vectors but replace the clicked point (if not null)
 
     if (is.null(info)){
@@ -43,7 +43,7 @@ update_plotly_colors_opacities <- function(session, info){
 # create_plotly_click_info = function(event_data, plot_source_name){
 #     if (is.null(event_data)) return(NULL)
 #     click_data <- event_data("plotly_click", source = plot_source_name)
-create_plotly_click_info = function(click_data){
+create_plotly_click_info = function(egm_data, click_data){
     if (is.null(click_data)) return(NULL)
 
     clicked_x <- click_data$customdata[[1]][1]
@@ -60,7 +60,7 @@ create_plotly_click_info = function(click_data){
     )
 }
 
-create_plotly_click_df = function(info, x_col, y_col){
+create_plotly_click_df = function(egm_data, info, x_col, y_col){
     if (is.null(info)) return(NULL)
     egm_data[[info$trace_id]]$df %>%
         dplyr::filter(
@@ -69,7 +69,7 @@ create_plotly_click_df = function(info, x_col, y_col){
         )
 }
 
-create_table_header_html <- function(info, df){
+create_table_header_html <- function(egm_data, info, df){
     # generate the table header (number of papers and any tags from the click)
 
     # Placeholder before first click
@@ -150,7 +150,7 @@ mod_click_reset_ui <- function(id, header_only = FALSE) {
     actionButton(ns("reset_plot"), "Reset", class = "reset-btn")
 }
 
-mod_click_server <- function(id, plot_source_name, x_col, y_col) {
+mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col) {
     moduleServer(id, function(input, output, session) {
 
         # Holds the current click info; NULL means "no selection"
@@ -159,28 +159,32 @@ mod_click_server <- function(id, plot_source_name, x_col, y_col) {
         # Update on plot click
         observeEvent(event_data("plotly_click", source = plot_source_name), {
             clicked_info(
-                create_plotly_click_info(event_data("plotly_click", source = plot_source_name))
+                create_plotly_click_info(egm_data(), event_data("plotly_click", source = plot_source_name))
             )
         })
 
         # create a dataframe with the papers in the clicked point
         clicked_df <- reactive({
-            create_plotly_click_df(clicked_info(), x_col, y_col)
+            create_plotly_click_df(egm_data(), clicked_info(), x_col, y_col)
         })
 
+        # reset the table and plot colors when the user clicks the reset button
         observeEvent(input$reset_plot, {
+            reset_egm_trigger(reset_egm_trigger() + 1) 
+        })
+        observeEvent(reset_egm_trigger(), {
             clicked_info(NULL)
             session$sendCustomMessage("hideArrow", list())
-        })
-
+        }, ignoreInit = TRUE)
+            
         # update the plot colors and opacities
         observe({
-            update_plotly_colors_opacities(session, clicked_info())
+            update_plotly_colors_opacities(session, egm_data(), clicked_info())
         })
 
         # table header (N papers, tags)
         output$table_header <- renderUI({
-            create_table_header_html(clicked_info(), clicked_df())
+            create_table_header_html(egm_data(), clicked_info(), clicked_df())
         })
 
         # table content (paper cards)
