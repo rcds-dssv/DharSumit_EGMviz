@@ -82,7 +82,6 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_titl
     desired_max_px <- 14
     desired_min_px <- 1
     size_cap <- quantile(initial_egm_data$all$counts[[n_col]], 0.99, na.rm = TRUE)
-    print(size_cap)
     df <- df %>%
         mutate(
             clamped = pmin(.data[[n_col]], size_cap),
@@ -92,7 +91,6 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_titl
                 from = c(0, sqrt(size_cap))
             )
         )
-    print(df$marker_size)
 
     spec <- spec %>% add_trace(
         # scatter plot
