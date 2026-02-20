@@ -170,20 +170,20 @@ create_egm_figure = function(egm_data, plot_source_name, x_col, y_col, n_col){
         # width = plot_width,
         source = plot_source_name,
     ) %>% 
-        config(
-            responsive = TRUE,
-            displayModeBar = TRUE,
-            modeBarButtonsToRemove = c(
-                "select2d",
-                "lasso2d",
-                "zoomIn2d",
-                "zoomOut2d",
-                "autoScale2d",
-                "hoverClosestCartesian",
-                "hoverCompareCartesian",
-                "toggleSpikelines"
-            )
+    config(
+        responsive = TRUE,
+        displayModeBar = TRUE,
+        modeBarButtonsToRemove = c(
+            "select2d",
+            "lasso2d",
+            "zoomIn2d",
+            "zoomOut2d",
+            "autoScale2d",
+            "hoverClosestCartesian",
+            "hoverCompareCartesian",
+            "toggleSpikelines"
         )
+    )
 
     # add all the traces
     for (name in names(egm_data)) {
@@ -292,5 +292,9 @@ mod_plot_server <- function(id, egm_data, plot_source_name, x_col, y_col, n_col)
             create_egm_figure(df, plot_source_name, x_col, y_col, n_col)
         })
 
+        observeEvent(egm_data(), {
+            req(egm_data())
+            session$sendCustomMessage("triggerAttachPlotlyClickHandler", list())
+        })
     })
 }

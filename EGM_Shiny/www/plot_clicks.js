@@ -1,6 +1,9 @@
 // flag to track if a point was clicked (vs. background click)
 var pointClicked = false;
 
+// save the plot data uid (first trace) so that I can check if a new plot has been created
+var lastPlotFingerprint = null;
+
 getPlotlyPositionOnPage = function(eventData){
     // from ChatGPT
     var point = eventData.points[0];
@@ -58,23 +61,27 @@ handlePlotBackgroundClick =  function(event) {
 // attach a click listener to plot when shiny finishes with the plot
 function attachPlotlyClickHandler() {
     var plot = document.getElementById("egm-egm_plot");
-    
-    if (plot){
-        if (typeof plot.on === "function") {
-            // attach the click handler
-            plot.on("plotly_click", handlePlotlyClicks);
-            console.log("Plotly handler attached");
+    if (!plot || typeof plot.on !== "function" || !plot._fullLayout || !plot._fullData || plot._fullData[0].uid === lastPlotFingerprint) {
+        // Plotly not ready yet, retry
+        console.log('waiting for plotly to load')
+        setTimeout(attachPlotlyClickHandler, 100);
+        return;
+    }
 
-            // create a hidden div for the arrow to mark clicks
-            // const el = document.createElement("div");
-            // el.id = "clicked_point_marker";
-            // el.classList.add("hidden");
-            // // document.body.appendChild(el);
-            // plot.querySelector(".svg-container").appendChild(el);
+    if (!plot._clickHandlerAttached) {
+        plot.on("plotly_click", handlePlotlyClicks);
+        plot._clickHandlerAttached = true;
+        lastPlotFingerprint = plot._fullData[0].uid;
 
-            const svgs = plot.querySelectorAll(".main-svg");
-            // const svg = svgs[svgs.length - 1];
-            const svg = svgs[1];
+        // create an SVG for the arrow to mark clicks (hide at start)
+        const svgs = plot.querySelectorAll(".main-svg");
+        // const svg = svgs[svgs.length - 1];
+        const svg = svgs[1];
+
+        // check if the arrow already exists
+        var check = svg.querySelector("#clicked_point_marker");
+        if (check === null){
+
             var arrow = document.createElementNS("http://www.w3.org/2000/svg", "path");
             arrow.setAttribute("d",
                 "M 0 10 " +   // tip
@@ -91,16 +98,11 @@ function attachPlotlyClickHandler() {
             svg.insertBefore(arrow, svg.querySelector('.infolayer'));
             // svg.appendChild(arrow);
             // arrow.setAttribute("transform", `translate(${x}, ${y})`);
+            console.log("created svg arrow marker")
+        }
 
-            return;
-        } 
     }
-
-    // Plotly not ready yet, retry
-    console.log('waiting for plotly to load')
-    setTimeout(attachPlotlyClickHandler, 500);
 }
-attachPlotlyClickHandler();
 
 document.addEventListener("DOMContentLoaded", function() {
     // attach the off-click listener
@@ -109,5 +111,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // for the reset button
 Shiny.addCustomMessageHandler("hideArrow", function(_) {
+    console.log("=== received hideArrow message from Shiny");
     document.getElementById("clicked_point_marker")?.classList.add("hidden");
-});
+})
+
+// when plot recreated
+Shiny.addCustomMessageHandler("triggerAttachPlotlyClickHandler", function(_) {
+    console.log("=== received triggerAttachPlotlyClickHandler message from Shiny");
+    // cleanup before trying to attach the listener
+    var plot = document.getElementById("egm-egm_plot")
+    if (plot) {
+        plot._clickHandlerAttached = false;
+        plot.querySelector("#clicked_point_marker")?.remove()
+    }
+    attachPlotlyClickHandler();
+})
