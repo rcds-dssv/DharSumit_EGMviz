@@ -215,7 +215,7 @@ body {
     transition: width 0.25s ease-in-out;
 }
 .plot-section.grow{
-    width: calc(100vw - 36px) !important;
+    width: calc(100vw - 20px) !important;
 }
 /* Header area above the plot */
 .plot-header {
