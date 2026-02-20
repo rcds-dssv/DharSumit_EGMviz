@@ -10,9 +10,9 @@ update_plotly_colors_opacities <- function(session, egm_data, info){
     }
 
     for (name in names(egm_data)) {
-        trace_idx <- egm_data[[name]]$index
-        colors <- rep(egm_data[[name]]$color, nrow(egm_data[[name]]$counts))
-        line_colors <- rep(egm_data[[name]]$color, nrow(egm_data[[name]]$counts))
+        trace_idx <- egm_metadata[[name]]$index
+        colors <- rep(egm_metadata[[name]]$color, nrow(egm_data[[name]]$counts))
+        line_colors <- rep(egm_metadata[[name]]$color, nrow(egm_data[[name]]$counts))
         opacities <- rep(opacity, nrow(egm_data[[name]]$counts))
         line_opacities <- rep(opacity, nrow(egm_data[[name]]$counts))
         # if there is click information then mark the clicked point
@@ -43,13 +43,13 @@ update_plotly_colors_opacities <- function(session, egm_data, info){
 # create_plotly_click_info = function(event_data, plot_source_name){
 #     if (is.null(event_data)) return(NULL)
 #     click_data <- event_data("plotly_click", source = plot_source_name)
-create_plotly_click_info = function(egm_data, click_data){
+create_plotly_click_info = function(click_data){
     if (is.null(click_data)) return(NULL)
 
     clicked_x <- click_data$customdata[[1]][1]
     clicked_y <- click_data$customdata[[1]][2]
     trace_id  <- click_data$customdata[[1]][3]
-    trace_index <- egm_data[[trace_id]]$index
+    trace_index <- egm_metadata[[trace_id]]$index
 
     list(
         clicked_x = clicked_x,
@@ -69,7 +69,7 @@ create_plotly_click_df = function(egm_data, info, x_col, y_col){
         )
 }
 
-create_table_header_html <- function(egm_data, info, df){
+create_table_header_html <- function(info, df){
     # generate the table header (number of papers and any tags from the click)
 
     # Placeholder before first click
@@ -79,7 +79,7 @@ create_table_header_html <- function(egm_data, info, df){
 
     # Now info and df exist
     n <- nrow(df)
-    display_text <- egm_data[[info$trace_id]]$display_text
+    display_text <- egm_metadata[[info$trace_id]]$display_text
     return(
         tagList(
             tags$p(paste("Number of papers:", n)),
@@ -159,7 +159,7 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         # Update on plot click
         observeEvent(event_data("plotly_click", source = plot_source_name), {
             clicked_info(
-                create_plotly_click_info(egm_data(), event_data("plotly_click", source = plot_source_name))
+                create_plotly_click_info(event_data("plotly_click", source = plot_source_name))
             )
         })
 
@@ -184,7 +184,7 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
 
         # table header (N papers, tags)
         output$table_header <- renderUI({
-            create_table_header_html(egm_data(), clicked_info(), clicked_df())
+            create_table_header_html(clicked_info(), clicked_df())
         })
 
         # table content (paper cards)

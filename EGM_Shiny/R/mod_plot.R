@@ -155,8 +155,8 @@ create_egm_figure = function(egm_data, plot_source_name, x_col, y_col, n_col){
             x_levels, 
             y_levels, 
             name, 
-            egm_data[[name]]$offset_x, 
-            egm_data[[name]]$offset_y
+            egm_metadata[[name]]$offset_x, 
+            egm_metadata[[name]]$offset_y
         )
     }
 
@@ -187,7 +187,7 @@ create_egm_figure = function(egm_data, plot_source_name, x_col, y_col, n_col){
 
     # add all the traces
     for (name in names(egm_data)) {
-        egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_data[[name]]$counts, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_data[[name]]$color)
+        egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_data[[name]]$counts, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_metadata[[name]]$color)
     }
 
     # configure the plot layout
