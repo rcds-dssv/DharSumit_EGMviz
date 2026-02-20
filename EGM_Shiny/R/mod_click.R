@@ -147,7 +147,7 @@ mod_click_plot_ui <- function(id, header_only = FALSE) {
 }
 mod_click_reset_ui <- function(id, header_only = FALSE) {
     ns <- NS(id)
-    actionButton(ns("reset_plot"), "Reset", class = "reset-btn")
+    actionButton(ns("reset_plot"), "Reset Plot Selection", class = "reset-btn")
 }
 
 mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col) {
