@@ -35,28 +35,7 @@ ui <- fluidPage(
             div(
                 class = "filters",
                 tags$h3("Filters"),
-
-                div(
-                    class = "filters-group",
-                    # example filter for the GenderReported column
-                    # later I will replace the rest of these divs with the module
-                    mod_filter_ui("egm"),
-                    div(
-                        class = "filters-item",
-                        tags$label("Filter 2:"),
-                        selectInput("filter2", label = NULL, choices = c("Option A", "Option B"))
-                    ),
-                    div(
-                        class = "filters-item",
-                        tags$label("Filter 3:"),
-                        selectInput("filter3", label = NULL, choices = c("Option 1A", "Option 1B"))
-                    ),
-                    div(
-                        class = "filters-item",
-                        tags$label("Filter 4:"),
-                        selectInput("filter4", label = NULL, choices = c("Option 2A", "Option 2B"))
-                    ),
-                ),
+                mod_filter_ui("egm"),
             ),
 
             # View toggle buttons on the right
