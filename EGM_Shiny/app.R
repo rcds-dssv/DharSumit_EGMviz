@@ -86,12 +86,22 @@ ui <- fluidPage(
                 # Table header (sticky)
                 div(
                     class = "table-header",
-                    tags$h3("Selected papers"),
-                    mod_click_plot_ui("egm", header_only = TRUE)
+                    div(
+                        class = "table-header-top",
+                        div(
+                            class = "table-header-top-left",
+                            tags$h3("Selected papers")
+                        ),
+                        div(
+                            class = "table-header-top-right",
+                            mod_export_citations_ui("egm")
+                        ),
+                    ),
+                    mod_click_plot_header_ui("egm"),
                 ),
                 
                 # Paper list
-                mod_click_plot_ui("egm")
+                mod_click_plot_content_ui("egm")
                 
             )
         )
@@ -133,6 +143,10 @@ server <- function(input, output, session) {
         reset_egm_trigger = reset_egm_trigger
     )
 
+    # server module to handle the citation exporter
+    mod_export_citations_server(
+        "egm"
+    )
 }
 
 shinyApp(ui, server)

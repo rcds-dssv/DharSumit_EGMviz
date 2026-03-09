@@ -341,6 +341,17 @@ body {
     top: 0;
     z-index: 10;
 }
+.table-header-top {
+    display: flex;
+    justify-content: space-between;
+}
+.table-header-top-left {
+  display: flex;
+  align-items: center;
+}
+.table-header-top-right {
+  position: relative;
+}
 
 .table-header h3 {
     font-size: 14px;

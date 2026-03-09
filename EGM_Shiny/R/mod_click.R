@@ -137,13 +137,13 @@ create_table_cards_html = function(df){
 }
 
 ###### modular ui and server functions
-mod_click_plot_ui <- function(id, header_only = FALSE) {
+mod_click_plot_header_ui <- function(id) {
     ns <- NS(id)
-    if (header_only) {
-        uiOutput(ns("table_header"))
-    } else {
-        uiOutput(ns("table_content"))
-    }
+    uiOutput(ns("table_header"))
+}
+mod_click_plot_content_ui <- function(id) {
+    ns <- NS(id)
+    uiOutput(ns("table_content"))
 }
 mod_click_reset_ui <- function(id, header_only = FALSE) {
     ns <- NS(id)
