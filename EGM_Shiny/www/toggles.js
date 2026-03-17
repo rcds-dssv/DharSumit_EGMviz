@@ -1,18 +1,11 @@
 // =============================================================================
-// toggle_table.js — table panel toggle and Plotly resize handling
+// toggles.js — table panel toggle and Plotly resize handling
 //
-// Manages the "Table" toggle button in the controls bar.  When clicked, it
-// expands the plot section to fill the full width (class "grow") or restores
-// the split layout.  Because Plotly does not automatically resize when its
-// container changes size, we must call Plotly.relayout() with explicit pixel
-// dimensions after every CSS transition.
+// The "Table" switchInput in mod_toggles_ui sends a "toggleTable" Shiny
+// message when its value changes.  This file listens for that message and
+// expands or collapses the table panel by toggling the CSS "grow" class on
+// plot_section, then smoothly resizes the Plotly figure to match.
 //
-// Why JavaScript?
-//   Plotly renders at a fixed pixel size and does not respond to CSS flexbox
-//   changes.  We must explicitly read the container's new dimensions and call
-//   Plotly.relayout() to trigger a re-render.  The smooth animation during the
-//   CSS transition requires requestAnimationFrame() to keep calling relayout()
-//   every frame while the container is animating.
 // =============================================================================
 
 
@@ -100,33 +93,33 @@ function resizePlotlySmooth(plot_container, plot, duration) {
 }
 
 
-// ── Toggle handler ────────────────────────────────────────────────────────────
+// ── Close dropdown on outside click ──────────────────────────────────────────
 
-// Expands or collapses the table panel.
-//
-// The "active" class on the button indicates that the table is currently shown.
-// Removing "active" means the table is hidden, so the plot section should grow
-// to fill the space (CSS class "grow" widens plot_section via a flex transition).
-function toggleTable() {
+// The <details> element doesn't close itself when the user clicks elsewhere.
+// This listener closes any open dropdown when a click lands outside it.
+document.addEventListener("click", function(e) {
+    document.querySelectorAll(".filters-details, .toggles-details").forEach(function(details) {
+        if (details.open && !details.contains(e.target)) {
+            details.open = false;
+        }
+    });
+});
+
+
+// ── Shiny message handler ─────────────────────────────────────────────────────
+
+// Sent by mod_toggles_server when the "Table" switchInput changes value.
+//   msg.show = true  → table is now ON  → remove "grow", restore split layout
+//   msg.show = false → table is now OFF → add "grow", expand plot to full width
+Shiny.addCustomMessageHandler("toggleTable", function(msg) {
     var plot_container = document.getElementById("plot_section");
     var plot           = document.getElementById("egm-egm_plot");
 
-    if (this.classList.contains("active")) {
-        // Table is currently visible — hide it and expand the plot
-        this.classList.remove("active");
-        plot_container.classList.add("grow");
-    } else {
-        // Table is currently hidden — restore the split layout
-        this.classList.add("active");
+    if (msg.show) {
         plot_container.classList.remove("grow");
+    } else {
+        plot_container.classList.add("grow");
     }
 
     resizePlotlySmooth(plot_container, plot);
-}
-
-
-// ── Initialisation ────────────────────────────────────────────────────────────
-
-document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("toggle_table").addEventListener("click", toggleTable);
 });

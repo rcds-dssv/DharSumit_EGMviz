@@ -1,21 +1,23 @@
 # =============================================================================
 # mod_toggles — plot layer visibility controls
 #
-# Four sliding toggle switches let the user show or hide individual layers
-# of the EGM scatter plot:
+# Five sliding toggle switches control what is shown in the EGM:
+#   Table        — shows/hides the paper table panel (layout toggle)
 #   Heatmap      — the gray cell-count heatmap (trace 0)
 #   All Papers   — the blue "all papers" dots   (trace 1)
 #   Confidence   — the green/yellow/red dots    (traces 2–4)
 #   In Progress  — the pink dots                (trace 5)
 #
-# On toggle: a plotlyProxy restyle call updates trace visibility immediately
-#            without re-rendering the whole figure (fast).
-# On filter change: create_egm_figure() reads the current toggle states via
-#            isolate() so the re-rendered plot starts with the right visibility.
+# Table toggle:  sends a "toggleTable" JS message; toggle_table.js does the
+#                CSS class change + smooth Plotly resize animation.
+# Data toggles:  plotlyProxy restyle calls update trace visibility immediately
+#                without re-rendering the whole figure.
+# Filter change: create_egm_figure() reads the current toggle states via
+#                isolate() so the re-rendered plot starts with correct visibility.
 #
 # Public interface:
-#   mod_toggles_ui(id)            — 2×2 grid of switchInputs
-#   mod_toggles_server(id, ...)   — proxy calls; returns reactive toggle states
+#   mod_toggles_ui(id)          — Table switch (full-width) + 2×2 data grid
+#   mod_toggles_server(id, ...) — message/proxy calls; returns reactive states
 # =============================================================================
 
 
@@ -23,6 +25,7 @@ mod_toggles_ui <- function(id) {
     ns <- NS(id)
     div(
         class = "toggles-switches",
+        switchInput(ns("show_table"),      label = "Table",       value = TRUE, size = "mini", onStatus = "primary", offStatus = "default"),
         switchInput(ns("show_heatmap"),    label = "Heatmap",     value = TRUE, size = "mini", onStatus = "primary", offStatus = "default"),
         switchInput(ns("show_summary"),    label = "All Papers",  value = TRUE, size = "mini", onStatus = "primary", offStatus = "default"),
         switchInput(ns("show_confidence"), label = "Confidence",  value = TRUE, size = "mini", onStatus = "primary", offStatus = "default"),
@@ -34,6 +37,14 @@ mod_toggles_ui <- function(id) {
 mod_toggles_server <- function(id, egm_data) {
     moduleServer(id, function(input, output, session) {
 
+        # ── Table toggle ──────────────────────────────────────────────────────
+        # Sends a message to toggle_table.js which handles the CSS class change
+        # and the smooth Plotly resize animation.
+        observeEvent(input$show_table, {
+            session$sendCustomMessage("toggleTable", list(show = input$show_table))
+        }, ignoreInit = TRUE)
+
+        # ── Data layer toggles ────────────────────────────────────────────────
         # Each observeEvent fires when the user flips a switch.
         # plotlyProxy updates only the `visible` property of the relevant
         # trace(s) without triggering a full plot re-render.

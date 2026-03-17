@@ -9,23 +9,27 @@
 
 mod_filter_ui <- function(id) {
     ns <- NS(id)
-    div(
-        class = "filters-group",
-        div(class = "filters-item",
-            tags$label("Gender Reported"),
-            selectInput(ns("GenderReported"), label = NULL, choices = c("Any", "Yes", "No"))
-        ),
-        div(class = "filters-item",
-            tags$label("Ethnicity Reported"),
-            selectInput(ns("EthnicityReported"), label = NULL, choices = c("Any", "Yes", "No"))
-        ),
-        div(class = "filters-item",
-            tags$label("Race Reported"),
-            selectInput(ns("RaceReported"), label = NULL, choices = c("Any", "Yes", "No"))
-        ),
-        div(class = "filters-item",
-            tags$label("US Origin"),
-            selectInput(ns("USOrigin"), label = NULL, choices = c("Any", "Yes", "No"))
+    tags$details(
+        class = "filters-details dropdown-details",
+        tags$summary("Filters"),
+        div(
+            class = "filters-dropdown",
+            div(class = "filters-item",
+                tags$label("Gender Reported"),
+                selectInput(ns("GenderReported"), label = NULL, choices = c("Any", "Yes", "No"))
+            ),
+            div(class = "filters-item",
+                tags$label("Ethnicity Reported"),
+                selectInput(ns("EthnicityReported"), label = NULL, choices = c("Any", "Yes", "No"))
+            ),
+            div(class = "filters-item",
+                tags$label("Race Reported"),
+                selectInput(ns("RaceReported"), label = NULL, choices = c("Any", "Yes", "No"))
+            ),
+            div(class = "filters-item",
+                tags$label("US Origin"),
+                selectInput(ns("USOrigin"), label = NULL, choices = c("Any", "Yes", "No"))
+            )
         )
     )
 }
