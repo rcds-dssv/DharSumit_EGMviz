@@ -30,15 +30,17 @@ update_plotly_colors_opacities <- function(session, egm_data, selected_info){
         }
 
         # Update the plot without re-rendering
-        plotlyProxy("egm_plot", session) %>%
-            plotlyProxyInvoke("restyle", list(
-                marker.color        = list(colors),
-                marker.opacity      = list(opacities),
-                marker.line.color   = list(line_colors),
-                marker.line.opacity = list(line_opacities)
-            ),
-            list(trace_idx)
+        restyle_args <- list(
+            marker.color        = list(colors),
+            marker.opacity      = list(opacities),
+            marker.line.color   = list(line_colors),
+            marker.line.opacity = list(line_opacities)
         )
+        if (is.null(selected_info)) {
+            restyle_args$selectedpoints <- list(NULL)  # clear plotly's selection dimming on reset
+        }
+        plotlyProxy("egm_plot", session) %>%
+            plotlyProxyInvoke("restyle", restyle_args, list(trace_idx))
     }
 }
 
@@ -61,7 +63,7 @@ create_plotly_click_info <- function(click_data) {
 
 create_plotly_selected_info <- function(selected_data) {
     # Returns a list of point-info lists, one per selected point.
-    if (is.null(selected_data) || nrow(selected_data) == 0) return(NULL)
+    if (is.null(selected_data) || !is.data.frame(selected_data) || nrow(selected_data) == 0) return(NULL)
 
     lapply(seq_len(nrow(selected_data)), function(i) {
         cd       <- selected_data$customdata[[i]]
@@ -210,6 +212,9 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         })
         observeEvent(reset_egm_trigger(), {
             clicked_info(NULL)
+            update_plotly_colors_opacities(session, egm_data(), NULL)
+            plotlyProxy("egm_plot", session) %>%
+                plotlyProxyInvoke("relayout", list(selections = list()))
             session$sendCustomMessage("hideArrow", list())
         }, ignoreInit = TRUE)
 

@@ -57,22 +57,12 @@ function drawArrowsForEventData(eventData) {
     });
 }
 
-// ─── Plotly selection reset ──────────────────────────────────────────────────
-
-function clearPlotlySelection() {
-    // Remove plotly's "selected" visual state from all traces.
-    // selectedpoints must have one entry per trace; a single [null] only clears trace 0.
-    var plot = document.getElementById("egm-egm_plot");
-    if (!plot || !plot.data) return;
-    var nullsPerTrace = Array(plot.data.length).fill(null);
-    Plotly.restyle(plot, {selectedpoints: nullsPerTrace});
-}
+// ─── Deselect handler ───────────────────────────────────────────────────────
 
 function handleDeselect() {
     // Called from plotly_doubleclick and plotly_deselect events.
-    // Clears arrows, clears plotly selection, and notifies Shiny.
+    // Clears arrows and notifies Shiny; R handles all proxy restyles.
     clearArrows();
-    clearPlotlySelection();
     Shiny.setInputValue("egm-reset_plot", Math.random(), {priority: "event"});
 }
 
@@ -121,7 +111,6 @@ function attachPlotlyClickHandler() {
 Shiny.addCustomMessageHandler("hideArrow", function(_) {
     console.log("=== received hideArrow message from Shiny");
     clearArrows();
-    clearPlotlySelection();
 });
 
 // When the plot is fully recreated (e.g. after a filter changes)
