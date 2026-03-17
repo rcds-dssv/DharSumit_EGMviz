@@ -99,29 +99,24 @@ create_table_header_html <- function(selected_info, df) {
 
     n <- nrow(df)
 
-    # deduplicate by what is actually rendered: (clicked_x, clicked_y, display_text)
-    # two points that would show identical tags are collapsed to one row
-    keys <- sapply(selected_info, function(pt) {
+    unique_x            <- unique(sapply(selected_info, function(pt) pt$clicked_x))
+    unique_y            <- unique(sapply(selected_info, function(pt) pt$clicked_y))
+    # collect unique (trace_id, display_text) pairs, skipping traces with no label ("all")
+    trace_display_pairs <- unique(Filter(Negate(is.null), lapply(selected_info, function(pt) {
         dt <- egm_metadata[[pt$trace_id]]$display_text
-        dt <- if (is.null(dt)) "" else dt
-        paste(pt$clicked_x, pt$clicked_y, dt, sep = "|||")
-    })
-    unique_pts <- selected_info[!duplicated(keys)]
-
-    point_tags <- lapply(unique_pts, function(pt) {
-        display_text <- egm_metadata[[pt$trace_id]]$display_text
-        tags$div(class = "paper-tags",
-            tags$span(class = "tag", pt$clicked_x),
-            tags$span(class = "tag", pt$clicked_y),
-            if (!is.null(display_text)) tags$span(class = paste("tag", pt$trace_id), display_text)
-        )
-    })
+        if (is.null(dt)) NULL else list(trace_id = pt$trace_id, display_text = dt)
+    })))
 
     tagList(
         tags$p(paste("Number of papers:", n)),
         tags$div(
             tags$p("Selection attributes:"),
-            do.call(tagList, point_tags)
+            tags$div(class = "paper-tags",
+                lapply(unique_x, function(v) tags$span(class = "tag", v)),
+                lapply(unique_y, function(v) tags$span(class = "tag", v)),
+                lapply(trace_display_pairs, function(td)
+                    tags$span(class = paste("tag", td$trace_id), td$display_text))
+            )
         )
     )
 }
