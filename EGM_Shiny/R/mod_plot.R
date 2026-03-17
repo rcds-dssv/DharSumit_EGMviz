@@ -1,8 +1,23 @@
+# =============================================================================
+# mod_plot — EGM figure creation
+#
+# Builds the interactive plotly scatter plot that forms the Evidence Gap Map.
+# Each grid cell shows up to five overlapping dots, one per evidence category
+# (all papers, high / medium / low confidence, and in-progress). Dot area is
+# proportional to the number of papers in that cell.
+#
+# Public interface:
+#   mod_plot_ui(id)       — plotlyOutput placeholder
+#   mod_plot_server(...)  — renders the figure and re-attaches JS handlers
+#                           whenever egm_data changes
+# =============================================================================
 
-##### helper functions
 
+# ── Helper: text wrapping ─────────────────────────────────────────────────────
+
+# Wraps text to `width` characters and optionally right-pads each line with
+# `padding` extra spaces. Used for axis tick labels and tooltip text.
 wrap_for_plotly <- function(x, width = 20, padding = 0) {
-    # wrap long lines (using width) and add padding to each line (if padding > 0)
     wrapped <- str_wrap(x, width = width)
     lines <- str_split(wrapped, "\n")
     padded_lines <- lapply(lines, function(line_vec) {
@@ -11,249 +26,205 @@ wrap_for_plotly <- function(x, width = 20, padding = 0) {
     sapply(padded_lines, paste, collapse = "<br>")
 }
 
-shapes_for_plotly <- function(n_x, n_y){
-    # create a grid for the plotly figure to define the boxes and outline the labels
 
-    # within the plot
-    # Create vertical lines
-    vlines <- lapply(0:(n_x), function(i) {
-        list(
-            type = "line",
-            x0 = i - 0.5, x1 = i - 0.5,
-            y0 = -0.5, y1 = n_y - 0.5,
-            line = list(color = "lightgray", width = 1)
-        )
+# ── Helper: grid lines ────────────────────────────────────────────────────────
+
+# Returns a list of plotly shape definitions that draw the cell grid (vertical
+# and horizontal lines) over the scatter plot.
+shapes_for_plotly <- function(n_x, n_y) {
+    vlines <- lapply(0:n_x, function(i) {
+        list(type = "line",
+             x0 = i - 0.5, x1 = i - 0.5,
+             y0 = -0.5,    y1 = n_y - 0.5,
+             line = list(color = "lightgray", width = 1))
     })
-  
-    # Create horizontal lines
-    hlines <- lapply(0:(n_y), function(i) {
-        list(
-            type = "line",
-            x0 = -0.5, x1 = n_x - 0.5,
-            y0 = i - 0.5, y1 = i - 0.5,
-            line = list(color = "lightgray", width = 1)
-        )
+    hlines <- lapply(0:n_y, function(i) {
+        list(type = "line",
+             x0 = -0.5,    x1 = n_x - 0.5,
+             y0 = i - 0.5, y1 = i - 0.5,
+             line = list(color = "lightgray", width = 1))
     })
-  
-    # boxes around x-axis labels (above the plot)
-    # x_label_boxes <- lapply(0:(n_x-1), function(i) {
-    #     list(
-    #         type = "rect",
-    #         xref = "x", yref = "paper",
-    #         x0 = i - 0.5, x1 = i + 0.5,
-    #         y0 = 1.01, y1 = 1.072, #magic numbers
-    #         line = list(color = "black", width = 1),
-    #         fillcolor = "transparent"
-    #     )
-    # })
-  
-    # # boxes around y-axis labels (left of the plot)
-    # y_label_boxes <- lapply(0:(n_y-1), function(i) {
-    #     list(
-    #         type = "rect",
-    #         xref = "paper", yref = "y",
-    #         x0 = -0.015, x1 = -0.45,  # magic numbers
-    #         y0 = i - 0.5, y1 = i + 0.5,
-    #         line = list(color = "black", width = 1),
-    #         fillcolor = "transparent"
-    #     )
-    # })
-  
-    # Combine all shapes
-    # all_shapes <- c(vlines, hlines, x_label_boxes, y_label_boxes)
-    all_shapes <- c(vlines, hlines)
-  
+    c(vlines, hlines)
 }
 
-add_to_counts_df_for_plotly <- function(count_df, x_col, y_col, x_levels, y_levels, label, x_offset, y_offset){
-    # add numeric values and customdata for handling clicks to the counts datafram
 
+# ── Helper: prepare counts dataframe for plotting ─────────────────────────────
+
+# Adds three columns to a counts dataframe so plotly can position and identify
+# each dot:
+#   x_num / y_num  — numeric positions on the plot axes (0-based index + jitter)
+#   customdata     — list column of (x_label, y_label, trace_name) triplets,
+#                    read by mod_selection.R when the user clicks or lassos
+add_to_counts_df_for_plotly <- function(count_df, x_col, y_col, x_levels, y_levels,
+                                        label, x_offset, y_offset) {
     count_df$x_num <- match(count_df[[x_col]], x_levels) - 1 + x_offset
     count_df$y_num <- match(count_df[[y_col]], y_levels) - 1 + y_offset
     count_df <- count_df %>%
-        mutate(
-            customdata = Map(list, .[[x_col]], .[[y_col]], label)
-        )
+        mutate(customdata = Map(list, .[[x_col]], .[[y_col]], label))
+    count_df
 }
 
-add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col, clean_x_title, clean_y_title, color){
-    # Pre-compute sizes as actual pixel values to lock the size for points to pixels (and don't use plotly's internal scaling)
-    # will use area to scale points, and clamp the pixel range
+
+# ── Helper: add one trace to the plotly figure ────────────────────────────────
+
+# Adds a single scatter trace to `spec` for the given counts dataframe.
+# Marker sizes are computed in pixels (not plotly's internal units) so that
+# dot area is proportional to paper count and stays consistent across redraws:
+#   - sqrt scaling gives area-proportional perception
+#   - counts are clamped at the 99th percentile of the unfiltered data so that
+#     a single very large cell does not compress all other dots
+add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col,
+                                     clean_x_title, clean_y_title, color) {
     desired_max_px <- 14
     desired_min_px <- 1
+    # Use the unfiltered data for the cap so sizes stay consistent when filters change
     size_cap <- quantile(initial_egm_data$all$counts[[n_col]], 0.99, na.rm = TRUE)
+
     df <- df %>%
         mutate(
-            clamped = pmin(.data[[n_col]], size_cap),
+            clamped     = pmin(.data[[n_col]], size_cap),
             marker_size = scales::rescale(
-                sqrt(clamped),           # sqrt for area-proportional perception, suggested by Claude
-                to = c(desired_min_px, desired_max_px),
+                sqrt(clamped),
+                to   = c(desired_min_px, desired_max_px),
                 from = c(0, sqrt(size_cap))
             )
         )
 
-    spec <- spec %>% add_trace(
-        # scatter plot
-        data = df,
-        x = ~x_num,
-        y = ~y_num,
+    spec %>% add_trace(
+        data       = df,
+        x          = ~x_num,
+        y          = ~y_num,
         customdata = ~customdata,
-        type = "scatter",
-        mode = "markers",
+        type       = "scatter",
+        mode       = "markers",
         marker = list(
-            size = ~marker_size,   # explicit pixel sizes, not scaled
+            size     = ~marker_size,   # explicit pixel diameters
             sizemode = "diameter",
-            sizemin = 1,
-            color = color,
-            opacity = 1,
-            line = list(
-                color = color,
-                width = 1
-            )
+            sizemin  = 1,
+            color    = color,
+            opacity  = 1,
+            line     = list(color = color, width = 1)
         ),
-        # tooltips
         text = ~paste0(
-            paste0("<b>",clean_x_title,":</b><br>"),
-            wrap_for_plotly(df[[x_col]], 20),
-            paste0("<br><br><b>",clean_y_title,":</b><br>"),
-            wrap_for_plotly(df[[y_col]], 20),
+            "<b>", clean_x_title, ":</b><br>", wrap_for_plotly(df[[x_col]], 20),
+            "<br><br><b>", clean_y_title, ":</b><br>", wrap_for_plotly(df[[y_col]], 20),
             "<br><br><b>N Papers:</b><br>", df[[n_col]]
         ),
         hoverinfo = "text"
     )
 }
 
-create_egm_figure = function(egm_data, plot_source_name, x_col, y_col, n_col){
-    # main function to generate the evidence gap map figure
 
-    # Get the number of unique levels for each axis (use the initial df so the axes are always the same)
+# ── Main figure builder ───────────────────────────────────────────────────────
+
+# Builds and returns the complete EGM plotly figure for the given egm_data.
+# Axis levels and marker-size scaling always reference initial_egm_data (the
+# unfiltered dataset) so the grid and dot sizes stay stable as filters change.
+create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col) {
+
+    # Axis dimensions come from the unfiltered data so the grid never shrinks
     n_x <- length(unique(initial_egm_data$all$counts[[x_col]]))
     n_y <- length(unique(initial_egm_data$all$counts[[y_col]]))
-    
-    # set the sizing to make square boxes, 
-    # trial and error ... (there must be a better way)
-    # for now, this is only used in a relative sense to draw the lines.  The actual plot size is responsive.
-    cell_px <- 60
+
+    # cell_px is used only to set the relative aspect ratio of the grid shapes;
+    # the actual rendered size is controlled by CSS (the plot fills its container)
+    cell_px     <- 60
     plot_width  <- n_x * cell_px + 260
     plot_height <- n_y * cell_px
 
-    # clean the text for the title and tooltips
-    clean_x_title <- str_replace_all(x_col,fixed(".")," ")
-    clean_y_title <- str_replace_all(y_col,fixed(".")," ")
-    
-    # plot using numerical values, using the initial df
+    # Convert column names like "Theme.Assignment" to "Theme Assignment" for display
+    clean_x_title <- str_replace_all(x_col, fixed("."), " ")
+    clean_y_title <- str_replace_all(y_col, fixed("."), " ")
+
+    # Numeric axis levels fixed to the unfiltered data so category order is stable
     x_levels <- levels(factor(initial_egm_data$all$counts[[x_col]]))
     y_levels <- levels(factor(initial_egm_data$all$counts[[y_col]]))
 
-
-    # this needs to be in the same order as the egm_data list for the re-coloring to work
+    # Add numeric positions and customdata to each trace's counts dataframe.
+    # Order must match egm_metadata so that the 0-based trace indices are correct.
     for (name in names(egm_data)) {
         egm_data[[name]]$counts <- add_to_counts_df_for_plotly(
-            egm_data[[name]]$counts, 
-            x_col, 
-            y_col, 
-            x_levels, 
-            y_levels, 
-            name, 
-            egm_metadata[[name]]$offset_x, 
-            egm_metadata[[name]]$offset_y
+            egm_data[[name]]$counts,
+            x_col, y_col, x_levels, y_levels,
+            label    = name,
+            x_offset = egm_metadata[[name]]$offset_x,
+            y_offset = egm_metadata[[name]]$offset_y
         )
     }
 
-    # count the total number of entries in current df
     n_total <- sum(egm_data$all$counts$n)
 
-    # create the plotly figure
-    egm_spec <- plot_ly(
-        # global settings
-        # height = plot_height,
-        # width = plot_width,
-        source = plot_source_name,
-    ) %>% 
-    config(
-        responsive = TRUE,
-        displayModeBar = TRUE,
-        modeBarButtonsToRemove = c(
-            "zoomIn2d",
-            "zoomOut2d",
-            "autoScale2d",
-            "hoverClosestCartesian",
-            "hoverCompareCartesian",
-            "toggleSpikelines"
+    # Base figure + toolbar config
+    egm_spec <- plot_ly(source = plot_source_name) %>%
+        config(
+            responsive      = TRUE,
+            displayModeBar  = TRUE,
+            modeBarButtonsToRemove = c(
+                "zoomIn2d", "zoomOut2d", "autoScale2d",
+                "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
+            )
         )
-    )
 
-    # add all the traces
+    # Add one trace per evidence category
     for (name in names(egm_data)) {
-        egm_spec <- add_trace_to_plotly_spec(egm_spec, egm_data[[name]]$counts, x_col, y_col, n_col, clean_x_title, clean_y_title, egm_metadata[[name]]$color)
+        egm_spec <- add_trace_to_plotly_spec(
+            egm_spec, egm_data[[name]]$counts,
+            x_col, y_col, n_col,
+            clean_x_title, clean_y_title,
+            color = egm_metadata[[name]]$color
+        )
     }
 
-    # configure the plot layout
     egm_spec <- egm_spec %>% layout(
-        # spacing, axis titles, legend
-        margin = list(t = 120, b = 0, l = 0, r = 0, pad = 10),
-        autosize = TRUE,
+        margin     = list(t = 120, b = 0, l = 0, r = 0, pad = 10),
+        autosize   = TRUE,
         showlegend = FALSE,
         xaxis = list(
-            # restore the labels
-            type = "linear",
-            tickmode = "array",
-            tickvals = seq(0, length(x_levels) - 1),
-            ticktext = x_levels,
-            range = c(-0.5, length(x_levels) - 0.5),
-            title = list(
-                text = clean_x_title, 
-                standoff = 10
-            ),
-            side = "top", 
-            tickangle = 0, 
-            showgrid = FALSE,
-            zeroline = FALSE
-            # silly fix to move the labels up
-            # ticklen = 7,
-            # tickcolor = "rgba(0,0,0,0)"
+            type      = "linear",
+            tickmode  = "array",
+            tickvals  = seq(0, length(x_levels) - 1),
+            ticktext  = x_levels,
+            range     = c(-0.5, length(x_levels) - 0.5),
+            title     = list(text = clean_x_title, standoff = 10),
+            side      = "top",
+            tickangle = 0,
+            showgrid  = FALSE,
+            zeroline  = FALSE
         ),
         yaxis = list(
-            # restore the labels
-            type = "linear",
+            type     = "linear",
             tickmode = "array",
             tickvals = seq(0, length(y_levels) - 1),
             ticktext = y_levels,
-            range = c(-0.5, length(y_levels) - 0.5),
-            title = list(
-                text = clean_y_title,
-                standoff = 20  
-            ),
+            range    = c(-0.5, length(y_levels) - 0.5),
+            title    = list(text = clean_y_title, standoff = 20),
             showgrid = FALSE,
             zeroline = FALSE
         ),
-        # my grid (defined above)
-        shapes = shapes_for_plotly(n_x, n_y),
-        # count of included papers in upper-left of figure
-        annotations = list(
-            list(
-                x = -0.262,
-                y = 1.072,
-                xref = "paper",
-                yref = "paper",
-                text = paste0("<b>Total N:</b> ", n_total),
-                showarrow = FALSE,
-                xanchor = "left",
-                yanchor = "top",
-                align = "left",
-                bgcolor = "rgba(0,0,0,0)",
-                bordercolor = "black",
-                borderwidth = 1,
-                borderpad = 10,
-                font = list(size = 12)
-            )
-        )
+        shapes      = shapes_for_plotly(n_x, n_y),
+        # "Total N" annotation in the upper-left corner.
+        # x/y are in paper coordinates; the exact values are adjusted by
+        # repositionPlotlyAnnotation0() in toggles.js after each resize.
+        annotations = list(list(
+            x         = -0.262, y = 1.072,
+            xref      = "paper", yref = "paper",
+            text      = paste0("<b>Total N:</b> ", n_total),
+            showarrow = FALSE,
+            xanchor   = "left", yanchor = "top",
+            align     = "left",
+            bgcolor   = "rgba(0,0,0,0)",
+            bordercolor = "black", borderwidth = 1, borderpad = 10,
+            font = list(size = 12)
+        ))
     )
 
-    # fix (wrap) the axis labels
+    # plotly_build() materialises the figure so we can post-process axis labels.
+    # Axis tick text is wrapped here because plotly does not support line breaks
+    # in tick labels natively; wrap_for_plotly() inserts <br> tags.
     egm_build <- plotly_build(egm_spec)
     xaxis <- egm_build$x$layout$xaxis
     yaxis <- egm_build$x$layout$yaxis
+
     if (!is.null(xaxis$categoryarray)) {
         labs <- xaxis$categoryarray
         egm_build$x$layout$xaxis$tickmode <- "array"
@@ -271,25 +242,27 @@ create_egm_figure = function(egm_data, plot_source_name, x_col, y_col, n_col){
         egm_build$x$layout$yaxis$ticktext <- wrap_for_plotly(yaxis$ticktext, 24, 2)
     }
 
-    return(egm_build)
+    egm_build
 }
 
-###### modular ui and server functions
+
+# ── Shiny module ──────────────────────────────────────────────────────────────
+
 mod_plot_ui <- function(id) {
     ns <- NS(id)
-    plotlyOutput(ns("egm_plot"),  height = "100%", width = "100%") 
+    plotlyOutput(ns("egm_plot"), height = "100%", width = "100%")
 }
 
-
 mod_plot_server <- function(id, egm_data, plot_source_name, x_col, y_col, n_col) {
-    moduleServer(id, function(input, output, session) {  
+    moduleServer(id, function(input, output, session) {
 
         output$egm_plot <- renderPlotly({
-            df <- egm_data()   # reactive dependency
-            req(df)
-            create_egm_figure(df, plot_source_name, x_col, y_col, n_col)
+            req(egm_data())
+            create_egm_figure(egm_data(), plot_source_name, x_col, y_col, n_col)
         })
 
+        # When the data (and therefore the plot) changes, tell plot_interactions.js
+        # to re-attach its click/selection handlers to the newly rendered element.
         observeEvent(egm_data(), {
             req(egm_data())
             session$sendCustomMessage("triggerAttachPlotlyClickHandler", list())

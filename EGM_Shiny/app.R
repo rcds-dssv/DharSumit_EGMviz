@@ -1,69 +1,63 @@
+# global.R is sourced here so the app can also be launched via source("app.R")
+# in addition to the standard shiny::runApp() workflow.
 source("global.R")
 
-# ─── UI ──────────────────────────────────────────────────────────────────────
+
+# =============================================================================
+# UI
+# =============================================================================
 
 ui <- fluidPage(
 
     tags$head(
+        # colors_runtime.css is generated at startup by global.R from the colors list
         tags$link(rel = "stylesheet", type = "text/css", href = "colors_runtime.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
-        tags$script(src = "toggles.js"),
-        tags$script(src = "plot_interactions.js")
+        tags$script(src = "toggles.js"),          # table show/hide toggle
+        tags$script(src = "plot_interactions.js")  # plot click/selection arrows
     ),
 
-    # Title
-    tags$h1(
-        class = "header-title",
-        "HEARING LITERATURE EVIDENCE GAP MAP"
-    ),
+    tags$h1(class = "header-title", "HEARING LITERATURE EVIDENCE GAP MAP"),
 
     div(
         class = "design-container",
 
-        # Instructions bar
+        # Instructions bar (top)
         div(
             class = "header-instructions",
             tags$h2("Instructions and Information"),
             tags$p("Text can be included here")
         ),
 
-        # Control bar
+        # Filters and toggle buttons
         div(
             class = "controls-bar",
-
-            div(
-                class = "filters",
-                tags$h3("Filters"),
-                mod_filter_ui("egm")
-            ),
-
+            div(class = "filters",  tags$h3("Filters"),  mod_filter_ui("egm")),
             div(
                 class = "toggles",
                 tags$h3("Toggles"),
                 div(
                     class = "toggles-group",
-                    # this button toggles the table on/off; logic is in toggles.js
+                    # Toggles the table panel on/off; click logic is in toggles.js
                     actionButton("toggle_table", "Table", class = "toggle-btn active")
                 )
             )
         ),
 
-        # Figure and table side-by-side
+        # Main area: plot on the left, paper table on the right
         div(
             class = "main-area",
             id    = "main_area",
 
-            # Plot (left)
+            # ── Plot panel ────────────────────────────────────────────────
             div(
                 class = "plot-section",
                 id    = "plot_section",
-
                 div(
                     class = "plot-header",
                     tags$h2("Evidence Gap Map"),
-                    mod_click_reset_ui("egm")
+                    mod_click_reset_ui("egm")  # "Reset Plot Selection" button
                 ),
-
                 div(
                     class = "plot-wrapper",
                     id    = "plot_wrapper",
@@ -71,11 +65,10 @@ ui <- fluidPage(
                 )
             ),
 
-            # Table (right)
+            # ── Table panel ───────────────────────────────────────────────
             div(
                 class = "table-section",
                 id    = "table_section",
-
                 div(
                     class = "table-header",
                     div(
@@ -83,21 +76,27 @@ ui <- fluidPage(
                         div(class = "table-header-top-left",  tags$h3("Selected papers")),
                         div(class = "table-header-top-right", mod_export_citations_ui("egm"))
                     ),
-                    mod_click_plot_header_ui("egm")
+                    mod_click_plot_header_ui("egm")   # paper count + selection tags
                 ),
-
-                mod_click_plot_content_ui("egm")
+                mod_click_plot_content_ui("egm")      # scrollable list of paper cards
             )
         )
     )
 )
 
 
-# ─── Server ──────────────────────────────────────────────────────────────────
+# =============================================================================
+# Server
+# =============================================================================
 
 server <- function(input, output, session) {
 
-    egm_data         <- reactiveVal(initial_egm_data)
+    # egm_data holds the currently filtered dataset (a named list of dataframes,
+    # one per evidence category). It is updated by the filter module.
+    egm_data <- reactiveVal(initial_egm_data)
+
+    # Incrementing this value triggers a full reset of the plot and table
+    # (colours, opacity, selection arrows, and the paper list).
     reset_egm_trigger <- reactiveVal(0)
 
     mod_plot_server(
@@ -111,11 +110,11 @@ server <- function(input, output, session) {
 
     mod_click_server(
         "egm",
-        egm_data         = egm_data,
+        egm_data          = egm_data,
         reset_egm_trigger = reset_egm_trigger,
-        plot_source_name = "egm_scatter_plot",
-        x_col            = "WorkType",
-        y_col            = "Theme.Assignment"
+        plot_source_name  = "egm_scatter_plot",
+        x_col             = "WorkType",
+        y_col             = "Theme.Assignment"
     )
 
     mod_filter_server(
