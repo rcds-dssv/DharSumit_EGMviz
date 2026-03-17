@@ -1,152 +1,130 @@
+# global.R is sourced here so the app can also be launched via source("app.R")
+# in addition to the standard shiny::runApp() workflow.
 source("global.R")
 
+
+# =============================================================================
+# UI
+# =============================================================================
+
 ui <- fluidPage(
-    
-    # include the style sheet
+
     tags$head(
-        tags$link(rel = "stylesheet", type = "text/css", href = "colors_base.css"),
+        # colors_runtime.css is generated at startup by global.R from the colors list
         tags$link(rel = "stylesheet", type = "text/css", href = "colors_runtime.css"),
-        tags$link(rel = "stylesheet", type = "text/css", href = "styles_design1.css"),
-        tags$script(src="toggles.js"),
-        tags$script(src="plot_clicks.js")
+        tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
+        tags$script(src = "toggles.js"),          # table show/hide toggle
+        tags$script(src = "plot_interactions.js")  # plot click/selection arrows
     ),
-  
-    # title
-    tags$h1(
-        class="header-title",
-        "HEARING LITERATURE EVIDENCE GAP MAP"
-    ),
+
+    tags$h1(class = "header-title", "HEARING LITERATURE EVIDENCE GAP MAP"),
 
     div(
-        class="design-container",
+        class = "design-container",
 
-        # instructions bar
+        # Instructions bar (top)
         div(
-            class="header-instructions",
+            class = "header-instructions",
             tags$h2("Instructions and Information"),
             tags$p("Text can be included here")
         ),
 
-        # Control bar at the top
+        # Filters and toggle buttons
         div(
             class = "controls-bar",
-
-            # filters
-            div(
-                class = "filters",
-                tags$h3("Filters"),
-                mod_filter_ui("egm"),
-            ),
-
-            # View toggle buttons on the right
+            div(class = "filters",  tags$h3("Filters"),  mod_filter_ui("egm")),
             div(
                 class = "toggles",
                 tags$h3("Toggles"),
                 div(
                     class = "toggles-group",
-            
-                    # actionButton("toggle_1", "Toggle 1", class = "toggle-btn active"),
-                    # actionButton("toggle_2", "Toggle 2", class = "toggle-btn active"),
-                    # this button toggles the table on/off and is controlled in javascript within toggles.js
+                    # Toggles the table panel on/off; click logic is in toggles.js
                     actionButton("toggle_table", "Table", class = "toggle-btn active")
-                ),
+                )
             )
         ),
-        
-        # Figure and table side-by-side
-        div(
-            class = "main-area",  
-            id = "main_area",
 
-            # figure (left)
+        # Main area: plot on the left, paper table on the right
+        div(
+            class = "main-area",
+            id    = "main_area",
+
+            # ── Plot panel ────────────────────────────────────────────────
             div(
                 class = "plot-section",
-                id = "plot_section",
-
-                # plot header
+                id    = "plot_section",
                 div(
                     class = "plot-header",
                     tags$h2("Evidence Gap Map"),
-                    mod_click_reset_ui("egm")
+                    mod_click_reset_ui("egm")  # "Reset Plot Selection" button
                 ),
-
-                # plot 
                 div(
                     class = "plot-wrapper",
-                    id = "plot_wrapper",
+                    id    = "plot_wrapper",
                     mod_plot_ui("egm")
                 )
             ),
 
-            # table (right)
+            # ── Table panel ───────────────────────────────────────────────
             div(
                 class = "table-section",
-                id = "table_section",
-
-                # Table header (sticky)
+                id    = "table_section",
                 div(
                     class = "table-header",
                     div(
                         class = "table-header-top",
-                        div(
-                            class = "table-header-top-left",
-                            tags$h3("Selected papers")
-                        ),
-                        div(
-                            class = "table-header-top-right",
-                            mod_export_citations_ui("egm")
-                        ),
+                        div(class = "table-header-top-left",  tags$h3("Selected papers")),
+                        div(class = "table-header-top-right", mod_export_citations_ui("egm"))
                     ),
-                    mod_click_plot_header_ui("egm"),
+                    mod_click_plot_header_ui("egm")   # paper count + selection tags
                 ),
-                
-                # Paper list
-                mod_click_plot_content_ui("egm")
-                
+                mod_click_plot_content_ui("egm")      # scrollable list of paper cards
             )
         )
     )
 )
 
+
+# =============================================================================
+# Server
+# =============================================================================
+
 server <- function(input, output, session) {
-  
-    # initialize the reactiveVal for the data set
+
+    # egm_data holds the currently filtered dataset (a named list of dataframes,
+    # one per evidence category). It is updated by the filter module.
     egm_data <- reactiveVal(initial_egm_data)
 
-    # initialize the reactiveVal to trigger a reste of the plot and table
+    # Incrementing this value triggers a full reset of the plot and table
+    # (colours, opacity, selection arrows, and the paper list).
     reset_egm_trigger <- reactiveVal(0)
 
-    # server module for the plot
     mod_plot_server(
-        "egm", 
-        egm_data = egm_data,
+        "egm",
+        egm_data         = egm_data,
         plot_source_name = "egm_scatter_plot",
-        x_col = "WorkType", 
-        y_col = "Theme.Assignment", 
-        n_col = "n"
-      )
-  
-    # server module to handle clicks on the plot and display the table
-    mod_click_server(
-        "egm", 
-        egm_data = egm_data,
-        reset_egm_trigger = reset_egm_trigger,
-        plot_source_name = "egm_scatter_plot",
-        x_col = "WorkType", 
-        y_col = "Theme.Assignment"
+        x_col            = "WorkType",
+        y_col            = "Theme.Assignment",
+        n_col            = "n"
     )
 
-    # server module to handle the filters
+    mod_click_server(
+        "egm",
+        egm_data          = egm_data,
+        reset_egm_trigger = reset_egm_trigger,
+        plot_source_name  = "egm_scatter_plot",
+        x_col             = "WorkType",
+        y_col             = "Theme.Assignment"
+    )
+
     mod_filter_server(
         "egm",
-        egm_data = egm_data,
+        egm_data          = egm_data,
         reset_egm_trigger = reset_egm_trigger
     )
 
-    # server module to handle the citation exporter
-    mod_export_citations_server(
-        "egm"
-    )
+    mod_export_citations_server("egm")
 }
+
 
 shinyApp(ui, server)
