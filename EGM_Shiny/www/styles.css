@@ -69,18 +69,44 @@ body {
     letter-spacing: 2px;
 }
 
+/* Header bar: flex row with controls on the left, text on the right */
 .header-instructions {
     background: linear-gradient(135deg, var(--color-top-gradient1) 0%, var(--color-top-gradient2) 100%);
     color: var(--color-body-text);
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+/* Left column: Filters and Toggles buttons stacked vertically */
+.header-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Vertical divider between buttons and instructions text */
+.header-divider {
+    width: 1px;
+    background: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
+}
+
+/* Right column: instructions text */
+.header-text {
+    flex: 1;
     padding: 20px;
 }
 
-.header-instructions h2 {
+.header-text h2 {
     margin: 0 0 8px 0;
     font-size: 24px;
 }
 
-.header-instructions p {
+.header-text p {
     opacity: 0.95;
     font-size: 15px;
     line-height: 1.5;
@@ -88,63 +114,91 @@ body {
 
 
 /* ============================================================ */
-/* TOP CONTROL BAR                                               */
+/* DROPDOWN CONTROLS (Filters and Toggles)                      */
 /* ============================================================ */
 
-.controls-bar {
-    background: var(--color-container-bg);
-    padding: 15px 20px;
-    align-items: center;
-    border-bottom: 1px solid var(--color-container-border);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 1rem;
+/* Shared wrapper — anchors the absolutely-positioned panel */
+.dropdown-details {
+    position: relative;
+}
+
+/* Shared <summary> button style */
+.dropdown-details summary {
+    background: var(--color-container-border);
+    color: var(--color-container-text);
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: sans-serif;
+    font-weight: normal;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    margin: 0;
+    transition: all 0.2s;
+    display: inline-block;
+    width: 120px;
+    text-align: center;
     box-sizing: border-box;
 }
 
-.controls-bar h3 {
-    margin: 0 0 20px 0;
-    font-family: sans-serif;
-    font-size: 15px;
+.dropdown-details summary::-webkit-details-marker {
+    display: none;
 }
 
-/* Filters */
-.filters {
+.dropdown-details summary:hover {
+    background: var(--color-toggle-hover-bg);
+    color: var(--color-toggle-hover-text);
+}
+
+.dropdown-details[open] summary {
+    background: var(--color-toggle-active-bg);
+    color: var(--color-body-text);
+}
+
+/* ── Filters panel ───────────────────────────────────────────────────── */
+
+.filters-details[open] .filters-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 200;
+    background: var(--color-container-bg);
+    border: 1px solid var(--color-container-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    min-width: 260px;
+}
+
+.filters-dropdown {
     display: flex;
     flex-direction: column;
+    gap: 8px;
 }
 
-.filters-group {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-}
-
-/* Individual label + input pairs */
 .filters-item {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.filters-item label,
-.controls-bar label {
+.filters-item label {
     font-size: 12px;
     color: var(--color-container-text);
     font-weight: 500;
     margin-bottom: 0 !important;
-    width: 60px;
-    text-align: right;
+    min-width: 130px;   /* wide enough for "Ethnicity Reported" */
+    white-space: nowrap;
 }
 
-.shiny-input-container {
-    width: 150px !important;
+.filters-item .shiny-input-container {
+    width: 80px !important;
     font-size: 12px;
+    margin-bottom: 0 !important;
 }
 
 .filters-item select,
-.controls-bar select,
-.controls-bar .selectize-input {
+.filters-dropdown .selectize-input {
     background: var(--color-body-bg) !important;
     border: 1px solid var(--color-container-border) !important;
     color: var(--color-body-text) !important;
@@ -155,56 +209,70 @@ body {
     width: 80px;
 }
 
-.controls-bar .selectize-dropdown {
+.filters-dropdown .selectize-dropdown {
     background: var(--color-body-bg);
     border: 1px solid var(--color-container-border);
     color: var(--color-body-text);
 }
 
-.controls-bar .selectize-dropdown-content .option {
+.filters-dropdown .selectize-dropdown-content .option {
     color: var(--color-body-text);
     padding: 8px 12px;
 }
 
-.controls-bar .selectize-dropdown-content .option:hover {
+.filters-dropdown .selectize-dropdown-content .option:hover {
     background: var(--color-container-border);
 }
 
-/* Toggle buttons */
-.toggles {
+/* ── Toggles panel ───────────────────────────────────────────────────── */
+
+.toggles-details[open] .toggles-switches {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 200;
+    background: var(--color-container-bg);
+    border: 1px solid var(--color-container-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    min-width: 180px;
+}
+
+.toggles-switches {
     display: flex;
     flex-direction: column;
-    padding-left: 20px;
-    border-left: 1px solid gray;
+    gap: 6px;
 }
 
-.toggles-group {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
-    gap: 10px;
+.toggles-switches .shiny-input-container {
+    width: 100% !important;
+    margin-bottom: 0 !important;
 }
 
-.toggle-btn {
-    background: var(--color-container-border) !important;
-    border: none !important;
-    color: var(--color-container-text) !important;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s;
-    width: 75px;
-    outline: 0 !important;
+.toggles-switches .control-label {
+    color: var(--color-container-text);
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
-.toggle-btn:hover {
-    background: var(--color-toggle-hover-bg) !important;
-    color: var(--color-toggle-hover-text) !important;
+.toggles-switches .bootstrap-switch.bootstrap-switch-on .bootstrap-switch-handle-on {
+    background-color: var(--color-toggle-active-bg);
+    color: white;
 }
 
-.toggle-btn.active {
-    background: var(--color-toggle-active-bg) !important;
-    color: var(--color-body-text) !important;
+.toggles-switches .bootstrap-switch.bootstrap-switch-off .bootstrap-switch-handle-off {
+    background-color: var(--color-container-border);
+    color: var(--color-container-text);
+}
+
+.toggles-switches .bootstrap-switch {
+    border-color: var(--color-container-border);
+}
+
+.toggles-switches .bootstrap-switch-label {
+    width: 100px !important;
+    min-width: 100px !important;
 }
 
 
@@ -259,7 +327,7 @@ body {
     font-weight: 600;
 }
 
-/* Reset button */
+/* Reset / Export buttons */
 .reset-btn {
     background: transparent !important;
     border: 1px solid var(--color-container-border) !important;
@@ -269,6 +337,8 @@ body {
     cursor: pointer;
     font-size: 12px;
     transition: all 0.2s;
+    width: 120px;
+    text-align: center;
 }
 
 .reset-btn:hover {
@@ -284,7 +354,7 @@ body {
     background: var(--color-container-bg);
     border: 1px solid var(--color-container-border);
     border-radius: 8px;
-    padding: 40px;
+    padding: 20px;
     min-height: 0;
 }
 
@@ -392,10 +462,14 @@ body {
 
 .table-header-top-right {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
 }
 
 .table-header h3 {
-    font-size: 14px;
+    font-size: 24px;
     color: var(--color-button-text);
     margin: 0 0 5px 0;
     font-weight: 600;
@@ -537,10 +611,6 @@ body {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-}
-
-.controls-bar .shiny-input-container {
-    margin-bottom: 0 !important;
 }
 
 .main-area .row {

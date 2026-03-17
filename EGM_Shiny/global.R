@@ -10,6 +10,7 @@ library(tidyr)
 library(forcats)
 library(plotly)
 library(stringr)
+library(shinyWidgets)
 
 
 # =============================================================================
@@ -24,7 +25,9 @@ colors <- list(
     high_confidence   = "#46A040",
     medium_confidence = "#FDB915",
     low_confidence    = "#CC3D3D",
-    in_progress       = "#FFC0CB"
+    in_progress       = "#FFC0CB",
+    heatmap_min       = "rgba(130,130,130,0)",    # 0 papers  → fully transparent
+    heatmap_max       = "rgba(130,130,130,1)"  # max papers → mid-gray
 )
 
 css <- paste0(
@@ -45,11 +48,11 @@ writeLines(css, "www/colors_runtime.css")
 # =============================================================================
 
 egm_metadata <- list(
-    all     = list(display_text = NULL,                color = colors$all_points,        index = 0, offset_x =  0.00, offset_y =  0.00),
-    high    = list(display_text = "High Confidence",   color = colors$high_confidence,   index = 1, offset_x =  0.35, offset_y =  0.35),
-    medium  = list(display_text = "Medium Confidence", color = colors$medium_confidence, index = 2, offset_x =  0.00, offset_y =  0.35),
-    low     = list(display_text = "Low Confidence",    color = colors$low_confidence,    index = 3, offset_x = -0.35, offset_y =  0.35),
-    ongoing = list(display_text = "In Progress",       color = colors$in_progress,       index = 4, offset_x = -0.17, offset_y = -0.35)
+    all     = list(display_text = NULL,                color = colors$all_points,        index = 1, offset_x =  0.00, offset_y =  0.00),
+    high    = list(display_text = "High Confidence",   color = colors$high_confidence,   index = 2, offset_x =  0.35, offset_y =  0.35),
+    medium  = list(display_text = "Medium Confidence", color = colors$medium_confidence, index = 3, offset_x =  0.00, offset_y =  0.35),
+    low     = list(display_text = "Low Confidence",    color = colors$low_confidence,    index = 4, offset_x = -0.35, offset_y =  0.35),
+    ongoing = list(display_text = "In Progress",       color = colors$in_progress,       index = 5, offset_x = -0.17, offset_y = -0.35)
 )
 
 
