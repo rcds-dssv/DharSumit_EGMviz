@@ -137,7 +137,7 @@ body {
     text-align: right;
 }
 
-.shiny-input-container {
+.filters-item .shiny-input-container {
     width: 150px !important;
     font-size: 12px;
 }
@@ -174,14 +174,49 @@ body {
 .toggles {
     display: flex;
     flex-direction: column;
+    gap: 10px;
     padding-left: 20px;
     border-left: 1px solid gray;
 }
 
-.toggles-group {
+/* 2×2 grid for the four switchInput toggles */
+.toggles-switches {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+    align-items: center;
+}
+
+/* Prevent Shiny's global .shiny-input-container width from blowing out the grid */
+.toggles-switches .shiny-input-container {
+    width: auto !important;
+    margin-bottom: 0 !important;
+}
+
+/* Label above each switch */
+.toggles-switches .control-label {
+    color: var(--color-container-text);
+    font-size: 11px;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* Switch track — ON state */
+.toggles-switches .bootstrap-switch.bootstrap-switch-on .bootstrap-switch-handle-on {
+    background-color: var(--color-toggle-active-bg);
+    color: white;
+}
+
+/* Switch track — OFF state */
+.toggles-switches .bootstrap-switch.bootstrap-switch-off .bootstrap-switch-handle-off {
+    background-color: var(--color-container-border);
+    color: var(--color-container-text);
+}
+
+/* Switch track background (the part behind the thumb) */
+.toggles-switches .bootstrap-switch {
+    border-color: var(--color-container-border);
 }
 
 .toggle-btn {

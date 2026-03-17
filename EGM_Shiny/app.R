@@ -13,7 +13,7 @@ ui <- fluidPage(
         # colors_runtime.css is generated at startup by global.R from the colors list
         tags$link(rel = "stylesheet", type = "text/css", href = "colors_runtime.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
-        tags$script(src = "toggles.js"),          # table show/hide toggle
+        tags$script(src = "toggle_table.js"),      # table show/hide toggle
         tags$script(src = "plot_interactions.js")  # plot click/selection arrows
     ),
 
@@ -36,11 +36,10 @@ ui <- fluidPage(
             div(
                 class = "toggles",
                 tags$h3("Toggles"),
-                div(
-                    class = "toggles-group",
-                    # Toggles the table panel on/off; click logic is in toggles.js
-                    actionButton("toggle_table", "Table", class = "toggle-btn active")
-                )
+                # Table toggle drives a CSS/JS animation in toggles.js, so it stays
+                # as a plain button rather than a switchInput
+                actionButton("toggle_table", "Table", class = "toggle-btn active"),
+                mod_toggles_ui("egm")  # heatmap / all papers / confidence / in-progress
             )
         ),
 
@@ -99,9 +98,12 @@ server <- function(input, output, session) {
     # (colours, opacity, selection arrows, and the paper list).
     reset_egm_trigger <- reactiveVal(0)
 
+    toggle_states <- mod_toggles_server("egm", egm_data = egm_data)
+
     mod_plot_server(
         "egm",
         egm_data         = egm_data,
+        toggle_states    = toggle_states,
         plot_source_name = "egm_scatter_plot",
         x_col            = "WorkType",
         y_col            = "Theme.Assignment",

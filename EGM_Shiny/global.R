@@ -10,6 +10,7 @@ library(tidyr)
 library(forcats)
 library(plotly)
 library(stringr)
+library(shinyWidgets)
 
 
 # =============================================================================

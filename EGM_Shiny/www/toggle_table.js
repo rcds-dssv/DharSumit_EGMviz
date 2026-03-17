@@ -1,5 +1,5 @@
 // =============================================================================
-// toggles.js — table panel toggle and Plotly resize handling
+// toggle_table.js — table panel toggle and Plotly resize handling
 //
 // Manages the "Table" toggle button in the controls bar.  When clicked, it
 // expands the plot section to fill the full width (class "grow") or restores
