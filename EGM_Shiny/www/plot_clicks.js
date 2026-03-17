@@ -44,17 +44,22 @@ function drawArrowsForEventData(eventData) {
     var xOffset = xaxis._mainAxis._offset;
     var yOffset = yaxis._mainAxis._offset;
 
-    eventData.points.forEach(function(point) {
-        var x_px = xaxis.l2p(point.x) + xOffset;
-        var y_px = yaxis.l2p(point.y) + yOffset;
+    var points = eventData.points;
 
-        var arrow = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        arrow.setAttribute("d", ARROW_PATH_D);
-        arrow.setAttribute("transform",
-            "translate(" + (x_px + 4) + ", " + (y_px - ARROW_HEIGHT / 2) + ")"
-        );
-        group.appendChild(arrow);
-    });
+    // Single arrow at (max x, avg y) of all selected points.
+    // For a single point this is identical to the previous per-point behaviour.
+    var max_x = points.reduce(function(m, p) { return Math.max(m, p.x); }, -Infinity);
+    var avg_y = points.reduce(function(s, p) { return s + p.y; }, 0) / points.length;
+
+    var x_px = xaxis.l2p(max_x) + xOffset;
+    var y_px = yaxis.l2p(avg_y) + yOffset;
+
+    var arrow = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    arrow.setAttribute("d", ARROW_PATH_D);
+    arrow.setAttribute("transform",
+        "translate(" + (x_px + 4) + ", " + (y_px - ARROW_HEIGHT / 2) + ")"
+    );
+    group.appendChild(arrow);
 }
 
 // ─── Deselect handler ───────────────────────────────────────────────────────
