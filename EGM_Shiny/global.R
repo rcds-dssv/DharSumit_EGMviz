@@ -1,5 +1,9 @@
 library(shiny)
-library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(tidyr)
+library(forcats)
 library(plotly)
 library(stringr)
 
