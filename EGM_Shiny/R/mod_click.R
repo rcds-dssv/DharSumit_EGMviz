@@ -1,28 +1,30 @@
-update_plotly_colors_opacities <- function(session, egm_data, info){
-    # Create the original color vectors but replace the clicked point (if not null)
+update_plotly_colors_opacities <- function(session, egm_data, selected_info){
+    # Create the original color vectors but replace the selected points (if not null)
 
-    if (is.null(info)){
+    if (is.null(selected_info)){
         #for plot reset
         opacity <- 1.
     } else {
-        # for emphasizing the clicked point (which will have opacity = 1)
+        # for emphasizing the selected points (which will have opacity = 1)
         opacity <- 0.4
     }
 
     for (name in names(egm_data)) {
-        trace_idx <- egm_metadata[[name]]$index
-        colors <- rep(egm_metadata[[name]]$color, nrow(egm_data[[name]]$counts))
-        line_colors <- rep(egm_metadata[[name]]$color, nrow(egm_data[[name]]$counts))
-        opacities <- rep(opacity, nrow(egm_data[[name]]$counts))
-        line_opacities <- rep(opacity, nrow(egm_data[[name]]$counts))
-        # if there is click information then mark the clicked point
-        # otherwise this will be used to reset the plot colors 
-        if (!is.null(info)){
-            if ("trace_index" %in% names(info) && "pointNumber" %in% names(info)){
-                if (trace_idx == info$trace_index) {
-                    line_colors[info$pointNumber + 1] <- "white"
-                    opacities[info$pointNumber + 1] <- 1;
-                    line_opacities[info$pointNumber + 1] <- 1;
+        trace_idx      <- egm_metadata[[name]]$index
+        n_pts          <- nrow(egm_data[[name]]$counts)
+        colors         <- rep(egm_metadata[[name]]$color, n_pts)
+        line_colors    <- rep(egm_metadata[[name]]$color, n_pts)
+        opacities      <- rep(opacity, n_pts)
+        line_opacities <- rep(opacity, n_pts)
+
+        # highlight each selected point that belongs to this trace
+        if (!is.null(selected_info)) {
+            for (pt in selected_info) {
+                if (pt$trace_index == trace_idx) {
+                    idx <- pt$pointNumber + 1   # R is 1-indexed
+                    line_colors[idx]    <- "white"
+                    opacities[idx]      <- 1
+                    line_opacities[idx] <- 1
                 }
             }
         }
@@ -30,9 +32,9 @@ update_plotly_colors_opacities <- function(session, egm_data, info){
         # Update the plot without re-rendering
         plotlyProxy("egm_plot", session) %>%
             plotlyProxyInvoke("restyle", list(
-                marker.color = list(colors),
-                marker.opacity = list(opacities),
-                marker.line.color = list(line_colors),
+                marker.color        = list(colors),
+                marker.opacity      = list(opacities),
+                marker.line.color   = list(line_colors),
                 marker.line.opacity = list(line_opacities)
             ),
             list(trace_idx)
@@ -40,55 +42,86 @@ update_plotly_colors_opacities <- function(session, egm_data, info){
     }
 }
 
-# create_plotly_click_info = function(event_data, plot_source_name){
-#     if (is.null(event_data)) return(NULL)
-#     click_data <- event_data("plotly_click", source = plot_source_name)
-create_plotly_click_info = function(click_data){
+create_plotly_click_info <- function(click_data) {
+    # Returns a list containing a single point-info list (consistent with the
+    # multi-point format used by create_plotly_selected_info).
     if (is.null(click_data)) return(NULL)
 
-    clicked_x <- click_data$customdata[[1]][1]
-    clicked_y <- click_data$customdata[[1]][2]
-    trace_id  <- click_data$customdata[[1]][3]
-    trace_index <- egm_metadata[[trace_id]]$index
+    cd       <- click_data$customdata[[1]]
+    trace_id <- cd[[3]]
 
-    list(
-        clicked_x = clicked_x,
-        clicked_y = clicked_y,
-        trace_id = trace_id,
-        trace_index = trace_index,
+    list(list(
+        clicked_x   = cd[[1]],
+        clicked_y   = cd[[2]],
+        trace_id    = trace_id,
+        trace_index = egm_metadata[[trace_id]]$index,
         pointNumber = click_data$pointNumber
-    )
+    ))
 }
 
-create_plotly_click_df = function(egm_data, info, x_col, y_col){
-    if (is.null(info)) return(NULL)
-    egm_data[[info$trace_id]]$df %>%
-        dplyr::filter(
-            .[[x_col]] == info$clicked_x,
-            .[[y_col]] == info$clicked_y
+create_plotly_selected_info <- function(selected_data) {
+    # Returns a list of point-info lists, one per selected point.
+    if (is.null(selected_data) || nrow(selected_data) == 0) return(NULL)
+
+    lapply(seq_len(nrow(selected_data)), function(i) {
+        cd       <- selected_data$customdata[[i]]
+        trace_id <- cd[[3]]
+        list(
+            clicked_x   = cd[[1]],
+            clicked_y   = cd[[2]],
+            trace_id    = trace_id,
+            trace_index = egm_metadata[[trace_id]]$index,
+            pointNumber = selected_data$pointNumber[i]
         )
+    })
 }
 
-create_table_header_html <- function(info, df){
-    # generate the table header (number of papers and any tags from the click)
+create_plotly_click_df <- function(egm_data, selected_info, x_col, y_col) {
+    if (is.null(selected_info)) return(NULL)
 
-    # Placeholder before first click
-    if (is.null(info) || is.null(df) || nrow(df) == 0) {
+    dfs <- lapply(selected_info, function(pt) {
+        egm_data[[pt$trace_id]]$df %>%
+            dplyr::filter(
+                .[[x_col]] == pt$clicked_x,
+                .[[y_col]] == pt$clicked_y
+            )
+    })
+    dplyr::bind_rows(dfs) %>% dplyr::distinct()
+}
+
+create_table_header_html <- function(selected_info, df) {
+    # generate the table header (number of papers and tags for each selected point)
+
+    # Placeholder before first click/selection
+    if (is.null(selected_info) || is.null(df) || nrow(df) == 0) {
         return(tags$p(class="info", "Click on a point to display the papers"))
     }
 
-    # Now info and df exist
     n <- nrow(df)
-    display_text <- egm_metadata[[info$trace_id]]$display_text
-    return(
-        tagList(
-            tags$p(paste("Number of papers:", n)),
-            tags$div(class = "paper-tags",
-                tags$p("Selection attributes:"),
-                tags$span(class = "tag", info$clicked_x),
-                tags$span(class = "tag", info$clicked_y),
-                if (!is.null(display_text)) tags$span(class = paste("tag", info$trace_id), display_text)
-            )
+
+    # deduplicate by what is actually rendered: (clicked_x, clicked_y, display_text)
+    # two points that would show identical tags are collapsed to one row
+    keys <- sapply(selected_info, function(pt) {
+        dt <- egm_metadata[[pt$trace_id]]$display_text
+        dt <- if (is.null(dt)) "" else dt
+        paste(pt$clicked_x, pt$clicked_y, dt, sep = "|||")
+    })
+    unique_pts <- selected_info[!duplicated(keys)]
+
+    point_tags <- lapply(unique_pts, function(pt) {
+        display_text <- egm_metadata[[pt$trace_id]]$display_text
+        tags$div(class = "paper-tags",
+            tags$span(class = "tag", pt$clicked_x),
+            tags$span(class = "tag", pt$clicked_y),
+            if (!is.null(display_text)) tags$span(class = paste("tag", pt$trace_id), display_text)
+        )
+    })
+
+    tagList(
+        tags$p(paste("Number of papers:", n)),
+        tags$div(
+            tags$p("Selection attributes:"),
+            do.call(tagList, point_tags)
         )
     )
 }
@@ -124,7 +157,7 @@ create_table_cards_html = function(df){
             if (row$in_progress > 0) tags$span(class = "tag ongoing", "In Progress")
         )
 
-        div(class = "paper-card", 
+        div(class = "paper-card",
             div(class = "paper-card-contents",
                 title,
                 meta,
@@ -153,30 +186,38 @@ mod_click_reset_ui <- function(id, header_only = FALSE) {
 mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col) {
     moduleServer(id, function(input, output, session) {
 
-        # Holds the current click info; NULL means "no selection"
+        # Holds the current selection as a list of point-info lists; NULL = no selection
         clicked_info <- reactiveVal(NULL)
 
-        # Update on plot click
+        # Single point click
         observeEvent(event_data("plotly_click", source = plot_source_name), {
             clicked_info(
                 create_plotly_click_info(event_data("plotly_click", source = plot_source_name))
             )
         })
 
-        # create a dataframe with the papers in the clicked point
+        # Lasso / box selection (multiple points)
+        observeEvent(event_data("plotly_selected", source = plot_source_name), {
+            info <- create_plotly_selected_info(
+                event_data("plotly_selected", source = plot_source_name)
+            )
+            if (!is.null(info)) clicked_info(info)
+        })
+
+        # create a dataframe with the papers in the selected points
         clicked_df <- reactive({
             create_plotly_click_df(egm_data(), clicked_info(), x_col, y_col)
         })
 
         # reset the table and plot colors when the user clicks the reset button
         observeEvent(input$reset_plot, {
-            reset_egm_trigger(reset_egm_trigger() + 1) 
+            reset_egm_trigger(reset_egm_trigger() + 1)
         })
         observeEvent(reset_egm_trigger(), {
             clicked_info(NULL)
             session$sendCustomMessage("hideArrow", list())
         }, ignoreInit = TRUE)
-            
+
         # update the plot colors and opacities
         observe({
             update_plotly_colors_opacities(session, egm_data(), clicked_info())

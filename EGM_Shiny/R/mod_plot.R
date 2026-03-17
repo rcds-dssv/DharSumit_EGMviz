@@ -174,8 +174,6 @@ create_egm_figure = function(egm_data, plot_source_name, x_col, y_col, n_col){
         responsive = TRUE,
         displayModeBar = TRUE,
         modeBarButtonsToRemove = c(
-            "select2d",
-            "lasso2d",
             "zoomIn2d",
             "zoomOut2d",
             "autoScale2d",
