@@ -26,20 +26,19 @@
 # =============================================================================
 
 # Converts a lasso / box-select plotly event (a dataframe, one row per selected
-# dot) into a list of point-info lists.  Returns NULL for empty or invalid input
-# (can occur when plotly fires plotly_selected in response to a programmatic call).
+# dot) into a list of point-info lists.  Returns NULL for empty or invalid input.
+# Rows without valid 3-element customdata (e.g. heatmap cells) are silently skipped.
 create_plotly_selected_info <- function(selected_data) {
     if (is.null(selected_data) || !is.data.frame(selected_data) || nrow(selected_data) == 0) {
         return(NULL)
     }
-    lapply(seq_len(nrow(selected_data)), function(i) {
+    infos <- lapply(seq_len(nrow(selected_data)), function(i) {
         cd <- selected_data$customdata[[i]]
-        list(
-            clicked_x = cd[[1]],
-            clicked_y = cd[[2]],
-            trace_id  = cd[[3]]
-        )
+        if (is.null(cd) || length(cd) < 3) return(NULL)
+        list(clicked_x = cd[[1]], clicked_y = cd[[2]], trace_id = cd[[3]])
     })
+    infos <- Filter(Negate(is.null), infos)
+    if (length(infos) == 0) NULL else infos
 }
 
 
@@ -158,15 +157,15 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         # Current selection: list of point-info lists, or NULL when nothing is selected
         clicked_info <- reactiveVal(NULL)
 
-        # Lasso / box-select.  Uses a JS-sent trigger (input$plotly_selected_trigger)
-        # rather than observing event_data() directly, so that re-selecting the same
-        # points after a reset always fires this observer.
-        observeEvent(input$plotly_selected_trigger, {
+        # Lasso / box-select: observe event_data() directly.
+        # plotly_deselect (double-click) and filter resets both cause this to
+        # become NULL, so re-selecting the same points always triggers a change.
+        observeEvent(event_data("plotly_selected", source = plot_source_name), {
             info <- create_plotly_selected_info(
                 event_data("plotly_selected", source = plot_source_name)
             )
             if (!is.null(info)) clicked_info(info)
-        })
+        }, ignoreNULL = TRUE)
 
         # Dataframe of papers matching the current selection
         clicked_df <- reactive({
