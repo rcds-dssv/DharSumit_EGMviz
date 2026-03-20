@@ -442,6 +442,11 @@ body {
     z-index: 10 !important;
 }
 
+/* Hide plotly's built-in "Double-click to zoom back out" notifier */
+.plotly-notifier {
+    display: none !important;
+}
+
 
 /* ============================================================ */
 /* TABLE SECTION (RIGHT)                                         */
