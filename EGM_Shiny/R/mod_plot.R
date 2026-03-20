@@ -181,6 +181,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
         config(
             responsive      = TRUE,
             displayModeBar  = TRUE,
+            doubleClick     = FALSE,
             modeBarButtonsToRemove = c(
                 "zoomIn2d", "zoomOut2d", "autoScale2d",
                 "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
@@ -224,7 +225,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     for (name in names(egm_data)) {
         trace_visible <- if (is.null(toggle_states)) TRUE
                          else if (name == "all")                            toggle_states$summary
-                         else if (name %in% c("high", "medium", "low"))    toggle_states$confidence
+                         else if (name %in% c("high", "medium", "low"))     toggle_states$confidence
                          else if (name == "ongoing")                        toggle_states$in_progress
                          else TRUE
 
@@ -251,7 +252,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             side      = "top",
             tickangle = 0,
             showgrid  = FALSE,
-            zeroline  = FALSE
+            zeroline  = FALSE,
+            ticks     = ""
         ),
         yaxis = list(
             type     = "linear",
@@ -261,7 +263,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             range    = c(-0.5, length(y_levels) - 0.5),
             title    = list(text = clean_y_title, standoff = 20),
             showgrid = FALSE,
-            zeroline = FALSE
+            zeroline = FALSE,
+            ticks    = ""
         ),
         shapes      = shapes_for_plotly(n_x, n_y),
         # "Total N" annotation in the upper-left corner.
@@ -330,7 +333,7 @@ mod_plot_server <- function(id, egm_data, toggle_states = NULL, plot_source_name
         # to re-attach its click/selection handlers to the newly rendered element.
         observeEvent(egm_data(), {
             req(egm_data())
-            session$sendCustomMessage("triggerAttachPlotlyClickHandler", list())
+            session$sendCustomMessage("triggerAttachPlotlyClickHandler", list(source = plot_source_name, ns = session$ns("")))
         })
     })
 }

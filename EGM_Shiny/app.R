@@ -17,7 +17,10 @@ ui <- fluidPage(
         tags$script(src = "plot_interactions.js")  # plot click/selection arrows
     ),
 
-    tags$h1(class = "header-title", "HEARING LITERATURE EVIDENCE GAP MAP"),
+    # tags$h1(class = "header-title", "HEARING LITERATURE EVIDENCE GAP MAP"),
+
+    # ── Help modal (see R/mod_help_modal.R) ─────────────────────────────────────
+    help_modal_ui(),
 
     div(
         class = "design-container",
@@ -27,8 +30,13 @@ ui <- fluidPage(
             class = "header-instructions",
             div(
                 class = "header-text",
-                tags$h2("Instructions and Information"),
-                tags$p("Text can be included here")
+                tags$h1("HEARING LITERATURE EVIDENCE GAP MAP"),
+                tags$p("Explore hearing research papers plotted by study type and health outcome. Bubble size reflects the number of papers at each intersection."),
+                tags$button(
+                    class   = "how-to-use-btn",
+                    onclick = "document.getElementById('egm-help-modal').classList.add('open')",
+                    "Instructions"
+                )
             ),
             div(class = "header-divider"),
             div(
@@ -68,7 +76,6 @@ ui <- fluidPage(
                         class = "table-header-top",
                         div(class = "table-header-top-left",  tags$h3("Selected papers")),
                         div(class = "table-header-top-right",
-                            mod_click_reset_ui("egm"),         # "Reset Selection"
                             mod_export_citations_ui("egm")     # "Export"
                         )
                     ),
@@ -91,8 +98,8 @@ server <- function(input, output, session) {
     # one per evidence category). It is updated by the filter module.
     egm_data <- reactiveVal(initial_egm_data)
 
-    # Incrementing this value triggers a full reset of the plot and table
-    # (colours, opacity, selection arrows, and the paper list).
+    # Incrementing this value triggers a full plot re-render and clears the
+    # paper table.  Currently only driven by filter changes.
     reset_egm_trigger <- reactiveVal(0)
 
     toggle_states <- mod_toggles_server("egm", egm_data = egm_data)

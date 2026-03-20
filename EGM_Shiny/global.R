@@ -26,8 +26,8 @@ colors <- list(
     medium_confidence = "#FDB915",
     low_confidence    = "#CC3D3D",
     in_progress       = "#FFC0CB",
-    heatmap_min       = "rgba(130,130,130,0)",    # 0 papers  → fully transparent
-    heatmap_max       = "rgba(130,130,130,1)"  # max papers → mid-gray
+    heatmap_min       = "rgba(130,130,130,0)", # fully transparent
+    heatmap_max       = "rgba(130,130,130,1)"  # mid-gray
 )
 
 css <- paste0(
