@@ -1,124 +1,43 @@
 # =============================================================================
 # mod_selection — plot selection handling and paper table
 #
-# Listens for plotly click / lasso-select events, highlights the selected
-# dots, and renders the matching papers in a table below the plot.
+# Listens for plotly lasso / box-select events and renders the matching papers
+# in a table below the plot.  Plotly's native selectedpoints mechanism handles
+# visual dimming of unselected points automatically — no manual restyle needed.
 #
 # Selection state is stored in the reactiveVal `clicked_info`, which is a
 # list of point-info lists (one per selected dot).  Each point-info list has:
-#   clicked_x   — x-axis label of the selected cell (e.g. "Intervention")
-#   clicked_y   — y-axis label of the selected cell (e.g. "Quality of Life")
-#   trace_id    — evidence category key matching egm_metadata (e.g. "high")
-#   trace_index — 0-based plotly trace index (from egm_metadata)
-#   pointNumber — 0-based index of the dot within its trace (from plotly)
+#   clicked_x — x-axis label of the selected cell (e.g. "Intervention")
+#   clicked_y — y-axis label of the selected cell (e.g. "Quality of Life")
+#   trace_id  — evidence category key matching egm_metadata (e.g. "high")
 #
 # customdata embedded in each plotly marker is a list(x_label, y_label, trace_id),
 # set by add_to_counts_df_for_plotly() in mod_plot.R.
 #
-# Public interface (UI functions):
+# Public interface:
 #   mod_click_plot_header_ui(id)  — paper count + selection attribute tags
 #   mod_click_plot_content_ui(id) — scrollable list of paper cards
-#   mod_click_reset_ui(id)        — "Reset Plot Selection" button
 #   mod_click_server(...)         — server logic
 # =============================================================================
 
 
 # =============================================================================
-# Plot update helpers
+# Selection parsing helper
 # =============================================================================
 
-# Updates every trace's marker colour, opacity, and line colour via a plotly
-# proxy (no full re-render).
-#
-# When selected_info is NULL (reset): all dots are restored to full opacity.
-# When selected_info is set:  selected dots get opacity 1 + white border;
-#                             all other dots are dimmed to opacity 0.4.
-update_plotly_colors_opacities <- function(session, egm_data, selected_info) {
-
-    base_opacity <- if (is.null(selected_info)) 1 else 0.4
-
-    for (name in names(egm_data)) {
-        trace_idx <- egm_metadata[[name]]$index
-        n_pts     <- nrow(egm_data[[name]]$counts)
-
-        colors         <- rep(egm_metadata[[name]]$color, n_pts)
-        line_colors    <- rep(egm_metadata[[name]]$color, n_pts)
-        opacities      <- rep(base_opacity, n_pts)
-        line_opacities <- rep(base_opacity, n_pts)
-
-        # Highlight each selected dot that belongs to this trace
-        if (!is.null(selected_info)) {
-            for (pt in selected_info) {
-                if (pt$trace_index == trace_idx) {
-                    idx <- pt$pointNumber + 1  # plotly is 0-based; R is 1-based
-                    line_colors[idx]    <- "white"
-                    opacities[idx]      <- 1
-                    line_opacities[idx] <- 1
-                }
-            }
-        }
-
-        restyle_args <- list(
-            marker.color        = list(colors),
-            marker.opacity      = list(opacities),
-            marker.line.color   = list(line_colors),
-            marker.line.opacity = list(line_opacities)
-        )
-        # On reset, also clear plotly's internal selection state (which would
-        # otherwise keep non-selected points dimmed independently of our opacity)
-        if (is.null(selected_info)) {
-            restyle_args$selectedpoints <- list(NULL)
-        }
-
-        plotlyProxy("egm_plot", session) %>%
-            plotlyProxyInvoke("restyle", restyle_args, list(trace_idx))
-    }
-}
-
-
-# =============================================================================
-# Selection parsing helpers
-# =============================================================================
-
-# Converts a single-click plotly event into a length-1 list of point-info
-# lists, matching the format returned by create_plotly_selected_info().
-create_plotly_click_info <- function(click_data) {
-    if (is.null(click_data)) return(NULL)
-    # Guard: clicks on the heatmap or empty areas produce no customdata
-    if (length(click_data$customdata) == 0) return(NULL)
-
-    # customdata is a list(x_label, y_label, trace_id) set in mod_plot.R
-    cd <- click_data$customdata[[1]]
-    if (length(cd) < 3) return(NULL)  # heatmap trace has no customdata structure
-    trace_id <- cd[[3]]
-
-    list(list(
-        clicked_x   = cd[[1]],
-        clicked_y   = cd[[2]],
-        trace_id    = trace_id,
-        trace_index = egm_metadata[[trace_id]]$index,
-        pointNumber = click_data$pointNumber
-    ))
-}
-
-# Converts a lasso / box-select plotly event (a dataframe, one row per
-# selected dot) into a list of point-info lists.
+# Converts a lasso / box-select plotly event (a dataframe, one row per selected
+# dot) into a list of point-info lists.  Returns NULL for empty or invalid input
+# (can occur when plotly fires plotly_selected in response to a programmatic call).
 create_plotly_selected_info <- function(selected_data) {
-    # Guard against NULL or non-dataframe input (can occur when plotly fires
-    # plotly_selected in response to a programmatic restyle call)
     if (is.null(selected_data) || !is.data.frame(selected_data) || nrow(selected_data) == 0) {
         return(NULL)
     }
-
     lapply(seq_len(nrow(selected_data)), function(i) {
-        cd       <- selected_data$customdata[[i]]
-        trace_id <- cd[[3]]
+        cd <- selected_data$customdata[[i]]
         list(
-            clicked_x   = cd[[1]],
-            clicked_y   = cd[[2]],
-            trace_id    = trace_id,
-            trace_index = egm_metadata[[trace_id]]$index,
-            pointNumber = selected_data$pointNumber[i]
+            clicked_x = cd[[1]],
+            clicked_y = cd[[2]],
+            trace_id  = cd[[3]]
         )
     })
 }
@@ -132,7 +51,6 @@ create_plotly_selected_info <- function(selected_data) {
 # Rows from multiple traces at the same grid cell are de-duplicated.
 create_plotly_click_df <- function(egm_data, selected_info, x_col, y_col) {
     if (is.null(selected_info)) return(NULL)
-
     dfs <- lapply(selected_info, function(pt) {
         egm_data[[pt$trace_id]]$df %>%
             dplyr::filter(.[[x_col]] == pt$clicked_x,
@@ -145,7 +63,7 @@ create_plotly_click_df <- function(egm_data, selected_info, x_col, y_col) {
 # x-axis value, y-axis value, and evidence-category label in the selection.
 create_table_header_html <- function(selected_info, df) {
     if (is.null(selected_info) || is.null(df) || nrow(df) == 0) {
-        return(tags$p(class = "info", "Click on a point to display the papers"))
+        return(tags$p(class = "info", "Use the lasso or box-select tool to display papers"))
     }
 
     n        <- nrow(df)
@@ -153,7 +71,7 @@ create_table_header_html <- function(selected_info, df) {
     unique_y <- unique(sapply(selected_info, function(pt) pt$clicked_y))
 
     # Collect unique (trace_id, display_text) pairs, skipping the "all" trace
-    # which has display_text = NULL and no dedicated colour tag
+    # which has display_text = NULL and no dedicated colour tag.
     trace_display_pairs <- unique(Filter(Negate(is.null), lapply(selected_info, function(pt) {
         dt <- egm_metadata[[pt$trace_id]]$display_text
         if (is.null(dt)) NULL else list(trace_id = pt$trace_id, display_text = dt)
@@ -234,30 +152,15 @@ mod_click_plot_content_ui <- function(id) {
     uiOutput(ns("table_content"))
 }
 
-mod_click_reset_ui <- function(id) {
-    ns <- NS(id)
-    actionButton(ns("reset_plot"), "Reset Selection", class = "reset-btn")
-}
-
 mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col) {
     moduleServer(id, function(input, output, session) {
 
         # Current selection: list of point-info lists, or NULL when nothing is selected
         clicked_info <- reactiveVal(NULL)
 
-        # Single-point click.
-        # Uses a JS-sent trigger (input$plotly_click_trigger) rather than
-        # observing event_data() directly, so that clicking the same point
-        # after a reset is always detected.  The trigger is a random number
-        # that changes on every click; event_data() is read here to get the
-        # actual click payload (which plotly's own binding keeps up to date).
-        observeEvent(input$plotly_click_trigger, {
-            info <- create_plotly_click_info(event_data("plotly_click", source = plot_source_name))
-            if (!is.null(info)) clicked_info(info)
-        })
-
-        # Lasso / box multi-point selection.
-        # Same trigger pattern as single-click above.
+        # Lasso / box-select.  Uses a JS-sent trigger (input$plotly_selected_trigger)
+        # rather than observing event_data() directly, so that re-selecting the same
+        # points after a reset always fires this observer.
         observeEvent(input$plotly_selected_trigger, {
             info <- create_plotly_selected_info(
                 event_data("plotly_selected", source = plot_source_name)
@@ -270,27 +173,17 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
             create_plotly_click_df(egm_data(), clicked_info(), x_col, y_col)
         })
 
-        # The reset button increments reset_egm_trigger, which is also watched
-        # by mod_filter_server so both the button and filter changes share the
-        # same reset path.
-        observeEvent(input$reset_plot, {
-            reset_egm_trigger(reset_egm_trigger() + 1)
+        # Double-click fires plotly_deselect (handled in plot_interactions.js),
+        # which clears plotly's selection visual.  Mirror that by clearing the table.
+        observeEvent(input$plotly_deselect_trigger, {
+            clicked_info(NULL)
         })
 
+        # Filter changes increment reset_egm_trigger and trigger a full plot
+        # re-render, which naturally clears selections.  Clear the table too.
         observeEvent(reset_egm_trigger(), {
             clicked_info(NULL)
-            update_plotly_colors_opacities(session, egm_data(), NULL)
-            # Clear the lasso / box selection shape drawn by plotly
-            plotlyProxy("egm_plot", session) %>%
-                plotlyProxyInvoke("relayout", list(selections = list()))
-            # Tell plot_interactions.js to remove the arrow SVG
-            session$sendCustomMessage("hideArrow", list())
         }, ignoreInit = TRUE)
-
-        # Keep dot colours / opacities in sync with the current selection
-        observe({
-            update_plotly_colors_opacities(session, egm_data(), clicked_info())
-        })
 
         output$table_header <- renderUI({
             create_table_header_html(clicked_info(), clicked_df())
