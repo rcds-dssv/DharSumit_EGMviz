@@ -6,19 +6,35 @@
 // expands or collapses the table panel by toggling the CSS "grow" class on
 // plot_section, then smoothly resizes the Plotly figure to match.
 //
+// Viewport-filling layout
+// -----------------------
+// The plot panel fills the available viewport height via CSS flexbox.  To keep
+// grid cells approximately square, the plot panel width is set proportionally
+// to its height using the ideal aspect ratio (740 / 900).  resizePlotToViewport()
+// handles this and is called on initial load, window resize, and Shiny updates.
+//
 // =============================================================================
 
+
+// ── Viewport-filling constants ────────────────────────────────────────────────
+
+// Desired minimum pixel size for each grid cell.
+// This is the only value you need to change to scale the base layout up or down.
+var CELL_SIZE_PX = 60;
+
+// CSS_W_OFFSET / CSS_H_OFFSET: padding + borders outside the plotly figure,
+var CSS_W = 42, CSS_H = 42;
 
 // ── Resize helpers ────────────────────────────────────────────────────────────
 
 // Computes the plot's available pixel size from its container.
 //
-// The offsets (-120 width, -160 height) account for padding, borders, and the
+// The offsets account for padding, borders, and the
 // plot header bar that sit inside plot_section but outside the plotlyOutput
 // element.  Adjust these if the CSS layout changes.
 function resizePlotlyFrame(plot_container, plot) {
-    var new_width  = plot_container.clientWidth  - 120;
-    var new_height = plot_container.clientHeight - 160;
+    var new_width  = plot_container.clientWidth  - CSS_W;
+    var new_height = plot_container.clientHeight - CSS_H;
 
     Plotly.relayout(plot, {
         width:  new_width,
@@ -93,6 +109,62 @@ function resizePlotlySmooth(plot_container, plot, duration) {
 }
 
 
+// ── Viewport-filling resize ───────────────────────────────────────────────────
+
+// Computes exact plot-section width that makes every grid cell square, given
+// the current CSS-determined height.  Cell squareness is derived from the live
+// plotly layout (axis category counts and actual rendered margins), so it
+// adapts automatically if the data or axis labels change.
+//
+// Guard: requires plot._fullLayout to be present, which means plotly must have
+// completed at least one render.  Calling before that is a safe no-op.
+function resizePlotToViewport() {
+    var plotSection = document.getElementById("plot_section");
+    var mainArea    = document.getElementById("main_area");
+    var plot        = document.getElementById("egm-egm_plot");
+
+    if (!plotSection || !mainArea || !plot || !plot._fullLayout) return;
+    if (plotSection.classList.contains("grow")) return;
+
+    var layout = plot._fullLayout;
+    var nX = (layout.xaxis._categories || []).length;
+    var nY = (layout.yaxis._categories || []).length;
+    if (!nX || !nY) return;
+
+    // Actual rendered margins (plotly may auto-expand l/r beyond the R values).
+    var m  = layout.margin || {};
+    var ml = m.l || 0,  mr = m.r || 0;
+    var mt = m.t || 0,  mb = m.b || 0;
+
+    // Minimum section dimensions that give at least CELL_SIZE_PX per cell.
+    var minH = Math.round(nY * CELL_SIZE_PX + mt + mb + CSS_H);
+    var minW = Math.round(nX * CELL_SIZE_PX + ml + mr + CSS_W);
+
+    // Propagate minimum height to .main-area so the CSS fallback stays in sync.
+    mainArea.style.minHeight = minH + "px";
+
+    // For the current CSS-driven height, compute the width that makes cells square.
+    var sectionH = Math.max(minH, plotSection.clientHeight);
+    var cellPx   = (sectionH - CSS_H - mt - mb) / nY;
+    var newW     = Math.max(minW, Math.round(nX * cellPx + ml + mr + CSS_W));
+
+    plotSection.style.width = newW + "px";
+    resizePlotlyFrame(plotSection, plot);
+    repositionPlotlyAnnotation0(plot);
+}
+
+// Re-run on window resize (debounced to avoid thrashing).
+var _vpResizeTimer = null;
+window.addEventListener("resize", function() {
+    clearTimeout(_vpResizeTimer);
+    _vpResizeTimer = setTimeout(resizePlotToViewport, 100);
+});
+
+// Re-run after each Shiny idle cycle — covers the initial page load
+// (when the plot is first rendered) and any filter-driven re-renders.
+$(document).on("shiny:idle", resizePlotToViewport);
+
+
 // ── Close dropdown on outside click ──────────────────────────────────────────
 
 // The <details> element doesn't close itself when the user clicks elsewhere.
@@ -113,11 +185,19 @@ document.addEventListener("click", function(e) {
 //   msg.show = false → table is now OFF → add "grow", expand plot to full width
 Shiny.addCustomMessageHandler("toggleTable", function(msg) {
     var plot_container = document.getElementById("plot_section");
+    var main_area      = document.getElementById("main_area");
     var plot           = document.getElementById("egm-egm_plot");
 
     if (msg.show) {
+        // Restore split layout: un-hide the table column and un-expand the plot.
+        main_area.classList.remove("table-hidden");
         plot_container.classList.remove("grow");
+        // Recompute the correct proportional width immediately so the smooth
+        // resize transition starts from the right dimensions.
+        resizePlotToViewport();
     } else {
+        // Collapse the table column to zero and expand the plot to full width.
+        main_area.classList.add("table-hidden");
         plot_container.classList.add("grow");
     }
 
