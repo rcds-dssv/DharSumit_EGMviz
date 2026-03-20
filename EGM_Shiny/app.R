@@ -17,7 +17,10 @@ ui <- fluidPage(
         tags$script(src = "plot_interactions.js")  # plot click/selection arrows
     ),
 
-    tags$h1(class = "header-title", "HEARING LITERATURE EVIDENCE GAP MAP"),
+    # tags$h1(class = "header-title", "HEARING LITERATURE EVIDENCE GAP MAP"),
+
+    # ── Help modal (see R/mod_help_modal.R) ─────────────────────────────────────
+    help_modal_ui(),
 
     div(
         class = "design-container",
@@ -27,8 +30,13 @@ ui <- fluidPage(
             class = "header-instructions",
             div(
                 class = "header-text",
-                tags$h2("Instructions and Information"),
-                tags$p("Text can be included here")
+                tags$h1("HEARING LITERATURE EVIDENCE GAP MAP"),
+                tags$p("Explore hearing research papers plotted by study type and health outcome. Bubble size reflects the number of papers at each intersection."),
+                tags$button(
+                    class   = "how-to-use-btn",
+                    onclick = "document.getElementById('egm-help-modal').classList.add('open')",
+                    "Instructions"
+                )
             ),
             div(class = "header-divider"),
             div(

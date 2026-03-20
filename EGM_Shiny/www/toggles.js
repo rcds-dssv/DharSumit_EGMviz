@@ -123,3 +123,19 @@ Shiny.addCustomMessageHandler("toggleTable", function(msg) {
 
     resizePlotlySmooth(plot_container, plot);
 });
+
+
+// ── Help modal dismiss: backdrop click or Escape key ─────────────────────────
+document.addEventListener("click", function(e) {
+    var modal = document.getElementById("egm-help-modal");
+    if (modal && modal.classList.contains("open") && e.target === modal) {
+        modal.classList.remove("open");
+    }
+});
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+        var modal = document.getElementById("egm-help-modal");
+        if (modal) modal.classList.remove("open");
+    }
+});
