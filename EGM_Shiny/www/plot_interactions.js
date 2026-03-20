@@ -25,17 +25,33 @@ var ARROW_PATH_D = "M 0 10 L 16 0 L 16 6 L 40 6 L 40 14 L 16 14 L 16 20 Z";
 var ARROW_HEIGHT = 20;
 
 // Fingerprint of the last plot we attached handlers to.
-// Used to detect when Shiny has fully re-rendered the plot after a filter change
-// so we can re-attach handlers to the new DOM element.
 var lastPlotFingerprint = null;
+
+// Plot source name and Shiny module namespace, received from R via the
+// triggerAttachPlotlyClickHandler message.
+var plotlySource = null;
+var plotlyNs     = null;
+
+// The scatter points from the most recent click or lasso selection.
+// Kept so the arrow can be redrawn after zoom/pan.
+var lastSelectedPts = null;
+
+// Arrow base position (SVG pixels) computed at the last drawArrowsForEventData
+// call.  During pan, the mousemove handler shifts the arrow by the mouse delta
+// from this base rather than recomputing via l2p() (which only updates after
+// the pan completes).
+var arrowBaseX = null;
+var arrowBaseY = null;
+
+// Pan-drag tracking.
+var panDragging     = false;
+var panStartClientX = null;
+var panStartClientY = null;
+var arrowRafPending = false;
 
 
 // ── Arrow helpers ─────────────────────────────────────────────────────────────
 
-// Returns (and lazily creates) the <g id="arrow_markers"> SVG group that holds
-// all arrow elements.  Plotly renders several stacked SVG elements; the second
-// one (.main-svg index 1) sits on top of the plot area and is the right layer
-// for overlay annotations.
 function ensureArrowGroup() {
     var plot = document.getElementById("egm-egm_plot");
     if (!plot) return null;
@@ -48,26 +64,21 @@ function ensureArrowGroup() {
     if (!group) {
         group = document.createElementNS("http://www.w3.org/2000/svg", "g");
         group.setAttribute("id", "arrow_markers");
-        // Insert before .infolayer so arrows appear below plotly's own overlays
         svg.insertBefore(group, svg.querySelector(".infolayer"));
     }
     return group;
 }
 
-// Removes all arrows from the overlay group.
 function clearArrows() {
     var group = ensureArrowGroup();
     if (group) group.innerHTML = "";
 }
 
-// Draws a single arrow for the current selection.
+// Draws a single arrow for the current selection and records its base position.
 //
 // Arrow position:
-//   x — rightmost selected point (so the arrow points away from the selection)
+//   x — rightmost selected point
 //   y — vertical average of all selected points
-//
-// For a single-point click this reduces to the position of that one point,
-// which matches the original per-point behaviour.
 function drawArrowsForEventData(eventData) {
     if (!eventData || !eventData.points || eventData.points.length === 0) return;
 
@@ -77,23 +88,23 @@ function drawArrowsForEventData(eventData) {
     var group = ensureArrowGroup();
     if (!group) return;
 
-    group.innerHTML = ""; // replace any previous arrow
+    group.innerHTML = "";
 
-    // Read Plotly's internal axis objects for coordinate conversion
     var xaxis   = plot._fullLayout.xaxis;
     var yaxis   = plot._fullLayout.yaxis;
-    var xOffset = xaxis._mainAxis._offset; // pixels from SVG left edge to plot area left
-    var yOffset = yaxis._mainAxis._offset; // pixels from SVG top  edge to plot area top
+    var xOffset = xaxis._mainAxis._offset;
+    var yOffset = yaxis._mainAxis._offset;
 
     var points = eventData.points;
+    var max_x  = points.reduce(function(m, p) { return Math.max(m, p.x); }, -Infinity);
+    var avg_y  = points.reduce(function(s, p) { return s + p.y; }, 0) / points.length;
 
-    var max_x = points.reduce(function(m, p) { return Math.max(m, p.x); }, -Infinity);
-    var avg_y = points.reduce(function(s, p) { return s + p.y; }, 0) / points.length;
-
-    // l2p() converts a data value to a pixel offset within the plot area;
-    // adding _offset gives the absolute pixel position within the SVG.
     var x_px = xaxis.l2p(max_x) + xOffset;
     var y_px = yaxis.l2p(avg_y) + yOffset;
+
+    // Record the base position so the pan handler can shift it by mouse delta.
+    arrowBaseX = x_px;
+    arrowBaseY = y_px;
 
     var arrow = document.createElementNS("http://www.w3.org/2000/svg", "path");
     arrow.setAttribute("d", ARROW_PATH_D);
@@ -103,42 +114,67 @@ function drawArrowsForEventData(eventData) {
     group.appendChild(arrow);
 }
 
-
-// ── Deselect handler ──────────────────────────────────────────────────────────
-
-// Called when the user double-clicks the plot or triggers plotly_deselect.
-// Clears the arrow overlay and notifies Shiny to run the full reset path
-// (opacity reset, table clear, etc.) — the same path as the Reset button.
-function handleDeselect() {
-    clearArrows();
-    Shiny.setInputValue("egm-reset_plot", Math.random(), { priority: "event" });
+// Moves the existing arrow by (dx, dy) pixels without recomputing from data.
+// Used during pan where l2p() has not yet updated.
+function shiftArrow(dx, dy) {
+    var group = ensureArrowGroup();
+    if (!group || arrowBaseX === null) return;
+    var arrow = group.querySelector("path");
+    if (!arrow) return;
+    arrow.setAttribute("transform",
+        "translate(" + (arrowBaseX + dx + 4) + ", " + (arrowBaseY + dy - ARROW_HEIGHT / 2) + ")"
+    );
 }
 
 
 // ── Plotly event handlers ─────────────────────────────────────────────────────
 
+// Returns only scatter-trace points (those with our 3-element customdata).
+// Heatmap cells and background clicks have no customdata.
+function scatterPointsOnly(eventData) {
+    if (!eventData || !("points" in eventData)) return [];
+    return eventData.points.filter(function(p) {
+        return Array.isArray(p.customdata) && p.customdata.length >= 3;
+    });
+}
+
 handlePlotlyClicks = function(eventData) {
-    if ("points" in eventData && eventData.points.length > 0) {
-        drawArrowsForEventData(eventData);
+    var pts = scatterPointsOnly(eventData);
+    if (pts.length === 0) return;
+
+    lastSelectedPts = pts;
+    drawArrowsForEventData({ points: pts });
+
+    // Trigger the R click observer with a random number so that clicking the
+    // same point after a reset always fires the observer (value always changes).
+    if (plotlyNs) {
+        Shiny.setInputValue(
+            plotlyNs + "plotly_click_trigger",
+            Math.random(),
+            { priority: "event" }
+        );
     }
 };
 
 handlePlotlySelected = function(eventData) {
-    if (eventData && "points" in eventData && eventData.points.length > 0) {
-        drawArrowsForEventData(eventData);
+    var pts = scatterPointsOnly(eventData);
+    if (pts.length === 0) return;
+
+    lastSelectedPts = pts;
+    drawArrowsForEventData({ points: pts });
+
+    if (plotlyNs) {
+        Shiny.setInputValue(
+            plotlyNs + "plotly_selected_trigger",
+            Math.random(),
+            { priority: "event" }
+        );
     }
 };
 
 
 // ── Attach handlers after Plotly renders ──────────────────────────────────────
 
-// Polls every 100 ms until the Plotly element is ready, then attaches the
-// click/selection/deselect handlers.
-//
-// The fingerprint check (plot._fullData[0].uid) prevents double-attaching
-// when `triggerAttachPlotlyClickHandler` is called: after a filter change
-// Shiny re-renders the plot with a new uid, so the fingerprint changes and we
-// know the plot is fresh and handlers need to be re-attached.
 function attachPlotlyClickHandler() {
     var plot = document.getElementById("egm-egm_plot");
     var notReady = !plot
@@ -155,30 +191,76 @@ function attachPlotlyClickHandler() {
     }
 
     if (!plot._clickHandlerAttached) {
-        plot.on("plotly_click",       handlePlotlyClicks);
-        plot.on("plotly_selected",    handlePlotlySelected);
-        plot.on("plotly_doubleclick", handleDeselect);
-        plot.on("plotly_deselect",    handleDeselect);
+        plot.on("plotly_click",    handlePlotlyClicks);
+        plot.on("plotly_selected", handlePlotlySelected);
+
+        // After zoom or completed pan, l2p() reflects the new range — redraw.
+        plot.on("plotly_relayout", function() {
+            if (lastSelectedPts) {
+                drawArrowsForEventData({ points: lastSelectedPts });
+            }
+        });
+
+        // Start pan tracking when the user presses on the drag layer.
+        var dragLayer = plot.querySelector(".nsewdrag");
+        if (dragLayer) {
+            dragLayer.addEventListener("mousedown", function(e) {
+                if (arrowBaseX === null) return;
+                panDragging     = true;
+                panStartClientX = e.clientX;
+                panStartClientY = e.clientY;
+            });
+        }
+
         plot._clickHandlerAttached = true;
         lastPlotFingerprint = plot._fullData[0].uid;
 
-        // Pre-create the arrow group so it's available immediately on first click
         ensureArrowGroup();
     }
 }
 
 
+// ── Document-level pan handlers ───────────────────────────────────────────────
+
+// During pan, Plotly moves the data layer visually but l2p() doesn't update
+// until the pan completes.  We track the mouse delta from pan-start and shift
+// the arrow by the same amount each frame.  Plotly pans 1:1 with mouse pixels,
+// so clientX/Y delta equals SVG pixel delta exactly.
+document.addEventListener("mousemove", function(e) {
+    if (!panDragging || arrowBaseX === null || arrowRafPending) return;
+    var dx = e.clientX - panStartClientX;
+    var dy = e.clientY - panStartClientY;
+    arrowRafPending = true;
+    requestAnimationFrame(function() {
+        shiftArrow(dx, dy);
+        arrowRafPending = false;
+    });
+});
+
+// On mouse-up, the pan is complete and l2p() now reflects the new axis range.
+// Redraw from data coordinates to get the exact final position.
+document.addEventListener("mouseup", function() {
+    if (panDragging && lastSelectedPts) {
+        drawArrowsForEventData({ points: lastSelectedPts });
+    }
+    panDragging     = false;
+    panStartClientX = null;
+    panStartClientY = null;
+});
+
+
 // ── Shiny message handlers ────────────────────────────────────────────────────
 
-// Sent by mod_selection.R when the "Reset Plot Selection" button is clicked.
 Shiny.addCustomMessageHandler("hideArrow", function(_) {
+    lastSelectedPts = null;
+    arrowBaseX      = null;
+    arrowBaseY      = null;
     clearArrows();
 });
 
-// Sent by mod_plot.R after the plot is fully re-rendered (e.g. after a filter
-// change).  Resets the handler-attached flag and the DOM group so that
-// attachPlotlyClickHandler() will re-attach to the new element.
-Shiny.addCustomMessageHandler("triggerAttachPlotlyClickHandler", function(_) {
+Shiny.addCustomMessageHandler("triggerAttachPlotlyClickHandler", function(msg) {
+    plotlySource = msg.source;
+    plotlyNs     = msg.ns;
     var plot = document.getElementById("egm-egm_plot");
     if (plot) {
         plot._clickHandlerAttached = false;

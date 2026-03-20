@@ -84,9 +84,12 @@ update_plotly_colors_opacities <- function(session, egm_data, selected_info) {
 # lists, matching the format returned by create_plotly_selected_info().
 create_plotly_click_info <- function(click_data) {
     if (is.null(click_data)) return(NULL)
+    # Guard: clicks on the heatmap or empty areas produce no customdata
+    if (length(click_data$customdata) == 0) return(NULL)
 
     # customdata is a list(x_label, y_label, trace_id) set in mod_plot.R
-    cd       <- click_data$customdata[[1]]
+    cd <- click_data$customdata[[1]]
+    if (length(cd) < 3) return(NULL)  # heatmap trace has no customdata structure
     trace_id <- cd[[3]]
 
     list(list(
@@ -242,15 +245,20 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         # Current selection: list of point-info lists, or NULL when nothing is selected
         clicked_info <- reactiveVal(NULL)
 
-        # Single-point click
-        observeEvent(event_data("plotly_click", source = plot_source_name), {
-            clicked_info(
-                create_plotly_click_info(event_data("plotly_click", source = plot_source_name))
-            )
+        # Single-point click.
+        # Uses a JS-sent trigger (input$plotly_click_trigger) rather than
+        # observing event_data() directly, so that clicking the same point
+        # after a reset is always detected.  The trigger is a random number
+        # that changes on every click; event_data() is read here to get the
+        # actual click payload (which plotly's own binding keeps up to date).
+        observeEvent(input$plotly_click_trigger, {
+            info <- create_plotly_click_info(event_data("plotly_click", source = plot_source_name))
+            if (!is.null(info)) clicked_info(info)
         })
 
-        # Lasso / box multi-point selection
-        observeEvent(event_data("plotly_selected", source = plot_source_name), {
+        # Lasso / box multi-point selection.
+        # Same trigger pattern as single-click above.
+        observeEvent(input$plotly_selected_trigger, {
             info <- create_plotly_selected_info(
                 event_data("plotly_selected", source = plot_source_name)
             )

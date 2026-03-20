@@ -181,6 +181,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
         config(
             responsive      = TRUE,
             displayModeBar  = TRUE,
+            doubleClick     = FALSE,
             modeBarButtonsToRemove = c(
                 "zoomIn2d", "zoomOut2d", "autoScale2d",
                 "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
@@ -330,7 +331,7 @@ mod_plot_server <- function(id, egm_data, toggle_states = NULL, plot_source_name
         # to re-attach its click/selection handlers to the newly rendered element.
         observeEvent(egm_data(), {
             req(egm_data())
-            session$sendCustomMessage("triggerAttachPlotlyClickHandler", list())
+            session$sendCustomMessage("triggerAttachPlotlyClickHandler", list(source = plot_source_name, ns = session$ns("")))
         })
     })
 }
