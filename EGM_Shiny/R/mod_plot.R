@@ -241,6 +241,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     egm_spec <- egm_spec %>% layout(
         margin     = list(t = 120, b = 0, l = 0, r = 0, pad = 10),
         autosize   = TRUE,
+        dragmode   = "select",
         showlegend = FALSE,
         xaxis = list(
             type      = "linear",

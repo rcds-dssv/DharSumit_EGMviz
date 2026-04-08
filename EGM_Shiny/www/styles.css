@@ -512,6 +512,15 @@ body {
     font-style: italic;
 }
 
+/* Shiny wraps uiOutput in a div with no flex properties, breaking the height
+   chain from .table-section down to .paper-list. Make it a flex pass-through. */
+#egm-table_content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 /* Paper list — flex: 1 fills whatever height remains after the sticky header */
 .paper-list {
     padding: 4px;
