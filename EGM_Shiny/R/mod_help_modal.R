@@ -79,7 +79,7 @@ help_modal_ui <- function() {
 
                 div(class = "modal-section",
                     tags$h3("Paper Panel"),
-                    tags$p("The panel on the right shows details for the papers in your current selection. At the top it displays the total paper count and colour-coded tags indicating which study types, themes, and confidence levels are represented. Below that, each paper appears as a card with its metadata fields."),
+                    tags$p("The panel on the right shows details for the papers in your current selection. At the top it displays the total paper count and color-coded tags indicating which study types, themes, and confidence levels are represented. Below that, each paper appears as a card with its metadata fields."),
                     tags$p("Use the Export button (top-right of the paper panel) to download citation information for the selected papers."),
                     tags$p("If the panel is not visible, open the Toggles dropdown and turn the Table toggle back on.")
                 )
