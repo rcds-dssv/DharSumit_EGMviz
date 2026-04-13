@@ -58,7 +58,7 @@ create_plotly_click_df <- function(egm_data, selected_info, x_col, y_col) {
     dplyr::bind_rows(dfs) %>% dplyr::distinct()
 }
 
-# Renders the table header: paper count and one colour-coded tag per unique
+# Renders the table header: paper count and one color-coded tag per unique
 # x-axis value, y-axis value, and evidence-category label in the selection.
 create_table_header_html <- function(selected_info, df) {
     if (is.null(selected_info) || is.null(df) || nrow(df) == 0) {
@@ -70,7 +70,7 @@ create_table_header_html <- function(selected_info, df) {
     unique_y <- unique(sapply(selected_info, function(pt) pt$clicked_y))
 
     # Collect unique (trace_id, display_text) pairs, skipping the "all" trace
-    # which has display_text = NULL and no dedicated colour tag.
+    # which has display_text = NULL and no dedicated color tag.
     trace_display_pairs <- unique(Filter(Negate(is.null), lapply(selected_info, function(pt) {
         dt <- egm_metadata[[pt$trace_id]]$display_text
         if (is.null(dt)) NULL else list(trace_id = pt$trace_id, display_text = dt)
@@ -83,7 +83,7 @@ create_table_header_html <- function(selected_info, df) {
             tags$div(class = "paper-tags",
                 lapply(unique_x, function(v) tags$span(class = "tag", v)),
                 lapply(unique_y, function(v) tags$span(class = "tag", v)),
-                # CSS class "tag high" / "tag medium" / etc. controls badge colour
+                # CSS class "tag high" / "tag medium" / etc. controls badge color
                 lapply(trace_display_pairs, function(td)
                     tags$span(class = paste("tag", td$trace_id), td$display_text))
             )
@@ -92,16 +92,24 @@ create_table_header_html <- function(selected_info, df) {
 }
 
 # Renders one card per paper row.  Columns in the `special` vector are handled
-# separately as colour-coded tags rather than plain label-value pairs.
+# separately as color-coded tags rather than plain label-value pairs.
 create_table_cards_html <- function(df) {
     if (is.null(df) || nrow(df) == 0) {
         return(div(class = "paper-list"))
     }
 
-    # Columns shown as colour-coded tags rather than plain metadata rows
-    special <- c(egm_definition$x_column, egm_definition$y_column, "review_confidence", "in_progress")
-    # Maps numeric review_confidence values (1/2/3) to labels
-    conf    <- c("Low", "Medium", "High")
+    x_col       <- egm_definition$x_column
+    y_col       <- egm_definition$y_column
+    conf_col    <- egm_definition$confidence_column_name  # NA when disabled
+    in_progress_col <- egm_definition$in_progress_column_name     # NA when disabled
+
+    # Columns shown as color-coded tags rather than plain metadata rows
+    special <- c(x_col, y_col)
+    if (has_confidence)   special <- c(special, conf_col)
+    if (has_in_progress)  special <- c(special, in_progress_col)
+
+    # Maps numeric confidence values (1/2/3) to labels
+    conf_labels <- c("Low", "Medium", "High")
 
     cards <- lapply(seq_len(nrow(df)), function(i) {
         row <- df[i, , drop = FALSE]
@@ -121,12 +129,22 @@ create_table_cards_html <- function(df) {
             }
         })
 
+        conf_tag <- if (has_confidence && !is.na(row[[conf_col]])) {
+            level <- row[[conf_col]]
+            tags$span(class = paste("tag", tolower(conf_labels[level])),
+                      paste(conf_labels[level], "Confidence"))
+        }
+
+        in_progress_tag <- if (has_in_progress && !is.na(row[[in_progress_col]]) &&
+                               row[[in_progress_col]] > 0) {
+            tags$span(class = "tag in_progress", "In Progress")
+        }
+
         special_tags <- tags$div(class = "paper-tags",
-            tags$span(class = "tag", row[[egm_definition$x_column]]),
-            tags$span(class = "tag", row[[egm_definition$y_column]]),
-            tags$span(class = paste("tag", tolower(conf[row$review_confidence])),
-                      paste(conf[row$review_confidence], "Confidence")),
-            if (row$in_progress > 0) tags$span(class = "tag ongoing", "In Progress")
+            tags$span(class = "tag", row[[x_col]]),
+            tags$span(class = "tag", row[[y_col]]),
+            conf_tag,
+            in_progress_tag
         )
 
         div(class = "paper-card",

@@ -41,14 +41,14 @@ egm_definition <- list(
     # If this column does not exist in the data, this functionality will be ignored.
     confidence_column_name = NA,
 
-    # The column name to use for the ongoing indicator.
+    # The column name to use for the in-progress indicator.
     # If this column does not exist in the data, this functionality will be ignored.
-    ongoing_column_name = NA,
+    in_progress_column_name = NA,
 
     # Color pallette
     # These values are also written to www/colors_runtime.css so the stylesheet
     # can reference them as CSS custom properties (var(--color-*)).
-    colors <- list(
+    colors = list(
         all_points        = "#1f77b4",
         high_confidence   = "#46A040",
         medium_confidence = "#FDB915",
@@ -75,18 +75,45 @@ writeLines(css, "www/colors_runtime.css")
 # EVIDENCE-CATEGORY METADATA
 # Each entry drives one plotly trace and one confidence-level tag in the table.
 #   display_text  label shown in table header tags (NULL = no tag)
-#   color         marker colour, taken from the palette above
+#   color         marker color, taken from the palette above
 #   index         0-based plotly trace index; must match create_egm_data() order
 #   offset_x/y    per-category jitter so overlapping dots stay readable
 # =============================================================================
 
-egm_metadata <- list(
-    all     = list(display_text = NULL,                color = colors$all_points,        index = 1, offset_x =  0.00, offset_y =  0.00),
-    high    = list(display_text = "High Confidence",   color = colors$high_confidence,   index = 2, offset_x =  0.35, offset_y =  0.35),
-    medium  = list(display_text = "Medium Confidence", color = colors$medium_confidence, index = 3, offset_x =  0.00, offset_y =  0.35),
-    low     = list(display_text = "Low Confidence",    color = colors$low_confidence,    index = 4, offset_x = -0.35, offset_y =  0.35),
-    ongoing = list(display_text = "In Progress",       color = colors$in_progress,       index = 5, offset_x = -0.17, offset_y = -0.35)
-)
+# Flags derived once at startup; used throughout the app to conditionally
+# enable confidence-level and in-progress trace/toggle/table features.
+has_confidence <- !is.na(egm_definition$confidence_column_name)
+has_in_progress <- !is.na(egm_definition$in_progress_column_name)
+
+# Evidence-category metadata built dynamically so trace indices stay correct
+# regardless of which optional categories are enabled.
+# Trace index layout: 0 = heatmap (always), 1 = all (always),
+# then confidence traces (if enabled), then in_progress (if enabled).
+local({
+    next_idx <- 2L
+    meta <- list(
+        all = list(display_text = NULL, color = egm_definition$colors$all_points,
+                   index = 1L, offset_x = 0.00, offset_y = 0.00)
+    )
+    if (has_confidence) {
+        meta$high   <- list(display_text = "High Confidence",
+                            color = egm_definition$colors$high_confidence,
+                            index = next_idx,      offset_x =  0.35, offset_y =  0.35)
+        meta$medium <- list(display_text = "Medium Confidence",
+                            color = egm_definition$colors$medium_confidence,
+                            index = next_idx + 1L, offset_x =  0.00, offset_y =  0.35)
+        meta$low    <- list(display_text = "Low Confidence",
+                            color = egm_definition$colors$low_confidence,
+                            index = next_idx + 2L, offset_x = -0.35, offset_y =  0.35)
+        next_idx <- next_idx + 3L
+    }
+    if (has_in_progress) {
+        meta$in_progress <- list(display_text = "In Progress",
+                                 color = egm_definition$colors$in_progress,
+                                 index = next_idx, offset_x = -0.17, offset_y = -0.35)
+    }
+    egm_metadata <<- meta
+})
 
 
 # =============================================================================
@@ -110,18 +137,24 @@ create_counts <- function(df) {
 # Build the named list of per-category dataframes that drives the whole app.
 # The names ("all", "high", ...) must match the keys in egm_metadata above.
 create_egm_data <- function(df_in) {
-    df_high    <- df_in %>% filter(review_confidence == 3)
-    df_medium  <- df_in %>% filter(review_confidence == 2)
-    df_low     <- df_in %>% filter(review_confidence == 1)
-    df_ongoing <- df_in %>% filter(in_progress == 1)
-
-    list(
-        all     = list(df = df_in,      counts = create_counts(df_in)),
-        high    = list(df = df_high,    counts = create_counts(df_high)),
-        medium  = list(df = df_medium,  counts = create_counts(df_medium)),
-        low     = list(df = df_low,     counts = create_counts(df_low)),
-        ongoing = list(df = df_ongoing, counts = create_counts(df_ongoing))
+    result <- list(
+        all = list(df = df_in, counts = create_counts(df_in))
     )
+    if (has_confidence) {
+        conf_col <- egm_definition$confidence_column_name
+        df_high   <- df_in %>% filter(!is.na(.data[[conf_col]]), .data[[conf_col]] == 3)
+        df_medium <- df_in %>% filter(!is.na(.data[[conf_col]]), .data[[conf_col]] == 2)
+        df_low    <- df_in %>% filter(!is.na(.data[[conf_col]]), .data[[conf_col]] == 1)
+        result$high   <- list(df = df_high,   counts = create_counts(df_high))
+        result$medium <- list(df = df_medium, counts = create_counts(df_medium))
+        result$low    <- list(df = df_low,    counts = create_counts(df_low))
+    }
+    if (has_in_progress) {
+        in_progress_col <- egm_definition$in_progress_column_name
+        df_in_progress <- df_in %>% filter(!is.na(.data[[in_progress_col]]), .data[[in_progress_col]] == 1)
+        result$in_progress <- list(df = df_in_progress, counts = create_counts(df_in_progress))
+    }
+    result
 }
 
 
@@ -135,7 +168,11 @@ df_all <- read_csv(egm_definition$datafile_path) %>%
     mutate(
         !!egm_definition$x_column := replace_na(.data[[egm_definition$x_column]], "None Given"),
         !!egm_definition$y_column := replace_na(.data[[egm_definition$y_column]], "None Given")
-    )
+    ) %>%
+    mutate(across(
+        all_of(egm_definition$filter_dropdown_list),
+        ~ ifelse(is.na(.), "None Given", as.character(.))
+    ))
 
 # Stored in the global env so mod_plot.R can reference it for consistent axis
 # sizing and marker scaling as the user applies filters.

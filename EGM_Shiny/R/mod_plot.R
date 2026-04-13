@@ -189,8 +189,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
 
     # ── Heatmap trace (trace index 0, rendered first / behind scatter dots) ──
     #
-    # Cells are coloured by the "all" paper count for the currently filtered data.
-    # zmax is fixed to the initial (unfiltered) maximum so the colour scale stays
+    # Cells are colored by the "all" paper count for the currently filtered data.
+    # zmax is fixed to the initial (unfiltered) maximum so the color scale stays
     # consistent as filters are applied — the same approach used for dot sizing.
     # Cells with a count of zero map to the transparent end of the scale.
     # The color ramps from transparent (0 papers) to a neutral gray (90th-percentile papers).
@@ -210,8 +210,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             zmin       = 0,
             zmax       = heatmap_zmax,
             colorscale = list(
-                list(0, colors$heatmap_min),  # 0 papers   → fully transparent
-                list(1, colors$heatmap_max)   # max papers → mid-gray
+                list(0, egm_definition$colors$heatmap_min),  # 0 papers   → fully transparent
+                list(1, egm_definition$colors$heatmap_max)   # max papers → mid-gray
             ),
             showscale  = FALSE,
             hoverinfo  = "none",
@@ -223,9 +223,9 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     # always starts with the same layer visibility the user last chose.
     for (name in names(egm_data)) {
         trace_visible <- if (is.null(toggle_states)) TRUE
-                         else if (name == "all")                            toggle_states$summary
-                         else if (name %in% c("high", "medium", "low"))     toggle_states$confidence
-                         else if (name == "ongoing")                        toggle_states$in_progress
+                         else if (name == "all")                        toggle_states$summary
+                         else if (name %in% c("high", "medium", "low")) toggle_states$confidence
+                         else if (name == "in_progress")                toggle_states$in_progress
                          else TRUE
 
         egm_spec <- add_trace_to_plotly_spec(
