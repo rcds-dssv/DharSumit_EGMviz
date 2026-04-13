@@ -154,9 +154,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     plot_width  <- n_x * cell_px + 260
     plot_height <- n_y * cell_px
 
-    # Convert column names like "Theme.Assignment" to "Theme Assignment" for display
-    clean_x_title <- str_replace_all(x_col, fixed("."), " ")
-    clean_y_title <- str_replace_all(y_col, fixed("."), " ")
+    clean_x_title <- egm_definition$x_column_display
+    clean_y_title <- egm_definition$y_column_display
 
     # Numeric axis levels fixed to the unfiltered data so category order is stable
     x_levels <- levels(factor(initial_egm_data$all$counts[[x_col]]))

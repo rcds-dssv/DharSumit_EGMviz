@@ -99,7 +99,7 @@ create_table_cards_html <- function(df) {
     }
 
     # Columns shown as colour-coded tags rather than plain metadata rows
-    special <- c("WorkType", "Theme.Assignment", "review_confidence", "in_progress")
+    special <- c(egm_definition$x_column, egm_definition$y_column, "review_confidence", "in_progress")
     # Maps numeric review_confidence values (1/2/3) to labels
     conf    <- c("Low", "Medium", "High")
 
@@ -122,8 +122,8 @@ create_table_cards_html <- function(df) {
         })
 
         special_tags <- tags$div(class = "paper-tags",
-            tags$span(class = "tag", row$WorkType),
-            tags$span(class = "tag", row$Theme.Assignment),
+            tags$span(class = "tag", row[[egm_definition$x_column]]),
+            tags$span(class = "tag", row[[egm_definition$y_column]]),
             tags$span(class = paste("tag", tolower(conf[row$review_confidence])),
                       paste(conf[row$review_confidence], "Confidence")),
             if (row$in_progress > 0) tags$span(class = "tag ongoing", "In Progress")

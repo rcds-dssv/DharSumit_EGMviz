@@ -109,8 +109,8 @@ server <- function(input, output, session) {
         egm_data         = egm_data,
         toggle_states    = toggle_states,
         plot_source_name = "egm_scatter_plot",
-        x_col            = "WorkType",
-        y_col            = "Theme.Assignment",
+        x_col            = egm_definition$x_column,
+        y_col            = egm_definition$y_column,
         n_col            = "n"
     )
 
@@ -119,8 +119,8 @@ server <- function(input, output, session) {
         egm_data          = egm_data,
         reset_egm_trigger = reset_egm_trigger,
         plot_source_name  = "egm_scatter_plot",
-        x_col             = "WorkType",
-        y_col             = "Theme.Assignment"
+        x_col             = egm_definition$x_column,
+        y_col             = egm_definition$y_column
     )
 
     mod_filter_server(

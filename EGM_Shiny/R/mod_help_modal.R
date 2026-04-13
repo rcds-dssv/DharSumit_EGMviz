@@ -29,7 +29,12 @@ help_modal_ui <- function() {
 
                 div(class = "modal-section",
                     tags$h3("Reading the Map"),
-                    tags$p("The horizontal axis (X) shows WorkType \u2014 the type of study or intervention. The vertical axis (Y) shows Theme.Assignment \u2014 the health outcome or research theme being addressed."),
+                    tags$p(paste0(
+                        "The horizontal axis (X) shows ", egm_definition$x_column_display,
+                        " \u2014 the type of study or intervention. The vertical axis (Y) shows ",
+                        egm_definition$y_column_display,
+                        " \u2014 the health outcome or research theme being addressed."
+                    )),
                     tags$p("Each bubble represents all papers at that combination of study type and theme. Larger bubbles mean more papers in that cell.")
                 ),
 

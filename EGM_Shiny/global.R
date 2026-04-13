@@ -12,27 +12,60 @@ library(plotly)
 library(stringr)
 library(shinyWidgets)
 
-
 # =============================================================================
-# COLOR PALETTE
-# Single source of truth for the five evidence categories.
-# These values are also written to www/colors_runtime.css so the stylesheet
-# can reference them as CSS custom properties (var(--color-*)).
+# DEFINITIONS
+# This section contains (hopefully) all of the variables one would need to 
+# change in order to implement basic tweaks to the dashboard
 # =============================================================================
 
-colors <- list(
-    all_points        = "#1f77b4",
-    high_confidence   = "#46A040",
-    medium_confidence = "#FDB915",
-    low_confidence    = "#CC3D3D",
-    in_progress       = "#FFC0CB",
-    heatmap_min       = "rgba(130,130,130,0)", # fully transparent
-    heatmap_max       = "rgba(130,130,130,1)"  # mid-gray
+egm_definition <- list(
+    # The relative path to the data file.
+    datafile_path = "data/AAHHC_Scoping_2026.csv",
+
+    # The column name to use for the x axis of the EGM figure and the display name 
+    x_column = "WorkType",
+    x_column_display = "Work Type",
+
+    # The column name to use for the y axis of the EGM figure and the display name 
+    y_column = "Theme",
+    y_column_display = "Theme",
+
+    # A list of column names within the data file to be used in filtering.
+    # Dropdowns will be created programmatically for each of these items.
+    # The first vector contains the column names.
+    # The second vector contains the desired display name.
+    filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType", "RT"),
+    filter_dropdown_list_display = c("US Origin", "Original Research Type", "Study Setting", "Observational Study", "Review Type", "RT"),
+
+    # The column name to use for the confidence level indicator.
+    # If this column does not exist in the data, this functionality will be ignored.
+    confidence_column_name = NA,
+
+    # The column name to use for the ongoing indicator.
+    # If this column does not exist in the data, this functionality will be ignored.
+    ongoing_column_name = NA,
+
+    # Color pallette
+    # These values are also written to www/colors_runtime.css so the stylesheet
+    # can reference them as CSS custom properties (var(--color-*)).
+    colors <- list(
+        all_points        = "#1f77b4",
+        high_confidence   = "#46A040",
+        medium_confidence = "#FDB915",
+        low_confidence    = "#CC3D3D",
+        in_progress       = "#FFC0CB",
+        heatmap_min       = "rgba(130,130,130,0)", # fully transparent
+        heatmap_max       = "rgba(130,130,130,1)"  # mid-gray
+    )
 )
 
+# =============================================================================
+# SAVE COLORS FOR CSS
+# to ensure consistent colors, write to a css file that can be used by html/js
+# =============================================================================
 css <- paste0(
     ":root {",
-    paste0("--color-", names(colors), ": ", unlist(colors), ";", collapse = ""),
+    paste0("--color-", names(egm_definition$colors), ": ", unlist(egm_definition$colors), ";", collapse = ""),
     "}"
 )
 writeLines(css, "www/colors_runtime.css")
@@ -61,14 +94,16 @@ egm_metadata <- list(
 # Pure transformation functions with no side effects.
 # =============================================================================
 
-# Count papers per (WorkType, Theme.Assignment) cell and place "Other" /
+# Count papers per (x_column, y_column) cell and place "Other" /
 # "None Given" categories at the end of each axis.
 create_counts <- function(df) {
+    x_col <- egm_definition$x_column
+    y_col <- egm_definition$y_column
     df %>%
-        count(WorkType, Theme.Assignment) %>%
+        count(.data[[x_col]], .data[[y_col]]) %>%
         mutate(
-            WorkType         = fct_relevel(factor(WorkType),        "Other", "None Given", after = Inf),
-            Theme.Assignment = fct_relevel(factor(Theme.Assignment), "None Given", "Other")
+            !!x_col := fct_relevel(factor(.data[[x_col]]), "Other", "None Given", after = Inf),
+            !!y_col := fct_relevel(factor(.data[[y_col]]), "None Given", "Other")
         )
 }
 
@@ -96,10 +131,10 @@ create_egm_data <- function(df_in) {
 
 # Read and lightly clean the papers dataset.
 # NA in the two axis columns would break the EGM grid, so replace with "None Given".
-df_all <- read_csv("data/batch3_resolved_amgedit.csv") %>%
+df_all <- read_csv(egm_definition$datafile_path) %>%
     mutate(
-        WorkType         = replace_na(WorkType,         "None Given"),
-        Theme.Assignment = replace_na(Theme.Assignment, "None Given")
+        !!egm_definition$x_column := replace_na(.data[[egm_definition$x_column]], "None Given"),
+        !!egm_definition$y_column := replace_na(.data[[egm_definition$y_column]], "None Given")
     )
 
 # Stored in the global env so mod_plot.R can reference it for consistent axis
