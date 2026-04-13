@@ -48,6 +48,10 @@ egm_definition <- list(
     # Column containing the paper title, used as the card heading.
     paper_title_column = "title",
 
+    # Column containing the DOI; used to build the doi.org link on each card.
+    # Set to NA to disable card linking.
+    paper_doi_column = "doi",
+
     # Remaining citation fields shown as a compact inline block below the title.
     # Display names are short labels shown before the value ("Vol.", "No.", "pp.").
     # An empty string ("") means the value is shown without a label.

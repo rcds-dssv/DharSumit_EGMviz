@@ -100,6 +100,7 @@ create_table_cards_html <- function(df) {
     if (is.null(df) || nrow(df) == 0) return(div(class = "paper-list"))
 
     title_col    <- egm_definition$paper_title_column
+    doi_col      <- egm_definition$paper_doi_column
     cite_cols    <- egm_definition$paper_citation_columns
     cite_display <- egm_definition$paper_citation_columns_display
     meta_cols    <- egm_definition$paper_meta_columns
@@ -176,9 +177,25 @@ create_table_cards_html <- function(df) {
         meta_section <- if (length(meta_items) > 0)
             div(class = "paper-meta-list", meta_items)
 
-        div(class = "paper-card",
-            div(class = "paper-card-contents",
-                title, citation, meta_section, egm_tags))
+        doi_val <- if (!is.null(doi_col) && !is.na(doi_col) &&
+                        doi_col %in% names(row) && !is_blank(row[[doi_col]])) {
+            as.character(row[[doi_col]])
+        } else NULL
+
+        card_inner <- div(class = "paper-card-contents",
+            title, citation, meta_section, egm_tags)
+
+        if (!is.null(doi_val)) {
+            tags$a(
+                href   = paste0("https://doi.org/", doi_val),
+                target = "_blank",
+                rel    = "noopener noreferrer",
+                class  = "paper-card paper-card-link",
+                card_inner
+            )
+        } else {
+            div(class = "paper-card", card_inner)
+        }
     })
 
     div(class = "paper-list", cards)

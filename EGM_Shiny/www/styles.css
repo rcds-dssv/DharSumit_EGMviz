@@ -545,6 +545,15 @@ body {
     transition: all 0.2s;
 }
 
+/* When a DOI is present the card is wrapped in an <a>; reset link styles
+   so it looks identical to the plain div version. */
+a.paper-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
 .paper-card:hover {
     border-color: var(--color-toggle-active-bg);
     box-shadow: 0 4px 12px var(--color-table-shadow);
