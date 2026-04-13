@@ -20,7 +20,7 @@ library(shinyWidgets)
 
 egm_definition <- list(
     # The relative path to the data file.
-    datafile_path = "data/AAHHC_Scoping_2026.csv",
+    datafile_path = "data/AAHHC_Scoping_2026_AMGclean.csv",
 
     # The column name to use for the x axis of the EGM figure and the display name 
     x_column = "WorkType",
@@ -35,7 +35,7 @@ egm_definition <- list(
     # The first vector contains the column names.
     # The second vector contains the desired display name.
     filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType"),
-    filter_dropdown_list_display = c("US Origin", "Original Research Type", "Study Setting", "Observational Study", "Review Type"),
+    filter_dropdown_list_display = c("US Origin", "Research Type", "Study Setting", "Observational Study", "Review Type"),
 
     # The column name to use for the confidence level indicator.
     # If this column does not exist in the data, this functionality will be ignored.
@@ -68,8 +68,8 @@ egm_definition <- list(
         medium_confidence = "#FDB915",
         low_confidence    = "#CC3D3D",
         in_progress       = "#FFC0CB",
-        heatmap_min       = "rgba(130,130,130,0)", # fully transparent
-        heatmap_max       = "rgba(130,130,130,1)"  # mid-gray
+        heatmap_min       = "rgba(31,119,180,0)",    # fully transparent (same hue as all_points)
+        heatmap_max       = "rgba(31,119,180,0.35)" # light blue tint at max count
     )
 )
 

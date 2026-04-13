@@ -385,6 +385,13 @@ body {
     fill: var(--color-clicked-point-marker);
 }
 
+/* Heatmap trace must not intercept mouse events -- the drag layer above it
+   handles all plot interactions.  Without this the selection cursor can
+   appear to "go behind" the heatmap cells. */
+.trace.heatmap {
+    pointer-events: none !important;
+}
+
 /* Highlight the active modebar tool button */
 .modebar-btn.active {
     background-color: rgba(0, 0, 0, 0.10) !important;
