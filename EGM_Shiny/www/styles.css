@@ -550,14 +550,37 @@ body {
     line-height: 1.4;
 }
 
+.paper-citation {
+    font-size: 11px;
+    color: var(--color-container-text);
+    margin-bottom: 8px;
+    line-height: 1.7;
+}
+
+.cite-label {
+    font-size: 10px;
+    color: var(--color-muted-text, #888);
+    margin-right: 1px;
+}
+
+
+.paper-meta-list {
+    margin-bottom: 16px;
+}
+
 .paper-meta {
     font-size: 11px;
     color: var(--color-container-text);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
-.paper-card-label {
-    font-weight: 700;
+.paper-meta-label {
+    color: var(--color-muted-text, #888);
+    margin-right: 4px;
+}
+
+.paper-meta-value {
+    font-weight: normal;
 }
 
 .paper-tags {

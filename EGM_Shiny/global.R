@@ -34,8 +34,8 @@ egm_definition <- list(
     # Dropdowns will be created programmatically for each of these items.
     # The first vector contains the column names.
     # The second vector contains the desired display name.
-    filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType", "RT"),
-    filter_dropdown_list_display = c("US Origin", "Original Research Type", "Study Setting", "Observational Study", "Review Type", "RT"),
+    filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType"),
+    filter_dropdown_list_display = c("US Origin", "Original Research Type", "Study Setting", "Observational Study", "Review Type"),
 
     # The column name to use for the confidence level indicator.
     # If this column does not exist in the data, this functionality will be ignored.
@@ -44,6 +44,20 @@ egm_definition <- list(
     # The column name to use for the in-progress indicator.
     # If this column does not exist in the data, this functionality will be ignored.
     in_progress_column_name = NA,
+
+    # Column containing the paper title, used as the card heading.
+    paper_title_column = "title",
+
+    # Remaining citation fields shown as a compact inline block below the title.
+    # Display names are short labels shown before the value ("Vol.", "No.", "pp.").
+    # An empty string ("") means the value is shown without a label.
+    paper_citation_columns         = c("authors", "year", "journal", "volume", "issue", "pages", "doi"),
+    paper_citation_columns_display = c("",        "",     "",        "Vol.",   "No.",   "pp.",   "DOI"),
+
+    # Additional metadata shown as labeled badge pills below the citation.
+    # Display names are the badge labels ("Setting: Hospital").
+    paper_meta_columns         = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType"),
+    paper_meta_columns_display = c("US Origin", "Research Type", "Study Setting", "Observational Study", "Review Type"),
 
     # Color pallette
     # These values are also written to www/colors_runtime.css so the stylesheet

@@ -91,64 +91,94 @@ create_table_header_html <- function(selected_info, df) {
     )
 }
 
-# Renders one card per paper row.  Columns in the `special` vector are handled
-# separately as color-coded tags rather than plain label-value pairs.
+# Renders one card per paper row with four distinct sections:
+#   1. Title        -- from egm_definition$paper_title_column (card heading)
+#   2. Citation     -- compact inline block with short labeled fields
+#   3. EGM tags     -- x/y axis values + optional confidence / in-progress badges
+#   4. Meta badges  -- labeled pills for paper_meta_columns ("Setting: Hospital")
 create_table_cards_html <- function(df) {
-    if (is.null(df) || nrow(df) == 0) {
-        return(div(class = "paper-list"))
-    }
+    if (is.null(df) || nrow(df) == 0) return(div(class = "paper-list"))
 
-    x_col       <- egm_definition$x_column
-    y_col       <- egm_definition$y_column
-    conf_col    <- egm_definition$confidence_column_name  # NA when disabled
-    in_progress_col <- egm_definition$in_progress_column_name     # NA when disabled
+    title_col    <- egm_definition$paper_title_column
+    cite_cols    <- egm_definition$paper_citation_columns
+    cite_display <- egm_definition$paper_citation_columns_display
+    meta_cols    <- egm_definition$paper_meta_columns
+    meta_display <- egm_definition$paper_meta_columns_display
+    x_col        <- egm_definition$x_column
+    y_col        <- egm_definition$y_column
+    conf_col     <- egm_definition$confidence_column_name
+    in_prog_col  <- egm_definition$in_progress_column_name
+    conf_labels  <- c("Low", "Medium", "High")
 
-    # Columns shown as color-coded tags rather than plain metadata rows
-    special <- c(x_col, y_col)
-    if (has_confidence)   special <- c(special, conf_col)
-    if (has_in_progress)  special <- c(special, in_progress_col)
-
-    # Maps numeric confidence values (1/2/3) to labels
-    conf_labels <- c("Low", "Medium", "High")
+    # TRUE when a value should be treated as absent in display
+    is_blank <- function(v) is.na(v) || trimws(as.character(v)) == "" ||
+                             as.character(v) == "None Given"
 
     cards <- lapply(seq_len(nrow(df)), function(i) {
         row <- df[i, , drop = FALSE]
 
-        # TODO: replace with the actual title column once data is finalised
-        title <- tags$h4("Paper Title Placeholder")
+        # -- 1. Title ----------------------------------------------------------
+        title_text <- if (!is.null(title_col) && !is.na(title_col) &&
+                         title_col %in% names(row) && !is_blank(row[[title_col]])) {
+            as.character(row[[title_col]])
+        } else "(No title)"
+        title <- tags$h4(title_text)
 
-        # Render non-special, non-NA columns as "Label: Value" rows.
-        # Column names are converted from CamelCase to "Camel Case" for display.
-        meta <- lapply(names(row), function(col) {
-            if (!is.na(row[[col]]) && !(col %in% special)) {
-                div(class = "paper-meta",
-                    span(class = "paper-card-label",
-                         paste0(trimws(gsub("([A-Z])", " \\1", col)), ":")),
-                    span(class = "paper-card-value", as.character(row[[col]]))
-                )
+        # -- 2. Citation block -------------------------------------------------
+        # Build inline field elements then join with middot separators.
+        cite_parts <- Filter(Negate(is.null), lapply(seq_along(cite_cols), function(j) {
+            col <- cite_cols[[j]]
+            lbl <- cite_display[[j]]
+            if (!(col %in% names(row)) || is_blank(row[[col]])) return(NULL)
+            val <- as.character(row[[col]])
+            if (nchar(lbl) == 0) {
+                span(class = "cite-value", val)
+            } else {
+                tagList(span(class = "cite-label", lbl), " ", span(class = "cite-value", val))
             }
-        })
+        }))
 
+        citation <- if (length(cite_parts) > 0) {
+            separated <- vector("list", length(cite_parts) * 2 - 1)
+            for (k in seq_along(cite_parts)) {
+                separated[[k * 2 - 1]] <- cite_parts[[k]]
+                if (k < length(cite_parts))
+                    separated[[k * 2]] <- span(class = "cite-sep", ", ")
+            }
+            div(class = "paper-citation", separated)
+        }
+
+        # -- 3. EGM attribute tags ---------------------------------------------
         conf_tag <- if (has_confidence && !is.na(row[[conf_col]])) {
             level <- row[[conf_col]]
             tags$span(class = paste("tag", tolower(conf_labels[level])),
                       paste(conf_labels[level], "Confidence"))
         }
-
-        in_progress_tag <- if (has_in_progress && !is.na(row[[in_progress_col]]) &&
-                               row[[in_progress_col]] > 0) {
+        in_progress_tag <- if (has_in_progress && !is_blank(row[[in_prog_col]]) &&
+                               row[[in_prog_col]] > 0) {
             tags$span(class = "tag in_progress", "In Progress")
         }
-
-        special_tags <- tags$div(class = "paper-tags",
+        egm_tags <- tags$div(class = "paper-tags",
             tags$span(class = "tag", row[[x_col]]),
             tags$span(class = "tag", row[[y_col]]),
-            conf_tag,
-            in_progress_tag
+            conf_tag, in_progress_tag
         )
 
+        # -- 4. Meta rows (italic label: value, one per line) -----------------
+        meta_items <- Filter(Negate(is.null), lapply(seq_along(meta_cols), function(j) {
+            col <- meta_cols[[j]]
+            lbl <- meta_display[[j]]
+            if (!(col %in% names(row)) || is_blank(row[[col]])) return(NULL)
+            div(class = "paper-meta",
+                tags$em(class = "paper-meta-label", paste0(lbl, ":")),
+                span(class = "paper-meta-value", as.character(row[[col]])))
+        }))
+        meta_section <- if (length(meta_items) > 0)
+            div(class = "paper-meta-list", meta_items)
+
         div(class = "paper-card",
-            div(class = "paper-card-contents", title, meta, special_tags))
+            div(class = "paper-card-contents",
+                title, citation, meta_section, egm_tags))
     })
 
     div(class = "paper-list", cards)
