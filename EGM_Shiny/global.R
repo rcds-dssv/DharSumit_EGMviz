@@ -11,6 +11,9 @@ library(forcats)
 library(plotly)
 library(stringr)
 library(shinyWidgets)
+library(writexl)
+library(jsonlite)
+library(httr)
 
 # =============================================================================
 # DEFINITIONS
@@ -62,6 +65,21 @@ egm_definition <- list(
     # Display names are the badge labels ("Setting: Hospital").
     paper_meta_columns         = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType"),
     paper_meta_columns_display = c("US Origin", "Research Type", "Study Setting", "Observational Study", "Review Type"),
+
+    # Mapping from data column names to standard BibTeX field names.
+    # Used by the export module to build BibEntry objects for BibTeX, APA,
+    # Vancouver, and RIS output.  Keys are column names in the CSV; values are
+    # BibTeX field names recognised by RefManageR.
+    paper_citation_bibtex_field_map = list(
+        title   = "title",
+        authors = "author",
+        year    = "year",
+        journal = "journal",
+        volume  = "volume",
+        issue   = "number",
+        pages   = "pages",
+        doi     = "doi"
+    ),
 
     # Color pallette
     # These values are also written to www/colors_runtime.css so the stylesheet

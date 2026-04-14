@@ -277,5 +277,12 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         output$table_content <- renderUI({
             create_table_cards_html(clicked_df())
         })
+
+        # Return the selection state so other modules (e.g. mod_export) can
+        # react to it without duplicating the observer logic.
+        list(
+            clicked_df   = clicked_df,
+            clicked_info = clicked_info
+        )
     })
 }

@@ -114,7 +114,7 @@ server <- function(input, output, session) {
         n_col            = "n"
     )
 
-    mod_click_server(
+    egm_selection <- mod_click_server(
         "egm",
         egm_data          = egm_data,
         reset_egm_trigger = reset_egm_trigger,
@@ -129,7 +129,11 @@ server <- function(input, output, session) {
         reset_egm_trigger = reset_egm_trigger
     )
 
-    mod_export_citations_server("egm")
+    mod_export_citations_server(
+        "egm",
+        clicked_df   = egm_selection$clicked_df,
+        clicked_info = egm_selection$clicked_info
+    )
 }
 
 
