@@ -239,9 +239,14 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
             if (!is.null(info)) clicked_info(info)
         }, ignoreNULL = TRUE)
 
-        # Dataframe of papers matching the current selection
+        # Dataframe of papers matching the current selection, sorted by author.
         clicked_df <- reactive({
-            create_plotly_click_df(egm_data(), clicked_info(), x_col, y_col)
+            df <- create_plotly_click_df(egm_data(), clicked_info(), x_col, y_col)
+            if (is.null(df) || nrow(df) == 0) return(df)
+            author_col <- egm_definition$paper_citation_columns[1]
+            if (author_col %in% names(df))
+                df <- df[order(df[[author_col]], na.last = TRUE), ]
+            df
         })
 
         # Double-click fires plotly_deselect (handled in plot_interactions.js),

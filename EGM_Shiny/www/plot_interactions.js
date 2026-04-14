@@ -54,11 +54,28 @@ function attachPlotlyClickHandler() {
 }
 
 
-// ── Shiny message handler ─────────────────────────────────────────────────────
+// ── Shiny message handlers ────────────────────────────────────────────────────
 
 Shiny.addCustomMessageHandler("triggerAttachPlotlyClickHandler", function(msg) {
     plotlyNs = msg.ns;
     var plot = document.getElementById("egm-egm_plot");
     if (plot) plot._clickHandlerAttached = false;
     attachPlotlyClickHandler();
+});
+
+// Programmatically click a hidden downloadButton by its namespaced id.
+// Used by mod_export.R to trigger the file download after DOI validation.
+Shiny.addCustomMessageHandler("triggerDownload", function(id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.click();
+});
+
+// Enable or disable a button by its namespaced id.
+// Used by mod_export.R to prevent duplicate API fetches from rapid re-clicks.
+Shiny.addCustomMessageHandler("setButtonDisabled", function(msg) {
+    var btn = document.getElementById(msg.id);
+    if (!btn) return;
+    btn.disabled    = msg.disabled;
+    btn.style.opacity = msg.disabled ? "0.5"        : "";
+    btn.style.cursor  = msg.disabled ? "not-allowed" : "";
 });

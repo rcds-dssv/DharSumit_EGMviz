@@ -927,3 +927,25 @@ a.paper-card-link {
     .modal-body::-webkit-scrollbar-thumb  { background-color: var(--color-plot-path); border-radius: 4px; }
     .modal-body::-webkit-scrollbar-button { display: none; }
 }
+
+/* ── Export modal body ──────────────────────────────────────────────────────── */
+
+.modal-body p {
+    margin: 0 0 6px 0;
+    font-size: 13px;
+    color: var(--color-body-text);
+    opacity: 0.95;
+}
+
+.modal-body ul {
+    margin: 2px 0 10px 0;
+    padding-left: 18px;
+}
+
+.modal-body li {
+    font-size: 13px;
+    color: var(--color-body-text);
+    line-height: 1.55;
+    margin-bottom: 3px;
+    opacity: 0.9;
+}
