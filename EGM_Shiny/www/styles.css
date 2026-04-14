@@ -231,6 +231,17 @@ body {
     background: var(--color-container-border);
 }
 
+.filters-reset-row {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 4px;
+}
+
+.filters-reset-btn {
+    width: auto !important;
+    padding: 6px 14px;
+}
+
 /* ── Toggles panel ───────────────────────────────────────────────────── */
 
 .toggles-details[open] .toggles-switches {

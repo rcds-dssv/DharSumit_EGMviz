@@ -30,7 +30,12 @@ mod_filter_ui <- function(id) {
     tags$details(
         class = "filters-details dropdown-details",
         tags$summary("Filters"),
-        div(class = "filters-dropdown", filter_items)
+        div(class = "filters-dropdown",
+            filter_items,
+            div(class = "filters-reset-row",
+                actionButton(ns("reset_filters"), "Reset all", class = "reset-btn filters-reset-btn")
+            )
+        )
     )
 }
 
@@ -48,6 +53,12 @@ mod_filter_server <- function(id, egm_data, reset_egm_trigger) {
 
         # Re-run whenever any filter dropdown changes.
         # ignoreInit = TRUE prevents a spurious reset when the app first loads.
+        observeEvent(input$reset_filters, {
+            for (col in filter_cols) {
+                updateSelectInput(session, col, selected = "Any")
+            }
+        })
+
         observeEvent(filter_values(), {
             df_filter <- df_all
 
