@@ -57,6 +57,12 @@ shapes_for_plotly <- function(n_x, n_y) {
 #                    read by mod_selection.R when the user clicks or lassos
 add_to_counts_df_for_plotly <- function(count_df, x_col, y_col, x_levels, y_levels,
                                         label, x_offset, y_offset) {
+    if (nrow(count_df) == 0) {
+        count_df$x_num      <- numeric(0)
+        count_df$y_num      <- numeric(0)
+        count_df$customdata <- list()
+        return(count_df)
+    }
     count_df$x_num <- match(count_df[[x_col]], x_levels) - 1 + x_offset
     count_df$y_num <- match(count_df[[y_col]], y_levels) - 1 + y_offset
     count_df <- count_df %>%

@@ -108,7 +108,7 @@ help_modal_ui <- function() {
 
                 div(class = "modal-section",
                     tags$h3("Selecting Papers"),
-                    tags$p("Use the lasso or box-select tool in the plotly toolbar (top-right corner of the chart). Click and drag to draw a selection around one or more bubbles \u2014 the paper panel on the right will populate with matching records, sorted by first author."),
+                    tags$p("Use the box-select or lasso tool in the plotly toolbar (top-right corner of the chart). Click and drag to draw a selection around one or more bubbles \u2014 the paper panel on the right will populate with matching records, sorted by first author."),
                     tags$p("Clicking directly on the chart without using a selection tool does not trigger the paper panel."),
                     tags$p("To clear your selection, double-click anywhere on the chart.")
                 ),
