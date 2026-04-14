@@ -198,7 +198,7 @@ body {
 }
 
 .filters-item .shiny-input-container {
-    width: 80px !important;
+    width: 160px !important;
     font-size: 12px;
     margin-bottom: 0 !important;
 }
@@ -212,7 +212,7 @@ body {
     border-radius: 4px;
     font-size: 12px;
     box-shadow: none !important;
-    width: 80px;
+    width: 160px;
 }
 
 .filters-dropdown .selectize-dropdown {
@@ -222,6 +222,7 @@ body {
 }
 
 .filters-dropdown .selectize-dropdown-content .option {
+    background: var(--color-body-bg);
     color: var(--color-body-text);
     padding: 8px 12px;
 }
@@ -241,7 +242,7 @@ body {
     border: 1px solid var(--color-container-border);
     border-radius: 8px;
     padding: 12px 16px;
-    min-width: 180px;
+    min-width: 160px;
 }
 
 .toggles-switches {

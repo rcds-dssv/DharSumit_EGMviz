@@ -67,7 +67,7 @@ egm_definition <- list(
     # These values are also written to www/colors_runtime.css so the stylesheet
     # can reference them as CSS custom properties (var(--color-*)).
     colors = list(
-        all_points        = "#1f77b4",
+        all_points        = "#30a9ff",
         high_confidence   = "#46A040",
         medium_confidence = "#FDB915",
         low_confidence    = "#CC3D3D",
@@ -181,15 +181,15 @@ create_egm_data <- function(df_in) {
 # =============================================================================
 
 # Read and lightly clean the papers dataset.
-# NA in the two axis columns would break the EGM grid, so replace with "None Given".
+# NA in the two axis columns would break the EGM grid, so replace with "Other".
 df_all <- read_csv(egm_definition$datafile_path) %>%
     mutate(
-        !!egm_definition$x_column := replace_na(.data[[egm_definition$x_column]], "None Given"),
-        !!egm_definition$y_column := replace_na(.data[[egm_definition$y_column]], "None Given")
+        !!egm_definition$x_column := replace_na(.data[[egm_definition$x_column]], "Other"),
+        !!egm_definition$y_column := replace_na(.data[[egm_definition$y_column]], "Other")
     ) %>%
     mutate(across(
         all_of(egm_definition$filter_dropdown_list),
-        ~ ifelse(is.na(.), "None Given", as.character(.))
+        ~ ifelse(is.na(.), "Other", as.character(.))
     ))
 
 # Stored in the global env so mod_plot.R can reference it for consistent axis

@@ -62,7 +62,7 @@ create_plotly_click_df <- function(egm_data, selected_info, x_col, y_col) {
 # x-axis value, y-axis value, and evidence-category label in the selection.
 create_table_header_html <- function(selected_info, df) {
     if (is.null(selected_info) || is.null(df) || nrow(df) == 0) {
-        return(tags$p(class = "info", "Use the lasso or box-select tool to display papers"))
+        return(tags$p(class = "info", "Use the lasso or box-select tool to display papers."))
     }
 
     n        <- nrow(df)
@@ -77,6 +77,8 @@ create_table_header_html <- function(selected_info, df) {
     })))
 
     tagList(
+        tags$p(class = "info", "Double click within the plot to deselect."),
+        br(),
         tags$p(paste("Number of papers:", n)),
         tags$div(
             tags$p("Selection attributes:"),
@@ -216,6 +218,11 @@ mod_click_plot_content_ui <- function(id) {
     uiOutput(ns("table_content"))
 }
 
+mod_click_reset_ui <- function(id) {
+    ns <- NS(id)
+    actionButton(ns("reset_plot"), "Reset Selection", class = "reset-btn")
+}
+
 mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col) {
     moduleServer(id, function(input, output, session) {
 
@@ -243,10 +250,24 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
             clicked_info(NULL)
         })
 
-        # Filter changes increment reset_egm_trigger and trigger a full plot
-        # re-render, which naturally clears selections.  Clear the table too.
+        # Reset button: increment the shared trigger so mod_filter_server also
+        # reacts (they share the same reset path).
+        observeEvent(input$reset_plot, {
+            reset_egm_trigger(reset_egm_trigger() + 1)
+        })
+
+        # Filter changes and the Reset button both increment reset_egm_trigger.
+        # A filter change also triggers a full plot re-render, so the proxy
+        # relayout is harmless overlap; dragmode = "select" is set explicitly
+        # to recover from any drag-state confusion caused by the re-render racing
+        # with prior proxy calls.
         observeEvent(reset_egm_trigger(), {
             clicked_info(NULL)
+            plotlyProxy("egm_plot", session) %>%
+                plotlyProxyInvoke("relayout", list(
+                    selections = list(),
+                    dragmode   = "select"
+                ))
         }, ignoreInit = TRUE)
 
         output$table_header <- renderUI({
