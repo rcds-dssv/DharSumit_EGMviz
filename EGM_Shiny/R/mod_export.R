@@ -210,6 +210,28 @@ mod_export_citations_ui <- function(id) {
         tags$div(
             style = "position:fixed; top:-200px; left:-200px; width:0; height:0; overflow:hidden; pointer-events:none;",
             downloadButton(ns("download"), "")
+        ),
+
+        # Processing overlay: shown immediately by a JS click handler when a
+        # citation-format download starts.  Closed by the triggerDownload or
+        # setButtonDisabled(false) JS handlers once R finishes.
+        # The progress bar is an indeterminate CSS animation — R's WebSocket
+        # messages are batched until the observer returns, so real-time
+        # percentage updates are not possible in synchronous Shiny.
+        tags$div(
+            class = "modal-overlay export-processing-overlay",
+            tags$div(
+                class = "modal-content export-processing-content",
+                div(
+                    class = "modal-body export-processing-body",
+                    tags$p(class = "export-processing-title",
+                           "Fetching citations\u2026"),
+                    div(class = "export-progress-track",
+                        div(class = "export-progress-bar")),
+                    tags$p(class = "export-processing-note",
+                           "Please wait. This box will close automatically when the download begins.")
+                )
+            )
         )
     )
 }
