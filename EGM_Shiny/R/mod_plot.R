@@ -57,6 +57,12 @@ shapes_for_plotly <- function(n_x, n_y) {
 #                    read by mod_selection.R when the user clicks or lassos
 add_to_counts_df_for_plotly <- function(count_df, x_col, y_col, x_levels, y_levels,
                                         label, x_offset, y_offset) {
+    if (nrow(count_df) == 0) {
+        count_df$x_num      <- numeric(0)
+        count_df$y_num      <- numeric(0)
+        count_df$customdata <- list()
+        return(count_df)
+    }
     count_df$x_num <- match(count_df[[x_col]], x_levels) - 1 + x_offset
     count_df$y_num <- match(count_df[[y_col]], y_levels) - 1 + y_offset
     count_df <- count_df %>%
@@ -95,8 +101,8 @@ build_heatmap_z <- function(counts, x_col, y_col, n_col, x_levels, y_levels) {
 add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col,
                                      clean_x_title, clean_y_title, color,
                                      visible = TRUE) {
-    desired_max_px <- 14
-    desired_min_px <- 1
+
+    
     # Use the unfiltered data for the cap so sizes stay consistent when filters change
     size_cap <- quantile(initial_egm_data$all$counts[[n_col]], 0.99, na.rm = TRUE)
 
@@ -105,7 +111,7 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col,
             clamped     = pmin(.data[[n_col]], size_cap),
             marker_size = scales::rescale(
                 sqrt(clamped),
-                to   = c(desired_min_px, desired_max_px),
+                to   = c(egm_definition$plot_points_desired_min_px, egm_definition$plot_points_desired_max_px),
                 from = c(0, sqrt(size_cap))
             )
         )
@@ -154,9 +160,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     plot_width  <- n_x * cell_px + 260
     plot_height <- n_y * cell_px
 
-    # Convert column names like "Theme.Assignment" to "Theme Assignment" for display
-    clean_x_title <- str_replace_all(x_col, fixed("."), " ")
-    clean_y_title <- str_replace_all(y_col, fixed("."), " ")
+    clean_x_title <- egm_definition$x_column_display
+    clean_y_title <- egm_definition$y_column_display
 
     # Numeric axis levels fixed to the unfiltered data so category order is stable
     x_levels <- levels(factor(initial_egm_data$all$counts[[x_col]]))
@@ -178,7 +183,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
 
     # Base figure + toolbar config
     egm_spec <- plot_ly(source = plot_source_name) %>%
-        config(
+        plotly::config(
             responsive      = TRUE,
             displayModeBar  = TRUE,
             doubleClick     = FALSE,
@@ -190,8 +195,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
 
     # ── Heatmap trace (trace index 0, rendered first / behind scatter dots) ──
     #
-    # Cells are coloured by the "all" paper count for the currently filtered data.
-    # zmax is fixed to the initial (unfiltered) maximum so the colour scale stays
+    # Cells are colored by the "all" paper count for the currently filtered data.
+    # zmax is fixed to the initial (unfiltered) maximum so the color scale stays
     # consistent as filters are applied — the same approach used for dot sizing.
     # Cells with a count of zero map to the transparent end of the scale.
     # The color ramps from transparent (0 papers) to a neutral gray (90th-percentile papers).
@@ -211,8 +216,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             zmin       = 0,
             zmax       = heatmap_zmax,
             colorscale = list(
-                list(0, colors$heatmap_min),  # 0 papers   → fully transparent
-                list(1, colors$heatmap_max)   # max papers → mid-gray
+                list(0, egm_definition$colors$heatmap_min),  # 0 papers   → fully transparent
+                list(1, egm_definition$colors$heatmap_max)   # max papers → mid-gray
             ),
             showscale  = FALSE,
             hoverinfo  = "none",
@@ -224,9 +229,9 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     # always starts with the same layer visibility the user last chose.
     for (name in names(egm_data)) {
         trace_visible <- if (is.null(toggle_states)) TRUE
-                         else if (name == "all")                            toggle_states$summary
-                         else if (name %in% c("high", "medium", "low"))     toggle_states$confidence
-                         else if (name == "ongoing")                        toggle_states$in_progress
+                         else if (name == "all")                        toggle_states$summary
+                         else if (name %in% c("high", "medium", "low")) toggle_states$confidence
+                         else if (name == "in_progress")                toggle_states$in_progress
                          else TRUE
 
         egm_spec <- add_trace_to_plotly_spec(

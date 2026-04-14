@@ -54,11 +54,60 @@ function attachPlotlyClickHandler() {
 }
 
 
-// ── Shiny message handler ─────────────────────────────────────────────────────
+// ── Shiny message handlers ────────────────────────────────────────────────────
 
 Shiny.addCustomMessageHandler("triggerAttachPlotlyClickHandler", function(msg) {
     plotlyNs = msg.ns;
     var plot = document.getElementById("egm-egm_plot");
     if (plot) plot._clickHandlerAttached = false;
     attachPlotlyClickHandler();
+});
+
+// ── Export processing overlay ─────────────────────────────────────────────────
+
+// Show or hide the citation-fetch processing overlay.
+// The overlay is opened client-side on button click (before R even receives
+// the event) so the user gets immediate feedback.  It is closed when R sends
+// either triggerDownload (success) or setButtonDisabled(false) (all exit paths).
+function setExportProcessingOverlay(visible) {
+    var overlay = document.querySelector(".export-processing-overlay");
+    if (!overlay) return;
+    if (visible) overlay.classList.add("open");
+    else         overlay.classList.remove("open");
+}
+
+// When the Download actionButton is clicked, show the overlay immediately if
+// a citation format (not csv/xlsx/json) is currently selected.
+// Uses event delegation so the dynamically rendered button is always found.
+document.addEventListener("click", function(e) {
+    var btn = e.target.closest("button[id$='-check_download']");
+    if (!btn) return;
+    var ns    = btn.id.replace(/-check_download$/, "");
+    var fmtEl = document.getElementById(ns + "-export_format");
+    if (!fmtEl) return;
+    if (["csv", "xlsx", "json"].indexOf(fmtEl.value) === -1) {
+        setExportProcessingOverlay(true);
+    }
+});
+
+// Programmatically click a hidden downloadButton by its namespaced id.
+// Used by mod_export.R to trigger the file download after DOI validation.
+// Also closes the processing overlay (success path).
+Shiny.addCustomMessageHandler("triggerDownload", function(id) {
+    setExportProcessingOverlay(false);
+    var btn = document.getElementById(id);
+    if (btn) btn.click();
+});
+
+// Enable or disable a button by its namespaced id.
+// Used by mod_export.R to prevent duplicate API fetches from rapid re-clicks.
+// Re-enabling also closes the processing overlay (covers all exit paths,
+// including errors and the all-papers-failed case).
+Shiny.addCustomMessageHandler("setButtonDisabled", function(msg) {
+    var btn = document.getElementById(msg.id);
+    if (!btn) return;
+    btn.disabled      = msg.disabled;
+    btn.style.opacity = msg.disabled ? "0.5"        : "";
+    btn.style.cursor  = msg.disabled ? "not-allowed" : "";
+    if (!msg.disabled) setExportProcessingOverlay(false);
 });

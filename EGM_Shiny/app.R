@@ -109,18 +109,18 @@ server <- function(input, output, session) {
         egm_data         = egm_data,
         toggle_states    = toggle_states,
         plot_source_name = "egm_scatter_plot",
-        x_col            = "WorkType",
-        y_col            = "Theme.Assignment",
+        x_col            = egm_definition$x_column,
+        y_col            = egm_definition$y_column,
         n_col            = "n"
     )
 
-    mod_click_server(
+    egm_selection <- mod_click_server(
         "egm",
         egm_data          = egm_data,
         reset_egm_trigger = reset_egm_trigger,
         plot_source_name  = "egm_scatter_plot",
-        x_col             = "WorkType",
-        y_col             = "Theme.Assignment"
+        x_col             = egm_definition$x_column,
+        y_col             = egm_definition$y_column
     )
 
     mod_filter_server(
@@ -129,7 +129,11 @@ server <- function(input, output, session) {
         reset_egm_trigger = reset_egm_trigger
     )
 
-    mod_export_citations_server("egm")
+    mod_export_citations_server(
+        "egm",
+        clicked_df   = egm_selection$clicked_df,
+        clicked_info = egm_selection$clicked_info
+    )
 }
 
 

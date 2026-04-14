@@ -58,11 +58,11 @@ create_plotly_click_df <- function(egm_data, selected_info, x_col, y_col) {
     dplyr::bind_rows(dfs) %>% dplyr::distinct()
 }
 
-# Renders the table header: paper count and one colour-coded tag per unique
+# Renders the table header: paper count and one color-coded tag per unique
 # x-axis value, y-axis value, and evidence-category label in the selection.
 create_table_header_html <- function(selected_info, df) {
     if (is.null(selected_info) || is.null(df) || nrow(df) == 0) {
-        return(tags$p(class = "info", "Use the lasso or box-select tool to display papers"))
+        return(tags$p(class = "info", "Use the lasso or box-select tool to display papers."))
     }
 
     n        <- nrow(df)
@@ -70,20 +70,22 @@ create_table_header_html <- function(selected_info, df) {
     unique_y <- unique(sapply(selected_info, function(pt) pt$clicked_y))
 
     # Collect unique (trace_id, display_text) pairs, skipping the "all" trace
-    # which has display_text = NULL and no dedicated colour tag.
+    # which has display_text = NULL and no dedicated color tag.
     trace_display_pairs <- unique(Filter(Negate(is.null), lapply(selected_info, function(pt) {
         dt <- egm_metadata[[pt$trace_id]]$display_text
         if (is.null(dt)) NULL else list(trace_id = pt$trace_id, display_text = dt)
     })))
 
     tagList(
+        tags$p(class = "info", "Double click within the plot to deselect."),
+        br(),
         tags$p(paste("Number of papers:", n)),
         tags$div(
             tags$p("Selection attributes:"),
             tags$div(class = "paper-tags",
                 lapply(unique_x, function(v) tags$span(class = "tag", v)),
                 lapply(unique_y, function(v) tags$span(class = "tag", v)),
-                # CSS class "tag high" / "tag medium" / etc. controls badge colour
+                # CSS class "tag high" / "tag medium" / etc. controls badge color
                 lapply(trace_display_pairs, function(td)
                     tags$span(class = paste("tag", td$trace_id), td$display_text))
             )
@@ -91,46 +93,111 @@ create_table_header_html <- function(selected_info, df) {
     )
 }
 
-# Renders one card per paper row.  Columns in the `special` vector are handled
-# separately as colour-coded tags rather than plain label-value pairs.
+# Renders one card per paper row with four distinct sections:
+#   1. Title        -- from egm_definition$paper_title_column (card heading)
+#   2. Citation     -- compact inline block with short labeled fields
+#   3. EGM tags     -- x/y axis values + optional confidence / in-progress badges
+#   4. Meta badges  -- labeled pills for paper_meta_columns ("Setting: Hospital")
 create_table_cards_html <- function(df) {
-    if (is.null(df) || nrow(df) == 0) {
-        return(div(class = "paper-list"))
-    }
+    if (is.null(df) || nrow(df) == 0) return(div(class = "paper-list"))
 
-    # Columns shown as colour-coded tags rather than plain metadata rows
-    special <- c("WorkType", "Theme.Assignment", "review_confidence", "in_progress")
-    # Maps numeric review_confidence values (1/2/3) to labels
-    conf    <- c("Low", "Medium", "High")
+    title_col    <- egm_definition$paper_title_column
+    doi_col      <- egm_definition$paper_doi_column
+    cite_cols    <- egm_definition$paper_citation_columns
+    cite_display <- egm_definition$paper_citation_columns_display
+    meta_cols    <- egm_definition$paper_meta_columns
+    meta_display <- egm_definition$paper_meta_columns_display
+    x_col        <- egm_definition$x_column
+    y_col        <- egm_definition$y_column
+    conf_col     <- egm_definition$confidence_column_name
+    in_prog_col  <- egm_definition$in_progress_column_name
+    conf_labels  <- c("Low", "Medium", "High")
+
+    # TRUE when a value should be treated as absent in display
+    is_blank <- function(v) is.na(v) || trimws(as.character(v)) == "" ||
+                             as.character(v) == "None Given"
 
     cards <- lapply(seq_len(nrow(df)), function(i) {
         row <- df[i, , drop = FALSE]
 
-        # TODO: replace with the actual title column once data is finalised
-        title <- tags$h4("Paper Title Placeholder")
+        # -- 1. Title ----------------------------------------------------------
+        title_text <- if (!is.null(title_col) && !is.na(title_col) &&
+                         title_col %in% names(row) && !is_blank(row[[title_col]])) {
+            as.character(row[[title_col]])
+        } else "(No title)"
+        title <- tags$h4(title_text)
 
-        # Render non-special, non-NA columns as "Label: Value" rows.
-        # Column names are converted from CamelCase to "Camel Case" for display.
-        meta <- lapply(names(row), function(col) {
-            if (!is.na(row[[col]]) && !(col %in% special)) {
-                div(class = "paper-meta",
-                    span(class = "paper-card-label",
-                         paste0(trimws(gsub("([A-Z])", " \\1", col)), ":")),
-                    span(class = "paper-card-value", as.character(row[[col]]))
-                )
+        # -- 2. Citation block -------------------------------------------------
+        # Build inline field elements then join with middot separators.
+        cite_parts <- Filter(Negate(is.null), lapply(seq_along(cite_cols), function(j) {
+            col <- cite_cols[[j]]
+            lbl <- cite_display[[j]]
+            if (!(col %in% names(row)) || is_blank(row[[col]])) return(NULL)
+            val <- as.character(row[[col]])
+            if (nchar(lbl) == 0) {
+                span(class = "cite-value", val)
+            } else {
+                tagList(span(class = "cite-label", lbl), " ", span(class = "cite-value", val))
             }
-        })
+        }))
 
-        special_tags <- tags$div(class = "paper-tags",
-            tags$span(class = "tag", row$WorkType),
-            tags$span(class = "tag", row$Theme.Assignment),
-            tags$span(class = paste("tag", tolower(conf[row$review_confidence])),
-                      paste(conf[row$review_confidence], "Confidence")),
-            if (row$in_progress > 0) tags$span(class = "tag ongoing", "In Progress")
+        citation <- if (length(cite_parts) > 0) {
+            separated <- vector("list", length(cite_parts) * 2 - 1)
+            for (k in seq_along(cite_parts)) {
+                separated[[k * 2 - 1]] <- cite_parts[[k]]
+                if (k < length(cite_parts))
+                    separated[[k * 2]] <- span(class = "cite-sep", ", ")
+            }
+            div(class = "paper-citation", separated)
+        }
+
+        # -- 3. EGM attribute tags ---------------------------------------------
+        conf_tag <- if (has_confidence && !is.na(row[[conf_col]])) {
+            level <- row[[conf_col]]
+            tags$span(class = paste("tag", tolower(conf_labels[level])),
+                      paste(conf_labels[level], "Confidence"))
+        }
+        in_progress_tag <- if (has_in_progress && !is_blank(row[[in_prog_col]]) &&
+                               row[[in_prog_col]] > 0) {
+            tags$span(class = "tag in_progress", "In Progress")
+        }
+        egm_tags <- tags$div(class = "paper-tags",
+            tags$span(class = "tag", row[[x_col]]),
+            tags$span(class = "tag", row[[y_col]]),
+            conf_tag, in_progress_tag
         )
 
-        div(class = "paper-card",
-            div(class = "paper-card-contents", title, meta, special_tags))
+        # -- 4. Meta rows (italic label: value, one per line) -----------------
+        meta_items <- Filter(Negate(is.null), lapply(seq_along(meta_cols), function(j) {
+            col <- meta_cols[[j]]
+            lbl <- meta_display[[j]]
+            if (!(col %in% names(row)) || is_blank(row[[col]])) return(NULL)
+            div(class = "paper-meta",
+                tags$em(class = "paper-meta-label", paste0(lbl, ":")),
+                span(class = "paper-meta-value", as.character(row[[col]])))
+        }))
+        meta_section <- if (length(meta_items) > 0)
+            div(class = "paper-meta-list", meta_items)
+
+        doi_val <- if (!is.null(doi_col) && !is.na(doi_col) &&
+                        doi_col %in% names(row) && !is_blank(row[[doi_col]])) {
+            as.character(row[[doi_col]])
+        } else NULL
+
+        card_inner <- div(class = "paper-card-contents",
+            title, citation, meta_section, egm_tags)
+
+        if (!is.null(doi_val)) {
+            tags$a(
+                href   = paste0("https://doi.org/", doi_val),
+                target = "_blank",
+                rel    = "noopener noreferrer",
+                class  = "paper-card paper-card-link",
+                card_inner
+            )
+        } else {
+            div(class = "paper-card", card_inner)
+        }
     })
 
     div(class = "paper-list", cards)
@@ -151,6 +218,11 @@ mod_click_plot_content_ui <- function(id) {
     uiOutput(ns("table_content"))
 }
 
+mod_click_reset_ui <- function(id) {
+    ns <- NS(id)
+    actionButton(ns("reset_plot"), "Reset Selection", class = "reset-btn")
+}
+
 mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col) {
     moduleServer(id, function(input, output, session) {
 
@@ -167,9 +239,14 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
             if (!is.null(info)) clicked_info(info)
         }, ignoreNULL = TRUE)
 
-        # Dataframe of papers matching the current selection
+        # Dataframe of papers matching the current selection, sorted by author.
         clicked_df <- reactive({
-            create_plotly_click_df(egm_data(), clicked_info(), x_col, y_col)
+            df <- create_plotly_click_df(egm_data(), clicked_info(), x_col, y_col)
+            if (is.null(df) || nrow(df) == 0) return(df)
+            author_col <- egm_definition$paper_citation_columns[1]
+            if (author_col %in% names(df))
+                df <- df[order(df[[author_col]], na.last = TRUE), ]
+            df
         })
 
         # Double-click fires plotly_deselect (handled in plot_interactions.js),
@@ -178,10 +255,24 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
             clicked_info(NULL)
         })
 
-        # Filter changes increment reset_egm_trigger and trigger a full plot
-        # re-render, which naturally clears selections.  Clear the table too.
+        # Reset button: increment the shared trigger so mod_filter_server also
+        # reacts (they share the same reset path).
+        observeEvent(input$reset_plot, {
+            reset_egm_trigger(reset_egm_trigger() + 1)
+        })
+
+        # Filter changes and the Reset button both increment reset_egm_trigger.
+        # A filter change also triggers a full plot re-render, so the proxy
+        # relayout is harmless overlap; dragmode = "select" is set explicitly
+        # to recover from any drag-state confusion caused by the re-render racing
+        # with prior proxy calls.
         observeEvent(reset_egm_trigger(), {
             clicked_info(NULL)
+            plotlyProxy("egm_plot", session) %>%
+                plotlyProxyInvoke("relayout", list(
+                    selections = list(),
+                    dragmode   = "select"
+                ))
         }, ignoreInit = TRUE)
 
         output$table_header <- renderUI({
@@ -191,5 +282,12 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         output$table_content <- renderUI({
             create_table_cards_html(clicked_df())
         })
+
+        # Return the selection state so other modules (e.g. mod_export) can
+        # react to it without duplicating the observer logic.
+        list(
+            clicked_df   = clicked_df,
+            clicked_info = clicked_info
+        )
     })
 }

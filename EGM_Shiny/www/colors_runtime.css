@@ -1,1 +1,1 @@
-:root {--color-all_points: #1f77b4;--color-high_confidence: #46A040;--color-medium_confidence: #FDB915;--color-low_confidence: #CC3D3D;--color-in_progress: #FFC0CB;--color-heatmap_min: rgba(130,130,130,0);--color-heatmap_max: rgba(130,130,130,1);}
+:root {--color-all_points: #30a9ff;--color-high_confidence: #46A040;--color-medium_confidence: #FDB915;--color-low_confidence: #CC3D3D;--color-in_progress: #FFC0CB;--color-heatmap_min: rgba(31,119,180,0);--color-heatmap_max: rgba(31,119,180,0.35);}

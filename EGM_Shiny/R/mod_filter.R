@@ -1,34 +1,39 @@
 # =============================================================================
 # mod_filter — demographic filter controls
 #
-# Provides four Yes / No / Any dropdowns (Gender, Ethnicity, Race, US Origin).
-# When any filter changes, the module re-filters df_all (defined in global.R),
-# rebuilds egm_data, and increments reset_egm_trigger to clear the table.
+# Reads filter_dropdown_list and filter_dropdown_list_display from
+# egm_definition (global.R) to programmatically generate one dropdown per
+# filter column.  Choices are "Any" plus every unique value in that column
+# (NA values have already been replaced with "None Given" in global.R).
+#
+# When any filter changes the module re-filters df_all, rebuilds egm_data,
+# and increments reset_egm_trigger to clear the table.
 # =============================================================================
 
 
 mod_filter_ui <- function(id) {
     ns <- NS(id)
+
+    filter_cols    <- egm_definition$filter_dropdown_list
+    filter_display <- egm_definition$filter_dropdown_list_display
+
+    filter_items <- lapply(seq_along(filter_cols), function(i) {
+        col     <- filter_cols[[i]]
+        display <- filter_display[[i]]
+        choices <- c("Any", sort(unique(df_all[[col]])))
+        div(class = "filters-item",
+            tags$label(display),
+            selectInput(ns(col), label = NULL, choices = choices)
+        )
+    })
+
     tags$details(
         class = "filters-details dropdown-details",
         tags$summary("Filters"),
-        div(
-            class = "filters-dropdown",
-            div(class = "filters-item",
-                tags$label("Gender Reported"),
-                selectInput(ns("GenderReported"), label = NULL, choices = c("Any", "Yes", "No"))
-            ),
-            div(class = "filters-item",
-                tags$label("Ethnicity Reported"),
-                selectInput(ns("EthnicityReported"), label = NULL, choices = c("Any", "Yes", "No"))
-            ),
-            div(class = "filters-item",
-                tags$label("Race Reported"),
-                selectInput(ns("RaceReported"), label = NULL, choices = c("Any", "Yes", "No"))
-            ),
-            div(class = "filters-item",
-                tags$label("US Origin"),
-                selectInput(ns("USOrigin"), label = NULL, choices = c("Any", "Yes", "No"))
+        div(class = "filters-dropdown",
+            filter_items,
+            div(class = "filters-reset-row",
+                actionButton(ns("reset_filters"), "Reset all", class = "reset-btn filters-reset-btn")
             )
         )
     )
@@ -38,26 +43,34 @@ mod_filter_ui <- function(id) {
 mod_filter_server <- function(id, egm_data, reset_egm_trigger) {
     moduleServer(id, function(input, output, session) {
 
+        filter_cols <- egm_definition$filter_dropdown_list
+
+        # Collect all filter input values into a single reactive so a single
+        # observeEvent can watch all of them without listing each by name.
+        filter_values <- reactive({
+            lapply(setNames(filter_cols, filter_cols), function(col) input[[col]])
+        })
+
         # Re-run whenever any filter dropdown changes.
         # ignoreInit = TRUE prevents a spurious reset when the app first loads.
-        observeEvent(
-            c(input$GenderReported, input$EthnicityReported, input$RaceReported, input$USOrigin),
-            {
-                # Start with the full dataset (df_all is the global from global.R)
-                df_filter <- df_all
+        observeEvent(input$reset_filters, {
+            for (col in filter_cols) {
+                updateSelectInput(session, col, selected = "Any")
+            }
+        })
 
-                # Apply only the filters that are not set to "Any"
-                if (input$GenderReported    != "Any") df_filter <- df_filter %>% filter(GenderReported    == input$GenderReported)
-                if (input$EthnicityReported != "Any") df_filter <- df_filter %>% filter(EthnicityReported == input$EthnicityReported)
-                if (input$RaceReported      != "Any") df_filter <- df_filter %>% filter(RaceReported      == input$RaceReported)
-                if (input$USOrigin          != "Any") df_filter <- df_filter %>% filter(USOrigin          == input$USOrigin)
+        observeEvent(filter_values(), {
+            df_filter <- df_all
 
-                egm_data(create_egm_data(df_filter))
+            for (col in filter_cols) {
+                val <- input[[col]]
+                if (!is.null(val) && val != "Any") {
+                    df_filter <- df_filter %>% filter(.data[[col]] == val)
+                }
+            }
 
-                # Trigger a full plot + table reset so stale selections are cleared
-                reset_egm_trigger(reset_egm_trigger() + 1)
-            },
-            ignoreInit = TRUE
-        )
+            egm_data(create_egm_data(df_filter))
+            reset_egm_trigger(reset_egm_trigger() + 1)
+        }, ignoreInit = TRUE)
     })
 }
