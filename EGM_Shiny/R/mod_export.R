@@ -229,8 +229,7 @@ mod_export_citations_ui <- function(id) {
                     div(class = "export-progress-track",
                         div(class = "export-progress-bar")),
                     tags$p(class = "export-processing-note",
-                           "Please wait. This box will close automatically when the download begins.")
-                )
+                           "Please wait. The app is gathering your citations.  This box will close automatically when the download begins.")                )
             )
         )
     )
