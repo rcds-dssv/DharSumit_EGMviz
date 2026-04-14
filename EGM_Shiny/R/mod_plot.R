@@ -95,8 +95,8 @@ build_heatmap_z <- function(counts, x_col, y_col, n_col, x_levels, y_levels) {
 add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col,
                                      clean_x_title, clean_y_title, color,
                                      visible = TRUE) {
-    desired_max_px <- 14
-    desired_min_px <- 1
+
+    
     # Use the unfiltered data for the cap so sizes stay consistent when filters change
     size_cap <- quantile(initial_egm_data$all$counts[[n_col]], 0.99, na.rm = TRUE)
 
@@ -105,7 +105,7 @@ add_trace_to_plotly_spec <- function(spec, df, x_col, y_col, n_col,
             clamped     = pmin(.data[[n_col]], size_cap),
             marker_size = scales::rescale(
                 sqrt(clamped),
-                to   = c(desired_min_px, desired_max_px),
+                to   = c(egm_definition$plot_points_desired_min_px, egm_definition$plot_points_desired_max_px),
                 from = c(0, sqrt(size_cap))
             )
         )
@@ -177,7 +177,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
 
     # Base figure + toolbar config
     egm_spec <- plot_ly(source = plot_source_name) %>%
-        config(
+        plotly::config(
             responsive      = TRUE,
             displayModeBar  = TRUE,
             doubleClick     = FALSE,

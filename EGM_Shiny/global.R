@@ -15,6 +15,7 @@ library(writexl)
 library(jsonlite)
 library(httr)
 
+
 # =============================================================================
 # DEFINITIONS
 # This section contains (hopefully) all of the variables one would need to 
@@ -32,6 +33,10 @@ egm_definition <- list(
     # The column name to use for the y axis of the EGM figure and the display name 
     y_column = "Theme",
     y_column_display = "Theme",
+
+    # Desired max and min pixel size for the points in the figure
+    plot_points_desired_max_px = 60,
+    plot_points_desired_min_px = 1,
 
     # A list of column names within the data file to be used in filtering.
     # Dropdowns will be created programmatically for each of these items.
