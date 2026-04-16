@@ -167,7 +167,7 @@ create_table_cards_html <- function(df) {
             conf_tag, in_progress_tag
         )
 
-        # -- 4. Meta rows (italic label: value, one per line) -----------------
+        # -- 4. Meta rows (italic label: separated by vertical bar) -----------------
         meta_items <- Filter(Negate(is.null), lapply(seq_along(meta_cols), function(j) {
             col <- meta_cols[[j]]
             lbl <- meta_display[[j]]

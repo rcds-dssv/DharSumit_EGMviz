@@ -773,8 +773,15 @@ a.paper-card-link {
 
 .paper-meta-list {
     margin-bottom: 16px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
-
+.paper-meta-list > div + div {
+    border-left: 1px solid;
+    padding-left: 6px;  
+    margin-left: 6px;  
+}
 .paper-meta {
     font-size: 11px;
     color: var(--color-container-text);
