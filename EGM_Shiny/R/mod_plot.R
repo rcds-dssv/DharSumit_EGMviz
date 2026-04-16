@@ -154,11 +154,11 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     n_x <- length(unique(initial_egm_data$all$counts[[x_col]]))
     n_y <- length(unique(initial_egm_data$all$counts[[y_col]]))
 
-    # cell_px is used only to set the relative aspect ratio of the grid shapes;
-    # the actual rendered size is controlled by CSS (the plot fills its container)
-    cell_px     <- 60
-    plot_width  <- n_x * cell_px + 260
-    plot_height <- n_y * cell_px
+    # set the pixel size of each grid cell from egm_definition
+    # plot_height includes the top and bottom margins (t = 120, b = 10) so the data-area cells are
+    # exactly plot_cell_width_px tall.  plot_width adds ~260 px for the y-axis label area.
+    plot_width  <- n_x * egm_definition$plot_cell_width_px + 260
+    plot_height <- n_y * egm_definition$plot_cell_height_px + 130
 
     clean_x_title <- egm_definition$x_column_display
     clean_y_title <- egm_definition$y_column_display
@@ -244,8 +244,10 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     }
 
     egm_spec <- egm_spec %>% layout(
-        margin     = list(t = 120, b = 0, l = 0, r = 0, pad = 10),
-        autosize   = TRUE,
+        margin     = list(t = 120, b = 10, l = 0, r = 0, pad = 10),
+        width      = plot_width,
+        height     = plot_height,
+        autosize   = FALSE,
         dragmode   = "select",
         showlegend = FALSE,
         xaxis = list(
@@ -274,8 +276,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
         ),
         shapes      = shapes_for_plotly(n_x, n_y),
         # "Total N" annotation in the upper-left corner.
-        # x/y are in paper coordinates; the exact values are adjusted by
-        # repositionPlotlyAnnotation0() in toggles.js after each resize.
+        # x/y are paper coordinates (0–1 maps to the data-area bounds).
+        # Negative x places the box in the left margin (y-axis label area).
         annotations = list(list(
             x         = -0.262, y = 1.072,
             xref      = "paper", yref = "paper",

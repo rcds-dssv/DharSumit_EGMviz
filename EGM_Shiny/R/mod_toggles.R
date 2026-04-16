@@ -6,8 +6,6 @@
 # switches are added only when the corresponding columns are defined in
 # egm_definition (has_confidence / has_in_progress flags set in global.R).
 #
-# Table toggle:  sends a "toggleTable" JS message; toggles.js handles the
-#                CSS class change + smooth Plotly resize animation.
 # Data toggles:  plotlyProxy restyle calls update trace visibility immediately
 #                without re-rendering the whole figure.  Trace indices are read
 #                from egm_metadata so they stay correct regardless of which
@@ -30,7 +28,6 @@ mod_toggles_ui <- function(id) {
     }
 
     switches <- list(
-        mk("show_table",   "Table"),
         mk("show_heatmap", "Heatmap"),
         mk("show_summary", "All Papers")
     )
@@ -43,11 +40,6 @@ mod_toggles_ui <- function(id) {
 
 mod_toggles_server <- function(id, egm_data) {
     moduleServer(id, function(input, output, session) {
-
-        # ── Table toggle ──────────────────────────────────────────────────────
-        observeEvent(input$show_table, {
-            session$sendCustomMessage("toggleTable", list(show = input$show_table))
-        }, ignoreInit = TRUE)
 
         # ── Data layer toggles ────────────────────────────────────────────────
         # Trace indices are read from egm_metadata (built dynamically in global.R)

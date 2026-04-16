@@ -269,7 +269,7 @@ mod_export_citations_server <- function(id, clicked_df, clicked_info) {
 
             tagList(
                 tags$details(
-                    class = "export-details dropdown-details",
+                    class = "export-details",
                     tags$summary("Export"),
                     div(class = "export-dropdown",
                         selectInput(ns("export_format"),
