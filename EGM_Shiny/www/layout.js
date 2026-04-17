@@ -1,10 +1,9 @@
 // =============================================================================
 // layout.js — panel drag-resize and UI interaction
 //
-// The EGM plot is sized entirely in R (create_egm_figure in mod_plot.R) using
-// egm_definition$plot_cell_size_px.  No client-side resizing is performed.
 // The .plot-wrapper scrolls horizontally / vertically when the figure is larger
 // than the panel, and the resize handle lets the user widen the plot panel.
+// This script also handles open/close of various modals and divs in the UI.
 // =============================================================================
 
 
