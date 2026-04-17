@@ -63,6 +63,15 @@ Shiny.addCustomMessageHandler("triggerAttachPlotlyClickHandler", function(msg) {
     attachPlotlyClickHandler();
 });
 
+// Show or hide the table section + resize handle based on whether points are selected.
+// Clears any inline grid style set by the resize-handle JS so CSS defaults apply when hiding.
+Shiny.addCustomMessageHandler("toggleTableSection", function(msg) {
+    var mainArea = document.getElementById("main_area");
+    if (!mainArea) return;
+    mainArea.classList.toggle("has-selection", msg.visible);
+    if (!msg.visible) mainArea.style.gridTemplateColumns = "";
+});
+
 // ── Export processing overlay ─────────────────────────────────────────────────
 
 // Show or hide the citation-fetch processing overlay.

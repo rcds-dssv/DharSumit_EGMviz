@@ -55,6 +55,11 @@ ui <- fluidPage(
             div(
                 class = "plot-section",
                 id    = "plot_section",
+                div(
+                    class = "plot-section-header",
+                    tags$h3("Evidence Gap Map"),
+                    mod_plot_info_ui("egm")
+                ),
                 tags$details(
                     class = "plot-config-details",
                     tags$summary("Plot configuration"),

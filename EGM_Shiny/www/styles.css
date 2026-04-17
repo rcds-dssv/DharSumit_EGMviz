@@ -45,7 +45,7 @@ body {
     margin: 0;
     padding: 0;
     overflow: auto;
-    min-width: 1200px;
+    min-width: 1000px;
     min-height: 800px;
 }
 
@@ -256,15 +256,34 @@ body {
 /* MAIN SPLIT LAYOUT                                             */
 /* ============================================================ */
 
-/* flex: 1 fills remaining viewport height after the header. */
+/* flex: 1 fills remaining viewport height after the header.
+   Default: single column (plot only). Table + resize handle are hidden until
+   the user makes a selection; .has-selection restores the three-column layout. */
 .main-area {
     display: grid;
-    grid-template-columns: auto 6px minmax(100px, 1fr);
+    grid-template-columns: auto;
     grid-template-rows: 1fr;
     align-items: stretch;
     flex: 1;
     min-height: 0px;
     overflow: visible;
+}
+
+.main-area .table-section,
+.main-area .resize-handle {
+    display: none;
+}
+
+.main-area.has-selection {
+    grid-template-columns: auto 6px minmax(100px, 1fr);
+}
+
+.main-area.has-selection .table-section {
+    display: flex;
+}
+
+.main-area.has-selection .resize-handle {
+    display: flex;
 }
 
 
@@ -281,9 +300,36 @@ body {
     flex-direction: column;
     overflow: hidden;
     min-height: 0;
-    width: 740px;
+    width: 100%;
     background: var(--color-container-bg);
     border: 1px solid var(--color-container-border);
+}
+
+/* ── Plot section header ─────────────────────────────────────────────────────── */
+
+.plot-section-header {
+    flex-shrink: 0;
+    padding: 20px;
+    background: var(--color-container-bg);
+}
+
+.plot-section-header h3 {
+    font-size: 24px;
+    color: var(--color-button-text);
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+.plot-section-header .info {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--color-container-text);
+    margin: 0;
+}
+
+/* Shiny wraps uiOutput in a div — make it invisible to layout */
+.plot-section-header > div {
+    display: contents;
 }
 
 /* ── Plot configuration dropdown ─────────────────────────────────────────────── */
@@ -659,11 +705,6 @@ body {
     transition: all 0.3s ease;
 }
 
-.table-section.hidden {
-    width: 0;
-    overflow: hidden;
-    opacity: 0;
-}
 
 .table-header {
     flex: 0 0 auto;

@@ -62,7 +62,7 @@ create_plotly_click_df <- function(egm_data, selected_info, x_col, y_col) {
 # x-axis value, y-axis value, and evidence-category label in the selection.
 create_table_header_html <- function(selected_info, df) {
     if (is.null(selected_info) || is.null(df) || nrow(df) == 0) {
-        return(tags$p(class = "info", "Use the lasso or box-select tool to display papers."))
+        return(tagList())
     }
 
     n        <- nrow(df)
@@ -77,8 +77,6 @@ create_table_header_html <- function(selected_info, df) {
     })))
 
     tagList(
-        tags$p(class = "info", "Double click within the plot to deselect."),
-        br(),
         tags$p(paste("Number of papers:", n)),
         tags$div(
             tags$p("Selection attributes:"),
@@ -208,6 +206,11 @@ create_table_cards_html <- function(df) {
 # Shiny module
 # =============================================================================
 
+mod_plot_info_ui <- function(id) {
+    ns <- NS(id)
+    uiOutput(ns("plot_info"))
+}
+
 mod_click_plot_header_ui <- function(id) {
     ns <- NS(id)
     uiOutput(ns("table_header"))
@@ -274,6 +277,20 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
                     dragmode   = "select"
                 ))
         }, ignoreInit = TRUE)
+
+        # Show/hide the table section and resize handle based on selection state.
+        observe({
+            session$sendCustomMessage("toggleTableSection",
+                                      list(visible = !is.null(clicked_info())))
+        })
+
+        output$plot_info <- renderUI({
+            if (is.null(clicked_info())) {
+                tags$p(class = "info", "Use the lasso or box-select tool to display papers.")
+            } else {
+                tags$p(class = "info", "Double click within the plot to deselect.")
+            }
+        })
 
         output$table_header <- renderUI({
             create_table_header_html(clicked_info(), clicked_df())
