@@ -35,12 +35,12 @@ egm_definition <- list(
     y_column_display = "Theme",
 
     # Desired max and min pixel size for the points in the figure
-    plot_points_desired_max_px = 50,
+    plot_points_desired_max_px = 40,
     plot_points_desired_min_px = 1,
 
     # Minimum pixel size of each grid cell (row height and column width) in the plot.  
-    plot_cell_width_px = 80,
-    plot_cell_height_px = 60,
+    plot_cell_width_px = 50,
+    plot_cell_height_px = 50,
 
     # A list of column names within the data file to be used in filtering.
     # Dropdowns will be created programmatically for each of these items.
