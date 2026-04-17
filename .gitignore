@@ -53,4 +53,4 @@ rsconnect/
 *data/
 
 # produced by the code
-EGM_Shiny/www/colors_runtime.css
+EGM_Shiny/www/styles_runtime.css

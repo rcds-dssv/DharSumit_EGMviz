@@ -221,6 +221,11 @@ mod_click_plot_content_ui <- function(id) {
     uiOutput(ns("table_content"))
 }
 
+mod_deselect_ui <- function(id) {
+    ns <- NS(id)
+    actionButton(ns("deselect_all"), "Deselect all", class = "reset-btn filters-reset-btn")
+}
+
 mod_click_reset_ui <- function(id) {
     ns <- NS(id)
     actionButton(ns("reset_plot"), "Reset Selection", class = "reset-btn")
@@ -258,6 +263,16 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
             clicked_info(NULL)
         })
 
+        # "Deselect all" button: clear state, remove the plotly selection shape, and
+        # restore full opacity by resetting selectedpoints on all traces.
+        observeEvent(input$deselect_all, {
+            clicked_info(NULL)
+            plotlyProxy("egm_plot", session) %>%
+                plotlyProxyInvoke("relayout", list(selections = list()))
+            session$sendCustomMessage("clearPlotlySelection",
+                                      list(plotId = session$ns("egm_plot")))
+        })
+
         # Reset button: increment the shared trigger so mod_filter_server also
         # reacts (they share the same reset path).
         observeEvent(input$reset_plot, {
@@ -288,7 +303,7 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
             if (is.null(clicked_info())) {
                 tags$p(class = "info", "Use the lasso or box-select tool to display papers.")
             } else {
-                tags$p(class = "info", "Double click within the plot to deselect.")
+                tags$p(class = "info", 'Use the "Deselect all" button or double click within the plot to deselect.')
             }
         })
 

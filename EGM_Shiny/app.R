@@ -10,8 +10,8 @@ source("global.R")
 ui <- fluidPage(
 
     tags$head(
-        # colors_runtime.css is generated at startup by global.R from the colors list
-        tags$link(rel = "stylesheet", type = "text/css", href = "colors_runtime.css"),
+        # styles_runtime.css is generated at startup by global.R
+        tags$link(rel = "stylesheet", type = "text/css", href = "styles_runtime.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
         tags$script(src = "layout.js"),            # panel drag-resize and UI interaction
         tags$script(src = "plot_interactions.js")  # plot click/selection handlers
@@ -57,13 +57,20 @@ ui <- fluidPage(
                 id    = "plot_section",
                 div(
                     class = "plot-section-header",
-                    tags$h3("Evidence Gap Map"),
+                    div(
+                        class = "plot-section-header-top",
+                        div(class = "plot-section-header-top-left", tags$h3("Evidence Gap Map")),
+                        div(
+                            class = "plot-section-header-top-right",
+                            mod_deselect_ui("egm"),
+                            tags$details(
+                                class = "plot-config-details",
+                                tags$summary("Plot configuration"),
+                                mod_toggles_ui("egm")
+                            )
+                        )
+                    ),
                     mod_plot_info_ui("egm")
-                ),
-                tags$details(
-                    class = "plot-config-details",
-                    tags$summary("Plot configuration"),
-                    mod_toggles_ui("egm")
                 ),
                 div(
                     class = "plot-wrapper",

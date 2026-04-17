@@ -91,7 +91,7 @@ egm_definition <- list(
     ),
 
     # Color pallette
-    # These values are also written to www/colors_runtime.css so the stylesheet
+    # These values are also written to www/styles_runtime.css so the stylesheet
     # can reference them as CSS custom properties (var(--color-*)).
     colors = list(
         all_points        = "#30a9ff",
@@ -113,7 +113,7 @@ css <- paste0(
     paste0("--color-", names(egm_definition$colors), ": ", unlist(egm_definition$colors), ";", collapse = ""),
     "}"
 )
-writeLines(css, "www/colors_runtime.css")
+writeLines(css, "www/styles_runtime.css")
 
 
 # =============================================================================
@@ -222,3 +222,13 @@ df_all <- read_csv(egm_definition$datafile_path) %>%
 # Stored in the global env so mod_plot.R can reference it for consistent axis
 # sizing and marker scaling as the user applies filters.
 initial_egm_data <- create_egm_data(df_all)
+
+# Compute the fixed plot width (same formula as create_egm_figure) and write a
+# max-width rule so the plot-section-header never exceeds the plot right edge.
+local({
+    n_x   <- length(unique(initial_egm_data$all$counts[[egm_definition$x_column]]))
+    max_w <- n_x * egm_definition$plot_cell_width_px + 260 + 40
+    cat(paste0(".plot-section-header { max-width: ", max_w, "px; }
+"),
+        file = "www/styles_runtime.css", append = TRUE)
+})

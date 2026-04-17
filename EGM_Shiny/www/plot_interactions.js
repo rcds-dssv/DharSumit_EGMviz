@@ -63,6 +63,15 @@ Shiny.addCustomMessageHandler("triggerAttachPlotlyClickHandler", function(msg) {
     attachPlotlyClickHandler();
 });
 
+// Clear plotly's selectedpoints state so all point opacities are restored.
+// R cannot serialize null correctly for this property via plotlyProxyInvoke,
+// so we call Plotly.restyle directly from JS.
+Shiny.addCustomMessageHandler("clearPlotlySelection", function(msg) {
+    var plot = document.getElementById(msg.plotId);
+    if (!plot) return;
+    Plotly.restyle(plot, { selectedpoints: null });
+});
+
 // Show or hide the table section + resize handle based on whether points are selected.
 // Clears any inline grid style set by the resize-handle JS so CSS defaults apply when hiding.
 Shiny.addCustomMessageHandler("toggleTableSection", function(msg) {

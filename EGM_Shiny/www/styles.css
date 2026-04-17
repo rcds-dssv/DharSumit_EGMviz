@@ -313,10 +313,29 @@ body {
     background: var(--color-container-bg);
 }
 
+.plot-section-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.plot-section-header-top-left {
+    display: flex;
+    align-items: center;
+}
+
+.plot-section-header-top-right {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .plot-section-header h3 {
     font-size: 24px;
     color: var(--color-button-text);
-    margin: 0 0 5px 0;
+    margin: 0;
     font-weight: 600;
 }
 
@@ -327,23 +346,10 @@ body {
     margin: 0;
 }
 
-/* Shiny wraps uiOutput in a div — make it invisible to layout */
-.plot-section-header > div {
-    display: contents;
-}
-
 /* ── Plot configuration dropdown ─────────────────────────────────────────────── */
-/*
- * Sits directly inside .plot-section as a flex child (no wrapper bar div).
- * Padding mirrors the controls-toolbar padding so the button left-aligns with
- * the "Reset filters" button in the toolbar above.
- * Matches .export-details summary style — both open a sub-panel.
- */
 
 .plot-config-details {
     position: relative;
-    flex-shrink: 0;
-    padding: 8px 20px;
 }
 
 .plot-config-details summary {
@@ -390,8 +396,8 @@ body {
 
 .plot-config-details[open] .toggles-switches {
     position: absolute;
-    left: 20px;
-    top: calc(100% - 2px);
+    right: 0;
+    top: calc(100% + 8px);
     z-index: 200;
     background: var(--color-container-bg);
     border: 1px solid var(--color-container-border);
