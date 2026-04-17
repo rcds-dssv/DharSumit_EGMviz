@@ -21,25 +21,6 @@
 # =============================================================================
 
 
-# =============================================================================
-# Selection parsing helper
-# =============================================================================
-
-# Converts a lasso / box-select plotly event (a dataframe, one row per selected
-# dot) into a list of point-info lists.  Returns NULL for empty or invalid input.
-# Rows without valid 3-element customdata (e.g. heatmap cells) are silently skipped.
-create_plotly_selected_info <- function(selected_data) {
-    if (is.null(selected_data) || !is.data.frame(selected_data) || nrow(selected_data) == 0) {
-        return(NULL)
-    }
-    infos <- lapply(seq_len(nrow(selected_data)), function(i) {
-        cd <- selected_data$customdata[[i]]
-        if (is.null(cd) || length(cd) < 3) return(NULL)
-        list(clicked_x = cd[[1]], clicked_y = cd[[2]], trace_id = cd[[3]])
-    })
-    infos <- Filter(Negate(is.null), infos)
-    if (length(infos) == 0) NULL else infos
-}
 
 
 # =============================================================================
@@ -265,15 +246,29 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
                                label = if (new_dir == "asc") "\u2191" else "\u2193")
         })
 
-        # Lasso / box-select: observe event_data() directly.
-        # plotly_deselect (double-click) and filter resets both cause this to
-        # become NULL, so re-selecting the same points always triggers a change.
-        observeEvent(event_data("plotly_selected", source = plot_source_name), {
-            info <- create_plotly_selected_info(
-                event_data("plotly_selected", source = plot_source_name)
-            )
-            if (!is.null(info)) clicked_info(info)
-        }, ignoreNULL = TRUE)
+        # Selection events come from plot_interactions.js as a custom input.
+        # JS handles Ctrl/Cmd+click accumulation and applies selectedpoints
+        # visually before sending; R just converts the customdata list to
+        # clicked_info format and updates the paper table.
+        observeEvent(input$plotly_accumulated_selection, {
+            sel <- input$plotly_accumulated_selection
+            if (is.null(sel) || length(sel) == 0) {
+                clicked_info(NULL)
+                return()
+            }
+            # Shiny/jsonlite flattens JS [[a,b,c],[d,e,f]] into a plain character
+            # vector of length 3*N.  Each customdata tuple is always 3 elements,
+            # so split the flat vector into consecutive 3-element chunks.
+            if (is.character(sel)) {
+                n_pts <- length(sel) / 3L
+                sel <- lapply(seq_len(n_pts), function(i) sel[((i - 1L) * 3L + 1L):(i * 3L)])
+            }
+            info <- Filter(Negate(is.null), lapply(sel, function(cd) {
+                if (length(cd) < 3) return(NULL)
+                list(clicked_x = cd[[1]], clicked_y = cd[[2]], trace_id = cd[[3]])
+            }))
+            clicked_info(if (length(info) > 0) info else NULL)
+        }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
         # Dataframe of papers matching the current selection, sorted by the chosen column.
         clicked_df <- reactive({

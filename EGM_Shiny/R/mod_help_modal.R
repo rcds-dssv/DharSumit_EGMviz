@@ -65,8 +65,7 @@ help_modal_ui <- function() {
     # Data formats are always available; citation formats are listed by name.
     export_data_items <- list(
         tags$li(HTML("<strong>CSV / Excel / JSON</strong> \u2014 downloads a spreadsheet of the selected papers with all metadata fields")),
-        tags$li(HTML("<strong>APA / Vancouver / AMA / Chicago</strong> \u2014 fetches formatted citations from the Crossref API and saves them as a text file")),
-        tags$li(HTML("<strong>BibTeX / RIS</strong> \u2014 fetches machine-readable citation records suitable for reference managers (Zotero, Mendeley, EndNote)"))
+        tags$li(HTML("<strong>APA / Vancouver / AMA / Chicago BibTeX / RIS</strong> \u2014 fetches formatted citations and saves them as a text file"))
     )
 
     # ── Modal HTML ─────────────────────────────────────────────────────────────
