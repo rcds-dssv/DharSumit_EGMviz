@@ -10,11 +10,11 @@ source("global.R")
 ui <- fluidPage(
 
     tags$head(
-        # colors_runtime.css is generated at startup by global.R from the colors list
-        tags$link(rel = "stylesheet", type = "text/css", href = "colors_runtime.css"),
+        # styles_runtime.css is generated at startup by global.R
+        tags$link(rel = "stylesheet", type = "text/css", href = "styles_runtime.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
-        tags$script(src = "toggles.js"),           # show/hide toggles
-        tags$script(src = "plot_interactions.js")  # plot click/selection arrows
+        tags$script(src = "layout.js"),            # panel drag-resize and UI interaction
+        tags$script(src = "plot_interactions.js")  # plot click/selection handlers
     ),
 
     # tags$h1(class = "header-title", "HEARING LITERATURE EVIDENCE GAP MAP"),
@@ -25,7 +25,7 @@ ui <- fluidPage(
     div(
         class = "design-container",
 
-        # Header bar: instructions text on the left, Filters + Toggles buttons on the right
+        # Header bar: title, description, and how-to button
         div(
             class = "header-instructions",
             div(
@@ -35,19 +35,15 @@ ui <- fluidPage(
                 tags$button(
                     class   = "how-to-use-btn",
                     onclick = "document.getElementById('egm-help-modal').classList.add('open')",
-                    "Instructions"
-                )
-            ),
-            div(class = "header-divider"),
-            div(
-                class = "header-controls",
-                mod_filter_ui("egm"),   # Filters dropdown
-                tags$details(
-                    class = "toggles-details dropdown-details",
-                    tags$summary("Toggles"),
-                    mod_toggles_ui("egm")
+                    "Information and Instructions"
                 )
             )
+        ),
+
+        # Always-visible controls toolbar: Filters grid on the left, Toggles column on the right
+        div(
+            class = "controls-toolbar",
+            mod_filter_ui("egm")
         ),
 
         # Main area: plot on the left, paper table on the right
@@ -60,11 +56,31 @@ ui <- fluidPage(
                 class = "plot-section",
                 id    = "plot_section",
                 div(
+                    class = "plot-section-header",
+                    div(
+                        class = "plot-section-header-top",
+                        div(class = "plot-section-header-top-left", tags$h3("Evidence Gap Map")),
+                        div(
+                            class = "plot-section-header-top-right",
+                            mod_deselect_ui("egm"),
+                            tags$details(
+                                class = "plot-config-details",
+                                tags$summary("Plot configuration"),
+                                mod_toggles_ui("egm")
+                            )
+                        )
+                    ),
+                    mod_plot_info_ui("egm")
+                ),
+                div(
                     class = "plot-wrapper",
                     id    = "plot_wrapper",
                     mod_plot_ui("egm")
                 )
             ),
+
+            # Draggable handle to resize plot / table columns
+            div(class = "resize-handle", id = "resize_handle", div(class = "resize-handle-grip")),
 
             # ── Table panel ───────────────────────────────────────────────
             div(
@@ -76,7 +92,8 @@ ui <- fluidPage(
                         class = "table-header-top",
                         div(class = "table-header-top-left",  tags$h3("Selected papers")),
                         div(class = "table-header-top-right",
-                            mod_export_citations_ui("egm")     # "Export"
+                            mod_sort_ui("egm"),
+                            mod_export_citations_ui("egm")
                         )
                     ),
                     mod_click_plot_header_ui("egm")   # paper count + selection tags

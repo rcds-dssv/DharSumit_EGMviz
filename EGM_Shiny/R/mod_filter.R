@@ -27,14 +27,11 @@ mod_filter_ui <- function(id) {
         )
     })
 
-    tags$details(
-        class = "filters-details dropdown-details",
-        tags$summary("Filters"),
-        div(class = "filters-dropdown",
-            filter_items,
-            div(class = "filters-reset-row",
-                actionButton(ns("reset_filters"), "Reset all", class = "reset-btn filters-reset-btn")
-            )
+    div(class = "toolbar-filters",
+        tags$span(class = "toolbar-section-label", "Filters"),
+        div(class = "filters-grid", filter_items),
+        div(class = "filters-reset-row",
+            actionButton(ns("reset_filters"), "Reset all filters", class = "reset-btn filters-reset-btn")
         )
     )
 }

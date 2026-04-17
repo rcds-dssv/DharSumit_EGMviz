@@ -19,6 +19,7 @@
     --color-toggle-active-bg:     #4f46e5;
     --color-button-text:          #a78bfa;
     --color-plot-path:            #3c4b6c;
+    --color-plot-text:            #cfdbf6;
     --color-table-bg:             #0f1629;
     --color-table-shadow:         rgba(79, 70, 229, 0.2);
     --color-tag-default:          rgba(79, 70, 229, 0.3);
@@ -44,7 +45,9 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     margin: 0;
     padding: 0;
-    min-width: 1200px;
+    overflow: auto;
+    min-width: 1000px;
+    min-height: 800px;
 }
 
 /* Reset Shiny default container padding */
@@ -74,37 +77,18 @@ body {
     letter-spacing: 2px;
 }
 
-/* Header bar: flex row with controls on the left, text on the right */
+/* Header bar: gradient background, instructions text only */
 .header-instructions {
     flex-shrink: 0;
     background: linear-gradient(135deg, var(--color-top-gradient1) 0%, var(--color-top-gradient2) 100%);
     color: var(--color-body-text);
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-}
-
-/* Left column: Filters and Toggles buttons stacked vertically */
-.header-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
     padding: 20px;
-    justify-content: center;
-    flex-shrink: 0;
 }
 
-/* Vertical divider between buttons and instructions text */
-.header-divider {
-    width: 1px;
-    background: rgba(255, 255, 255, 0.4);
-    flex-shrink: 0;
-}
-
-/* Right column: instructions text */
-.header-text {
-    flex: 1;
-    padding: 20px;
+.header-text h1 {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+    letter-spacing: 1px;
 }
 
 .header-text h2 {
@@ -116,150 +100,125 @@ body {
     opacity: 0.95;
     font-size: 15px;
     line-height: 1.5;
+    margin: 0 0 10px 0;
 }
 
 
 /* ============================================================ */
-/* DROPDOWN CONTROLS (Filters and Toggles)                      */
+/* CONTROLS TOOLBAR (Filters + Toggles — always visible)        */
 /* ============================================================ */
 
-/* Shared wrapper — anchors the absolutely-positioned panel */
-.dropdown-details {
-    position: relative;
-}
-
-/* Shared <summary> button style */
-.dropdown-details summary {
-    background: var(--color-container-border);
-    color: var(--color-container-text);
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-family: sans-serif;
-    font-weight: normal;
-    cursor: pointer;
-    user-select: none;
-    list-style: none;
-    margin: 0;
-    transition: all 0.2s;
-    display: inline-block;
-    width: 120px;
-    text-align: center;
-    box-sizing: border-box;
-}
-
-.dropdown-details summary::-webkit-details-marker {
-    display: none;
-}
-
-.dropdown-details summary:hover {
-    background: var(--color-toggle-hover-bg);
-    color: var(--color-toggle-hover-text);
-}
-
-.dropdown-details[open] summary {
-    background: var(--color-toggle-active-bg);
-    color: var(--color-body-text);
-}
-
-/* ── Filters panel ───────────────────────────────────────────────────── */
-
-.filters-details[open] .filters-dropdown {
-    position: absolute;
-    right: 0;
-    top: calc(100% + 8px);
-    z-index: 200;
+.controls-toolbar {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 10px 20px;
     background: var(--color-container-bg);
-    border: 1px solid var(--color-container-border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    min-width: 260px;
+    border-bottom: 1px solid var(--color-container-border);
 }
 
-.filters-dropdown {
+/* ── Filters section ───────────────────────────────────────── */
+
+/* Takes all remaining horizontal space */
+.toolbar-filters {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
+/* Items flow column-by-column into two rows, filling available width */
+.filters-grid {
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(120px, 1fr);
+    column-gap: 12px;
+    row-gap: 5px;
+    align-items: start;
+    width: 100%;
+}
+
+/* Each filter: label stacked above its select input */
 .filters-item {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 3px;
 }
 
 .filters-item label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--color-container-text);
     font-weight: 500;
     margin-bottom: 0 !important;
-    min-width: 130px;   /* wide enough for "Ethnicity Reported" */
     white-space: nowrap;
 }
 
 .filters-item .shiny-input-container {
-    width: 160px !important;
-    font-size: 12px;
+    width: 100% !important;
     margin-bottom: 0 !important;
 }
 
 .filters-item select,
-.filters-dropdown .selectize-input {
+.filters-grid .selectize-input {
     background: var(--color-body-bg) !important;
     border: 1px solid var(--color-container-border) !important;
     color: var(--color-body-text) !important;
-    padding: 6px 12px;
+    padding: 4px 8px;
     border-radius: 4px;
     font-size: 12px;
     box-shadow: none !important;
-    width: 160px;
+    width: 100%;
+    min-height: 0;
 }
 
-.filters-dropdown .selectize-dropdown {
+/* Selectize open-dropdown panel */
+.filters-grid .selectize-dropdown {
     background: var(--color-body-bg);
     border: 1px solid var(--color-container-border);
     color: var(--color-body-text);
 }
 
-.filters-dropdown .selectize-dropdown-content .option {
+.filters-grid .selectize-dropdown-content .option {
     background: var(--color-body-bg);
     color: var(--color-body-text);
-    padding: 8px 12px;
+    padding: 6px 10px;
 }
 
-.filters-dropdown .selectize-dropdown-content .option:hover {
+.filters-grid .selectize-dropdown-content .option:hover {
     background: var(--color-container-border);
 }
 
 .filters-reset-row {
     display: flex;
-    justify-content: flex-end;
-    padding-top: 4px;
+    justify-content: flex-start;
 }
 
 .filters-reset-btn {
     width: auto !important;
-    padding: 6px 14px;
+    padding: 4px 12px;
+    font-size: 11px;
 }
 
-/* ── Toggles panel ───────────────────────────────────────────────────── */
-
-.toggles-details[open] .toggles-switches {
-    position: absolute;
-    right: 0;
-    top: calc(100% + 8px);
-    z-index: 200;
-    background: var(--color-container-bg);
-    border: 1px solid var(--color-container-border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    min-width: 160px;
+/* Shared section title for Filters and Toggles */
+.toolbar-section-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-container-text);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 5px;
 }
+
+/* ── Toggle switches (used inside .plot-config-details dropdown) ── */
 
 .toggles-switches {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .toggles-switches .shiny-input-container {
@@ -299,28 +258,33 @@ body {
 /* ============================================================ */
 
 /* flex: 1 fills remaining viewport height after the header.
-   min-height: 900px is the CSS fallback; JS updates it based on CELL_SIZE_PX
-   once the plot has rendered.  overflow: hidden prevents the table section
-   from creating a horizontal scrollbar when its column is collapsed to 0. */
+   Default: single column (plot only). Table + resize handle are hidden until
+   the user makes a selection; .has-selection restores the three-column layout. */
 .main-area {
     display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: 1fr;          /* locks row to container height, not content */
-    transition: grid-template-columns 0.3s ease;
+    grid-template-columns: auto;
+    grid-template-rows: 1fr;
     align-items: stretch;
     flex: 1;
-    min-height: 900px;
-    overflow: hidden;
+    min-height: 0px;
+    overflow: visible;
 }
 
-/* When table is hidden, collapse the right column and clip any overflow */
-.main-area.table-hidden {
-    grid-template-columns: 1fr 0;
+.main-area .table-section,
+.main-area .resize-handle {
+    display: none;
 }
 
-.main-area.table-hidden .table-section {
-    overflow: hidden;
-    min-width: 0;
+.main-area.has-selection {
+    grid-template-columns: auto 6px minmax(100px, 1fr);
+}
+
+.main-area.has-selection .table-section {
+    display: flex;
+}
+
+.main-area.has-selection .resize-handle {
+    display: flex;
 }
 
 
@@ -329,22 +293,183 @@ body {
 /* ============================================================ */
 
 /* Height fills .main-area via grid align-items: stretch.
-   overflow: hidden prevents the plotly SVG from expanding the container, which
-   would cause clientHeight to grow on every resizePlotToViewport() call.
+   overflow: hidden prevents the plotly SVG from expanding the container.
    Width starts at the minimum (740px) and is adjusted by resizePlotToViewport()
-   in toggles.js to keep grid cells square as the viewport grows. */
+   in layout.js and by the drag handle. */
 .plot-section {
     display: flex;
     flex-direction: column;
     overflow: hidden;
     min-height: 0;
-    background: var(--color-body-bg);
-    width: 740px;
-    transition: width 0.25s ease-in-out;
+    width: 100%;
+    background: var(--color-container-bg);
+    border: 1px solid var(--color-container-border);
 }
 
-.plot-section.grow {
-    width: calc(100vw - 20px) !important;
+/* ── Plot section header ─────────────────────────────────────────────────────── */
+
+.plot-section-header {
+    flex-shrink: 0;
+    padding: 20px;
+    background: var(--color-container-bg);
+}
+
+.plot-section-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.plot-section-header-top-left {
+    display: flex;
+    align-items: center;
+}
+
+.plot-section-header-top-right {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.plot-section-header h3 {
+    font-size: 24px;
+    color: var(--color-button-text);
+    margin: 0;
+    font-weight: 600;
+}
+
+.plot-section-header .info {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--color-container-text);
+    margin: 0;
+}
+
+/* ── Plot configuration dropdown ─────────────────────────────────────────────── */
+
+.plot-config-details {
+    position: relative;
+}
+
+.plot-config-details summary {
+    background: transparent;
+    border: 1px solid var(--color-container-border);
+    color: var(--color-container-text);
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: sans-serif;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    margin: 0;
+    transition: all 0.2s;
+    display: inline-block;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+/* Chevron to signal that this opens a panel (unlike plain action buttons) */
+.plot-config-details summary::after {
+    content: " ▾";
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.plot-config-details[open] summary::after {
+    content: " ▴";
+}
+
+.plot-config-details summary::-webkit-details-marker { display: none; }
+
+.plot-config-details summary:hover {
+    background: var(--color-container-bg);
+    border-color: var(--color-toggle-active-bg);
+    color: var(--color-button-text);
+}
+
+.plot-config-details[open] summary {
+    background: var(--color-toggle-active-bg);
+    color: var(--color-body-text);
+}
+
+.plot-config-details[open] .toggles-switches {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 200;
+    background: var(--color-container-bg);
+    border: 1px solid var(--color-container-border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    min-width: 170px;
+}
+
+/* ── Drag-resize handle ──────────────────────────────────────────────────────── */
+
+.resize-handle {
+    background: var(--color-container-border);
+    cursor: col-resize;
+    user-select: none;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;          /* lets the grip rectangle bump out of the 6 px column */
+    transition: background 0.15s;
+}
+
+/* Small rectangle that bumps out of the bar — classic resize-handle indicator */
+.resize-handle-grip {
+    width: 14px;                /* extends 4 px into each adjacent panel */
+    height: 26px;
+    background: var(--color-container-bg);
+    border: 1px solid var(--color-container-border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    position: relative;
+    pointer-events: none;       /* drag events are handled by the parent bar */
+    transition: border-color 0.15s, background 0.15s;
+}
+
+/* Three vertically-stacked dots inside the grip */
+.resize-handle-grip::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--color-container-text);
+    box-shadow:
+        0 -6px 0 var(--color-container-text),
+        0  6px 0 var(--color-container-text);
+    opacity: 0.45;
+    transition: opacity 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.resize-handle:hover,
+.resize-handle.dragging {
+    background: var(--color-toggle-active-bg);
+}
+
+.resize-handle:hover .resize-handle-grip,
+.resize-handle.dragging .resize-handle-grip {
+    border-color: var(--color-toggle-active-bg);
+    background: var(--color-container-border);
+}
+
+.resize-handle:hover .resize-handle-grip::before,
+.resize-handle.dragging .resize-handle-grip::before {
+    opacity: 1;
+    background: var(--color-button-text);
+    box-shadow:
+        0 -6px 0 var(--color-button-text),
+        0  6px 0 var(--color-button-text);
 }
 
 .plot-header {
@@ -383,6 +508,146 @@ body {
 }
 
 /* ── Export panel ────────────────────────────────────────────────────── */
+
+/* ── Sort dropdown (paper list) ──────────────────────────────────────────────── */
+
+.sort-select-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.sort-dir-btn {
+    background: var(--color-body-bg);
+    border: 1px solid var(--color-container-border) !important;
+    color: var(--color-body-text);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+    margin-bottom: 0;
+    box-shadow: none !important;
+}
+
+.sort-dir-btn:hover {
+    color: var(--color-body-text);
+    background: var(--color-toggle-hover-bg);
+    border-color: var(--color-toggle-active-bg) !important;
+}
+
+.sort-dir-btn.active {
+    background: var(--color-body-bg) !important;
+    border-color: var(--color-container-border) !important;
+    box-shadow: none !important;
+}
+.sort-dir-btn:focus,.sort-dir-btn.focus  {
+    background: var(--color-body-bg) !important;
+    color: var(--color-body-text) !important;
+}
+
+.sort-select-wrapper .shiny-input-container {
+    width: auto !important;
+    margin-bottom: 0 !important;
+}
+
+.sort-select-wrapper label {
+    font-size: 11px;
+    color: var(--color-container-text);
+    font-weight: 500;
+    margin-bottom: 0 !important;
+    white-space: nowrap;
+    display: block;
+}
+
+.sort-select-wrapper .shiny-input-container,
+.sort-select-wrapper .selectize-control {
+    width: 100px !important;
+}
+
+.sort-select-wrapper .selectize-input {
+    background: var(--color-body-bg) !important;
+    border: 1px solid var(--color-container-border) !important;
+    color: var(--color-body-text) !important;
+    padding: 4px 28px 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: none !important;
+    min-height: 0;
+    white-space: nowrap;
+}
+
+.sort-select-wrapper .selectize-dropdown {
+    background: var(--color-body-bg);
+    border: 1px solid var(--color-container-border);
+    color: var(--color-body-text);
+}
+
+.sort-select-wrapper .selectize-dropdown-content .option {
+    background: var(--color-body-bg);
+    color: var(--color-body-text);
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.sort-select-wrapper .selectize-dropdown-content .option:hover {
+    background: var(--color-container-border);
+}
+
+/* The export button is still a <details>/<summary> dropdown */
+.export-details {
+    position: relative;
+}
+
+.export-details summary {
+    background: transparent;
+    border: 1px solid var(--color-container-border);
+    color: var(--color-container-text);
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: sans-serif;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    margin: 8px 0 0 0;
+    transition: all 0.2s;
+    display: inline-block;
+    width: 120px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.export-details summary::-webkit-details-marker { display: none; }
+
+/* Chevron matches .plot-config-details — both open sub-panels */
+.export-details summary::after {
+    content: " ▾";
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.export-details[open] summary::after {
+    content: " ▴";
+}
+
+.export-details summary:hover {
+    background: var(--color-container-bg);
+    border-color: var(--color-toggle-active-bg);
+    color: var(--color-button-text);
+}
+
+.export-details[open] summary {
+    background: var(--color-toggle-active-bg);
+    color: var(--color-body-text);
+}
 
 .export-details[open] .export-dropdown {
     position: absolute;
@@ -439,14 +704,16 @@ body {
     box-sizing: border-box;
 }
 
-/* Plot wrapper */
+/* Plot wrapper — scrollable container; the plot never shrinks below its initial
+   size so scroll bars appear instead of squishing the figure. */
 .plot-wrapper {
     flex: 1;
     position: relative;
-    background: var(--color-container-bg);
-    border: 1px solid var(--color-container-border);
+    background: transparent;
+    border: none;
     padding: 20px;
     min-height: 0;
+    overflow: auto;
 }
 
 /* Arrow markers drawn by plot_interactions.js */
@@ -478,7 +745,7 @@ body {
 }
 
 .plot-container.plotly .main-svg text {
-    fill: var(--color-container-text) !important;
+    fill: var(--color-plot-text) !important;
 }
 
 .plot-container.plotly .main-svg .shapelayer path {
@@ -537,11 +804,6 @@ body {
     transition: all 0.3s ease;
 }
 
-.table-section.hidden {
-    width: 0;
-    overflow: hidden;
-    opacity: 0;
-}
 
 .table-header {
     flex: 0 0 auto;
@@ -566,9 +828,9 @@ body {
 .table-header-top-right {
     position: relative;
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
 }
 
 .table-header h3 {
@@ -651,8 +913,15 @@ a.paper-card-link {
 
 .paper-meta-list {
     margin-bottom: 16px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
-
+.paper-meta-list > div + div {
+    border-left: 1px solid;
+    padding-left: 6px;  
+    margin-left: 6px;  
+}
 .paper-meta {
     font-size: 11px;
     color: var(--color-container-text);
@@ -711,35 +980,41 @@ a.paper-card-link {
 
 /* WebKit (Chrome, Safari, Edge) */
 @supports selector(::-webkit-scrollbar) {
-    .paper-list::-webkit-scrollbar {
+    .paper-list::-webkit-scrollbar,
+    .plot-wrapper::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
 
-    .paper-list::-webkit-scrollbar-track {
+    .paper-list::-webkit-scrollbar-track,
+    .plot-wrapper::-webkit-scrollbar-track {
         background: var(--color-scroll-bg);
         border-radius: 4px;
     }
 
-    .paper-list::-webkit-scrollbar-thumb {
+    .paper-list::-webkit-scrollbar-thumb,
+    .plot-wrapper::-webkit-scrollbar-thumb {
         background-color: var(--color-plot-path);
         border-radius: 4px;
         border: 2px solid var(--color-scroll-bg);
     }
 
-    .paper-list::-webkit-scrollbar-thumb:hover {
+    .paper-list::-webkit-scrollbar-thumb:hover,
+    .plot-wrapper::-webkit-scrollbar-thumb:hover {
         background-color: var(--color-container-text);
     }
 
     /* Remove scrollbar arrows */
-    .paper-list::-webkit-scrollbar-button {
+    .paper-list::-webkit-scrollbar-button,
+    .plot-wrapper::-webkit-scrollbar-button {
         display: none;
     }
 }
 
 /* Firefox */
 @-moz-document url-prefix() {
-    .paper-list {
+    .paper-list,
+    .plot-wrapper {
         scrollbar-width: thin;
         scrollbar-color: var(--color-plot-path) var(--color-scroll-bg);
     }

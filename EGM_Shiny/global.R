@@ -35,8 +35,12 @@ egm_definition <- list(
     y_column_display = "Theme",
 
     # Desired max and min pixel size for the points in the figure
-    plot_points_desired_max_px = 60,
+    plot_points_desired_max_px = 40,
     plot_points_desired_min_px = 1,
+
+    # Minimum pixel size of each grid cell (row height and column width) in the plot.  
+    plot_cell_width_px = 50,
+    plot_cell_height_px = 50,
 
     # A list of column names within the data file to be used in filtering.
     # Dropdowns will be created programmatically for each of these items.
@@ -63,8 +67,9 @@ egm_definition <- list(
     # Remaining citation fields shown as a compact inline block below the title.
     # Display names are short labels shown before the value ("Vol.", "No.", "pp.").
     # An empty string ("") means the value is shown without a label.
-    paper_citation_columns         = c("authors", "year", "journal", "volume", "issue", "pages", "doi"),
-    paper_citation_columns_display = c("",        "",     "",        "Vol.",   "No.",   "pp.",   "DOI"),
+    paper_citation_columns         = c("year", "authors", "journal", "volume", "issue", "pages", "doi"),
+    paper_citation_columns_display = c("",     "",        "Journal", "Vol.",   "No.",   "pp.",   "DOI"),
+    paper_citation_columns_bold    = c(TRUE,   FALSE,     FALSE,     FALSE,    FALSE,   FALSE,   FALSE),
 
     # Additional metadata shown as labeled badge pills below the citation.
     # Display names are the badge labels ("Setting: Hospital").
@@ -72,6 +77,10 @@ egm_definition <- list(
     paper_meta_columns_display = c("US Origin", "Research Type", "Study Setting", "Observational Study", "Review Type"),
 
     # Mapping from data column names to standard BibTeX field names.
+    # Columns the user can sort the paper list by.  Must be valid column names.
+    paper_sort_columns         = c("year", "authors", "title"),
+    paper_sort_columns_display = c("Year", "Author", "Title"),
+
     # Used by the export module to build BibEntry objects for BibTeX, APA,
     # Vancouver, and RIS output.  Keys are column names in the CSV; values are
     # BibTeX field names recognised by RefManageR.
@@ -87,7 +96,7 @@ egm_definition <- list(
     ),
 
     # Color pallette
-    # These values are also written to www/colors_runtime.css so the stylesheet
+    # These values are also written to www/styles_runtime.css so the stylesheet
     # can reference them as CSS custom properties (var(--color-*)).
     colors = list(
         all_points        = "#30a9ff",
@@ -96,7 +105,7 @@ egm_definition <- list(
         low_confidence    = "#CC3D3D",
         in_progress       = "#FFC0CB",
         heatmap_min       = "rgba(31,119,180,0)",    # fully transparent (same hue as all_points)
-        heatmap_max       = "rgba(31,119,180,0.35)" # light blue tint at max count
+        heatmap_max       = "rgba(31, 118, 180, 0.9)" # light blue tint at max count
     )
 )
 
@@ -109,7 +118,7 @@ css <- paste0(
     paste0("--color-", names(egm_definition$colors), ": ", unlist(egm_definition$colors), ";", collapse = ""),
     "}"
 )
-writeLines(css, "www/colors_runtime.css")
+writeLines(css, "www/styles_runtime.css")
 
 
 # =============================================================================
@@ -170,8 +179,11 @@ create_counts <- function(df) {
     df %>%
         count(.data[[x_col]], .data[[y_col]]) %>%
         mutate(
-            !!x_col := fct_relevel(factor(.data[[x_col]]), "Other", "None Given", after = Inf),
-            !!y_col := fct_relevel(factor(.data[[y_col]]), "None Given", "Other")
+            !!x_col := fct_relevel(factor(.data[[x_col]]),
+                                   intersect(c("Other", "None Given"), unique(.data[[x_col]])),
+                                   after = Inf),
+            !!y_col := fct_relevel(factor(.data[[y_col]]),
+                                   intersect(c("None Given", "Other"), unique(.data[[y_col]])))
         )
 }
 
@@ -218,3 +230,13 @@ df_all <- read_csv(egm_definition$datafile_path) %>%
 # Stored in the global env so mod_plot.R can reference it for consistent axis
 # sizing and marker scaling as the user applies filters.
 initial_egm_data <- create_egm_data(df_all)
+
+# Compute the fixed plot width (same formula as create_egm_figure) and write a
+# max-width rule so the plot-section-header never exceeds the plot right edge.
+local({
+    n_x   <- length(unique(initial_egm_data$all$counts[[egm_definition$x_column]]))
+    max_w <- n_x * egm_definition$plot_cell_width_px + 260 + 40
+    cat(paste0(".plot-section-header { max-width: ", max_w, "px; }
+"),
+        file = "www/styles_runtime.css", append = TRUE)
+})
