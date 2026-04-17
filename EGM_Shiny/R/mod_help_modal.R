@@ -16,10 +16,10 @@
 help_modal_ui <- function() {
 
     # ── Dot-types list ─────────────────────────────────────────────────────────
-    # Always include the "All Papers" entry; confidence and in-progress entries
+    # Always include the "Summary" entry; confidence and in-progress entries
     # are added only when the corresponding data columns exist.
     dot_items <- list(
-        tags$div(HTML("<span class='dot-swatch' style='background:var(--color-all_points)'></span><strong>Blue \u2014 All Papers:</strong> every paper at that cell"))
+        tags$div(HTML("<span class='dot-swatch' style='background:var(--color-all_points)'></span><strong>Blue \u2014 Summary:</strong> every paper at that cell"))
     )
     if (has_confidence) {
         dot_items <- c(dot_items, list(
@@ -44,20 +44,20 @@ help_modal_ui <- function() {
     })
 
     # ── Toggles list ───────────────────────────────────────────────────────────
-    # Always include Table, Heatmap, All Papers; add optional toggles when present.
+    # Always include Table, Heatmap, Summary; add optional toggles when present.
     toggle_items <- list(
         tags$li(HTML("<strong>Table</strong> \u2014 shows or hides the paper detail panel on the right")),
         tags$li(HTML("<strong>Heatmap</strong> \u2014 shows or hides the cell-shading overlay (darker = more papers)")),
-        tags$li(HTML("<strong>All Papers</strong> \u2014 shows or hides the blue All Papers dots"))
+        tags$li(HTML("<strong>Summary Dots</strong> \u2014 shows or hides the blue Summary dots"))
     )
     if (has_confidence) {
         toggle_items <- c(toggle_items, list(
-            tags$li(HTML("<strong>Confidence</strong> \u2014 shows or hides the High, Medium, and Low Confidence dots"))
+            tags$li(HTML("<strong>Confidence Dots</strong> \u2014 shows or hides the High, Medium, and Low Confidence dots"))
         ))
     }
     if (has_in_progress) {
         toggle_items <- c(toggle_items, list(
-            tags$li(HTML("<strong>In Progress</strong> \u2014 shows or hides the pink In Progress dots"))
+            tags$li(HTML("<strong>In Progress Dots</strong> \u2014 shows or hides the pink In Progress dots"))
         ))
     }
 

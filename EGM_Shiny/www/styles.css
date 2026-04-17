@@ -508,6 +508,98 @@ body {
 
 /* ── Export panel ────────────────────────────────────────────────────── */
 
+/* ── Sort dropdown (paper list) ──────────────────────────────────────────────── */
+
+.sort-select-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.sort-dir-btn {
+    background: var(--color-body-bg);
+    border: 1px solid var(--color-container-border) !important;
+    color: var(--color-body-text);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+    margin-bottom: 0;
+    box-shadow: none !important;
+}
+
+.sort-dir-btn:hover {
+    color: var(--color-body-text);
+    background: var(--color-toggle-hover-bg);
+    border-color: var(--color-toggle-active-bg) !important;
+}
+
+.sort-dir-btn.active {
+    background: var(--color-body-bg) !important;
+    border-color: var(--color-container-border) !important;
+    box-shadow: none !important;
+}
+.sort-dir-btn:focus,.sort-dir-btn.focus  {
+    background: var(--color-body-bg) !important;
+    color: var(--color-body-text) !important;
+}
+
+.sort-select-wrapper .shiny-input-container {
+    width: auto !important;
+    margin-bottom: 0 !important;
+}
+
+.sort-select-wrapper label {
+    font-size: 11px;
+    color: var(--color-container-text);
+    font-weight: 500;
+    margin-bottom: 0 !important;
+    white-space: nowrap;
+    display: block;
+}
+
+.sort-select-wrapper .shiny-input-container,
+.sort-select-wrapper .selectize-control {
+    width: 100px !important;
+}
+
+.sort-select-wrapper .selectize-input {
+    background: var(--color-body-bg) !important;
+    border: 1px solid var(--color-container-border) !important;
+    color: var(--color-body-text) !important;
+    padding: 4px 28px 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: none !important;
+    min-height: 0;
+    white-space: nowrap;
+}
+
+.sort-select-wrapper .selectize-dropdown {
+    background: var(--color-body-bg);
+    border: 1px solid var(--color-container-border);
+    color: var(--color-body-text);
+}
+
+.sort-select-wrapper .selectize-dropdown-content .option {
+    background: var(--color-body-bg);
+    color: var(--color-body-text);
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.sort-select-wrapper .selectize-dropdown-content .option:hover {
+    background: var(--color-container-border);
+}
+
 /* The export button is still a <details>/<summary> dropdown */
 .export-details {
     position: relative;
@@ -524,7 +616,7 @@ body {
     cursor: pointer;
     user-select: none;
     list-style: none;
-    margin: 0;
+    margin: 8px 0 0 0;
     transition: all 0.2s;
     display: inline-block;
     width: 120px;
@@ -735,9 +827,9 @@ body {
 .table-header-top-right {
     position: relative;
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
 }
 
 .table-header h3 {

@@ -92,7 +92,8 @@ ui <- fluidPage(
                         class = "table-header-top",
                         div(class = "table-header-top-left",  tags$h3("Selected papers")),
                         div(class = "table-header-top-right",
-                            mod_export_citations_ui("egm")     # "Export"
+                            mod_sort_ui("egm"),
+                            mod_export_citations_ui("egm")
                         )
                     ),
                     mod_click_plot_header_ui("egm")   # paper count + selection tags

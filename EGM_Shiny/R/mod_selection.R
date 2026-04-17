@@ -103,6 +103,7 @@ create_table_cards_html <- function(df) {
     doi_col      <- egm_definition$paper_doi_column
     cite_cols    <- egm_definition$paper_citation_columns
     cite_display <- egm_definition$paper_citation_columns_display
+    cite_bold    <- egm_definition$paper_citation_columns_bold
     meta_cols    <- egm_definition$paper_meta_columns
     meta_display <- egm_definition$paper_meta_columns_display
     x_col        <- egm_definition$x_column
@@ -123,19 +124,21 @@ create_table_cards_html <- function(df) {
                          title_col %in% names(row) && !is_blank(row[[title_col]])) {
             as.character(row[[title_col]])
         } else "(No title)"
-        title <- tags$h4(title_text)
+        title <- tags$h4(paste0(i, ". ", title_text))
 
         # -- 2. Citation block -------------------------------------------------
         # Build inline field elements then join with middot separators.
         cite_parts <- Filter(Negate(is.null), lapply(seq_along(cite_cols), function(j) {
-            col <- cite_cols[[j]]
-            lbl <- cite_display[[j]]
+            col  <- cite_cols[[j]]
+            lbl  <- cite_display[[j]]
+            bold <- isTRUE(cite_bold[[j]])
             if (!(col %in% names(row)) || is_blank(row[[col]])) return(NULL)
             val <- as.character(row[[col]])
+            val_tag <- if (bold) tags$strong(class = "cite-value", val) else span(class = "cite-value", val)
             if (nchar(lbl) == 0) {
-                span(class = "cite-value", val)
+                val_tag
             } else {
-                tagList(span(class = "cite-label", lbl), " ", span(class = "cite-value", val))
+                tagList(span(class = "cite-label", lbl), " ", val_tag)
             }
         }))
 
@@ -144,7 +147,7 @@ create_table_cards_html <- function(df) {
             for (k in seq_along(cite_parts)) {
                 separated[[k * 2 - 1]] <- cite_parts[[k]]
                 if (k < length(cite_parts))
-                    separated[[k * 2]] <- span(class = "cite-sep", ", ")
+                    separated[[k * 2]] <- span(class = "cite-sep", "; ")
             }
             div(class = "paper-citation", separated)
         }
@@ -226,6 +229,21 @@ mod_deselect_ui <- function(id) {
     actionButton(ns("deselect_all"), "Deselect all", class = "reset-btn filters-reset-btn")
 }
 
+mod_sort_ui <- function(id) {
+    ns <- NS(id)
+    div(
+        class = "sort-select-wrapper",
+        selectInput(
+            ns("sort_by"),
+            label    = "Sort by",
+            choices  = setNames(egm_definition$paper_sort_columns,
+                                egm_definition$paper_sort_columns_display),
+            selected = egm_definition$paper_sort_columns[1]
+        ),
+        actionButton(ns("sort_dir_toggle"), "\u2191", class = "sort-dir-btn", title = "Toggle sort direction")
+    )
+}
+
 mod_click_reset_ui <- function(id) {
     ns <- NS(id)
     actionButton(ns("reset_plot"), "Reset Selection", class = "reset-btn")
@@ -237,6 +255,16 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         # Current selection: list of point-info lists, or NULL when nothing is selected
         clicked_info <- reactiveVal(NULL)
 
+        # Sort direction: "asc" or "desc"; toggled by the ↑/↓ button.
+        sort_dir <- reactiveVal("asc")
+
+        observeEvent(input$sort_dir_toggle, {
+            new_dir <- if (sort_dir() == "asc") "desc" else "asc"
+            sort_dir(new_dir)
+            updateActionButton(session, "sort_dir_toggle",
+                               label = if (new_dir == "asc") "\u2191" else "\u2193")
+        })
+
         # Lasso / box-select: observe event_data() directly.
         # plotly_deselect (double-click) and filter resets both cause this to
         # become NULL, so re-selecting the same points always triggers a change.
@@ -247,13 +275,13 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
             if (!is.null(info)) clicked_info(info)
         }, ignoreNULL = TRUE)
 
-        # Dataframe of papers matching the current selection, sorted by author.
+        # Dataframe of papers matching the current selection, sorted by the chosen column.
         clicked_df <- reactive({
             df <- create_plotly_click_df(egm_data(), clicked_info(), x_col, y_col)
             if (is.null(df) || nrow(df) == 0) return(df)
-            author_col <- egm_definition$paper_citation_columns[1]
-            if (author_col %in% names(df))
-                df <- df[order(df[[author_col]], na.last = TRUE), ]
+            sort_col <- input$sort_by
+            if (!is.null(sort_col) && sort_col %in% names(df))
+                df <- df[order(df[[sort_col]], decreasing = sort_dir() == "desc", na.last = TRUE), ]
             df
         })
 

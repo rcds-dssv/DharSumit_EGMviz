@@ -67,8 +67,9 @@ egm_definition <- list(
     # Remaining citation fields shown as a compact inline block below the title.
     # Display names are short labels shown before the value ("Vol.", "No.", "pp.").
     # An empty string ("") means the value is shown without a label.
-    paper_citation_columns         = c("authors", "year", "journal", "volume", "issue", "pages", "doi"),
-    paper_citation_columns_display = c("",        "",     "",        "Vol.",   "No.",   "pp.",   "DOI"),
+    paper_citation_columns         = c("year", "authors", "journal", "volume", "issue", "pages", "doi"),
+    paper_citation_columns_display = c("",     "",        "Journal", "Vol.",   "No.",   "pp.",   "DOI"),
+    paper_citation_columns_bold    = c(TRUE,   FALSE,     FALSE,     FALSE,    FALSE,   FALSE,   FALSE),
 
     # Additional metadata shown as labeled badge pills below the citation.
     # Display names are the badge labels ("Setting: Hospital").
@@ -76,6 +77,10 @@ egm_definition <- list(
     paper_meta_columns_display = c("US Origin", "Research Type", "Study Setting", "Observational Study", "Review Type"),
 
     # Mapping from data column names to standard BibTeX field names.
+    # Columns the user can sort the paper list by.  Must be valid column names.
+    paper_sort_columns         = c("year", "authors", "title"),
+    paper_sort_columns_display = c("Year", "Author", "Title"),
+
     # Used by the export module to build BibEntry objects for BibTeX, APA,
     # Vancouver, and RIS output.  Keys are column names in the CSV; values are
     # BibTeX field names recognised by RefManageR.

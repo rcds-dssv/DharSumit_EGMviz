@@ -2,7 +2,7 @@
 # mod_toggles — plot layer visibility controls
 #
 # Sliding toggle switches control what is shown in the EGM.  Three switches
-# are always present (Table, Heatmap, All Papers).  Confidence and In Progress
+# are always present (Table, Heatmap, Summary).  Confidence and In Progress
 # switches are added only when the corresponding columns are defined in
 # egm_definition (has_confidence / has_in_progress flags set in global.R).
 #
@@ -29,10 +29,10 @@ mod_toggles_ui <- function(id) {
 
     switches <- list(
         mk("show_heatmap", "Heatmap"),
-        mk("show_summary", "All Papers")
+        mk("show_summary", "Summary Dots")
     )
-    if (has_confidence)   switches <- c(switches, list(mk("show_confidence",  "Confidence")))
-    if (has_in_progress)  switches <- c(switches, list(mk("show_in_progress", "In Progress")))
+    if (has_confidence)   switches <- c(switches, list(mk("show_confidence",  "Confidence Dots")))
+    if (has_in_progress)  switches <- c(switches, list(mk("show_in_progress", "In Progress Dots")))
 
     div(class = "toggles-switches", switches)
 }
