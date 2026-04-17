@@ -324,7 +324,7 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
 
         output$plot_info <- renderUI({
             if (is.null(clicked_info())) {
-                tags$p(class = "info", "Use the lasso or box-select tool to display papers.")
+                tags$p(class = "info", "Click on a point or click+drag with the box-select or lasso tool to display papers.")
             } else {
                 tags$p(class = "info", 'Use the "Deselect all" button or double click within the plot to deselect.')
             }

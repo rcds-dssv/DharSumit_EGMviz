@@ -222,14 +222,31 @@ Shiny.addCustomMessageHandler("clearPlotlySelection", function(msg) {
     Plotly.restyle(plot, { selectedpoints: null });
 });
 
+// Remembered plot-panel width from the last resize, restored when the table
+// re-opens so the layout snaps back to where the user left it.
+var _savedPlotWidth = null;
+
 // Show or hide the table section + resize handle based on selection state.
-// Clears any inline grid style set by the resize-handle JS so CSS defaults
-// apply when hiding.
+// On hide: saves the resized plot-panel width (if any) then clears all inline
+// sizing so CSS defaults restore full-width.  On show: restores the saved width.
 Shiny.addCustomMessageHandler("toggleTableSection", function(msg) {
-    var mainArea = document.getElementById("main_area");
+    var mainArea    = document.getElementById("main_area");
+    var plotSection = document.getElementById("plot_section");
     if (!mainArea) return;
-    mainArea.classList.toggle("has-selection", msg.visible);
-    if (!msg.visible) mainArea.style.gridTemplateColumns = "";
+
+    if (msg.visible) {
+        mainArea.classList.add("has-selection");
+        if (_savedPlotWidth !== null && plotSection) {
+            plotSection.style.width = _savedPlotWidth;
+        }
+    } else {
+        if (plotSection && plotSection.style.width) {
+            _savedPlotWidth = plotSection.style.width;
+            plotSection.style.width = "";
+        }
+        mainArea.classList.remove("has-selection");
+        mainArea.style.gridTemplateColumns = "";
+    }
 });
 
 
