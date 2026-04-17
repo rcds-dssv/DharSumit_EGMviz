@@ -19,6 +19,7 @@
     --color-toggle-active-bg:     #4f46e5;
     --color-button-text:          #a78bfa;
     --color-plot-path:            #3c4b6c;
+    --color-plot-text:            #cfdbf6;
     --color-table-bg:             #0f1629;
     --color-table-shadow:         rgba(79, 70, 229, 0.2);
     --color-tag-default:          rgba(79, 70, 229, 0.3);
@@ -744,7 +745,7 @@ body {
 }
 
 .plot-container.plotly .main-svg text {
-    fill: var(--color-container-text) !important;
+    fill: var(--color-plot-text) !important;
 }
 
 .plot-container.plotly .main-svg .shapelayer path {

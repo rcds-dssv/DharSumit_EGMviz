@@ -154,11 +154,30 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     n_x <- length(unique(initial_egm_data$all$counts[[x_col]]))
     n_y <- length(unique(initial_egm_data$all$counts[[y_col]]))
 
-    # set the pixel size of each grid cell from egm_definition
-    # plot_height includes the top and bottom margins (t = 120, b = 10) so the data-area cells are
-    # exactly plot_cell_width_px tall.  plot_width adds ~260 px for the y-axis label area.
-    plot_width  <- n_x * egm_definition$plot_cell_width_px + 260
-    plot_height <- n_y * egm_definition$plot_cell_height_px + 130
+    # data_height/data_width: pixel extents of the data area (0–1 in paper coords).
+    # plot_height adds the top margin and bottom margin (10 px).
+    # plot_width adds ~260 px for the y-axis label area.
+    data_height <- n_y * egm_definition$plot_cell_height_px
+    data_width  <- n_x * egm_definition$plot_cell_width_px
+    margin_t    <- 120
+    plot_width  <- data_width + 260
+    plot_height <- data_height + margin_t + 10
+
+    # Paper-coordinate positions derived from pixel offsets so the layout stays
+    # consistent regardless of grid size.
+    # x0_margin: left edge of both axis boxes, reaching into the y-axis label area.
+    x0_margin      <- -175 / data_width
+    # x title: level with the x tick labels
+    ann_x_title_y  <- 1 + 20  / data_height
+    # y title: just above the topmost y tick label (top of data area)
+    ann_y_title_y  <- (n_y - 0.5) / n_y
+    # header box top: above the x tick label row
+    top_box_y1     <- 1 + 75  / data_height
+    # Total N: near the top of the margin, above the header box
+    ann_total_n_y  <- 1 + 100 / data_height
+    # small x padding (8 px) inside the left edge of the boxes
+    ann_x          <- x0_margin + 20 / data_width
+
 
     clean_x_title <- egm_definition$x_column_display
     clean_y_title <- egm_definition$y_column_display
@@ -216,8 +235,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             zmin       = 0,
             zmax       = heatmap_zmax,
             colorscale = list(
-                list(0, egm_definition$colors$heatmap_min),  # 0 papers   → fully transparent
-                list(1, egm_definition$colors$heatmap_max)   # max papers → mid-gray
+                list(0, egm_definition$colors$heatmap_min),  # 0 papers 
+                list(1, egm_definition$colors$heatmap_max)   # max papers
             ),
             showscale  = FALSE,
             hoverinfo  = "none",
@@ -243,25 +262,45 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
         )
     }
 
+    # Rectangle shapes framing the axis label areas.
+    axis_box_line  <- list(color = "rgba(160,170,200,0.35)", width = 1)
+    axis_box_fill  <- "rgba(255,255,255,0.04)"
+    top_box <- list(
+        type = "rect", xref = "paper", yref = "paper",
+        x0 = x0_margin, x1 = 1.0,
+        y0 = 1.0,       y1 = top_box_y1,
+        fillcolor = axis_box_fill, line = axis_box_line
+    )
+    left_box <- list(
+        type = "rect", xref = "paper", yref = "paper",
+        x0 = x0_margin, x1 = 0.0,
+        y0 = 0.0,       y1 = 1.0,
+        fillcolor = axis_box_fill, line = axis_box_line
+    )
+
+    # Note: font colors below apply to the downloaded image only.
+    # In the browser, all plotly SVG text is overridden to white via styles.css.
     egm_spec <- egm_spec %>% layout(
-        margin     = list(t = 120, b = 10, l = 0, r = 0, pad = 10),
+        margin     = list(t = margin_t, b = 10, l = 0, r = 0, pad = 10),
         width      = plot_width,
         height     = plot_height,
         autosize   = FALSE,
         dragmode   = "select",
         showlegend = FALSE,
+        font = list(color = "black"),
         xaxis = list(
             type      = "linear",
             tickmode  = "array",
             tickvals  = seq(0, length(x_levels) - 1),
             ticktext  = x_levels,
             range     = c(-0.5, length(x_levels) - 0.5),
-            title     = list(text = clean_x_title, standoff = 10),
+            title     = list(text = ""),
             side      = "top",
             tickangle = 0,
             showgrid  = FALSE,
             zeroline  = FALSE,
-            ticks     = ""
+            ticks     = "",
+            tickfont  = list(color = "black")
         ),
         yaxis = list(
             type     = "linear",
@@ -269,26 +308,42 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             tickvals = seq(0, length(y_levels) - 1),
             ticktext = y_levels,
             range    = c(-0.5, length(y_levels) - 0.5),
-            title    = list(text = clean_y_title, standoff = 20),
+            title    = list(text = ""),
             showgrid = FALSE,
             zeroline = FALSE,
-            ticks    = ""
+            ticks    = "",
+            tickfont = list(color = "black")
         ),
-        shapes      = shapes_for_plotly(n_x, n_y),
-        # "Total N" annotation in the upper-left corner.
-        # x/y are paper coordinates (0–1 maps to the data-area bounds).
-        # Negative x places the box in the left margin (y-axis label area).
-        annotations = list(list(
-            x         = -0.262, y = 1.072,
-            xref      = "paper", yref = "paper",
-            text      = paste0("<b>Total N:</b> ", n_total),
-            showarrow = FALSE,
-            xanchor   = "left", yanchor = "top",
-            align     = "left",
-            bgcolor   = "rgba(0,0,0,0)",
-            bordercolor = "black", borderwidth = 1, borderpad = 10,
-            font = list(size = 12)
-        ))
+        shapes = c(shapes_for_plotly(n_x, n_y), list(top_box, left_box)),
+        annotations = list(
+            # X-axis title: upper-left, inline with x tick labels
+            list(
+                x = ann_x, y = ann_x_title_y,
+                xref = "paper", yref = "paper",
+                text = paste0("<i>", clean_x_title, " &#8594;</i>"),
+                showarrow = FALSE,
+                xanchor = "left", yanchor = "middle",
+                font = list(size = 16, color = "black")
+            ),
+            # Y-axis title: upper-left, just above the topmost y tick label
+            list(
+                x = ann_x, y = ann_y_title_y,
+                xref = "paper", yref = "paper",
+                text = paste0("<i>", clean_y_title, " &#8595;</i>"),
+                showarrow = FALSE,
+                xanchor = "left", yanchor = "bottom",
+                font = list(size = 16, color = "black")
+            ),
+            # Total N: top-left corner, above the header box
+            list(
+                x = ann_x, y = ann_total_n_y,
+                xref = "paper", yref = "paper",
+                text = paste0("<b>Total N:</b> ", n_total),
+                showarrow = FALSE,
+                xanchor = "left", yanchor = "top",
+                font = list(size = 12, color = "black")
+            )
+        )
     )
 
     # plotly_build() materialises the figure so we can post-process axis labels.

@@ -105,7 +105,7 @@ egm_definition <- list(
         low_confidence    = "#CC3D3D",
         in_progress       = "#FFC0CB",
         heatmap_min       = "rgba(31,119,180,0)",    # fully transparent (same hue as all_points)
-        heatmap_max       = "rgba(31,119,180,0.35)" # light blue tint at max count
+        heatmap_max       = "rgba(31, 118, 180, 0.9)" # light blue tint at max count
     )
 )
 
