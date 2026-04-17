@@ -179,8 +179,11 @@ create_counts <- function(df) {
     df %>%
         count(.data[[x_col]], .data[[y_col]]) %>%
         mutate(
-            !!x_col := fct_relevel(factor(.data[[x_col]]), "Other", "None Given", after = Inf),
-            !!y_col := fct_relevel(factor(.data[[y_col]]), "None Given", "Other")
+            !!x_col := fct_relevel(factor(.data[[x_col]]),
+                                   intersect(c("Other", "None Given"), unique(.data[[x_col]])),
+                                   after = Inf),
+            !!y_col := fct_relevel(factor(.data[[y_col]]),
+                                   intersect(c("None Given", "Other"), unique(.data[[y_col]])))
         )
 }
 

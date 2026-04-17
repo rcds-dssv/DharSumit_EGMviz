@@ -201,7 +201,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     n_total <- sum(egm_data$all$counts$n)
 
     # Base figure + toolbar config
-    egm_spec <- plot_ly(source = plot_source_name) %>%
+    egm_spec <- plot_ly(source = plot_source_name, width = plot_width, height = plot_height) %>%
         plotly::config(
             responsive      = TRUE,
             displayModeBar  = TRUE,
@@ -282,8 +282,6 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     # In the browser, all plotly SVG text is overridden to white via styles.css.
     egm_spec <- egm_spec %>% layout(
         margin     = list(t = margin_t, b = 10, l = 0, r = 0, pad = 10),
-        width      = plot_width,
-        height     = plot_height,
         autosize   = FALSE,
         dragmode   = "select",
         showlegend = FALSE,
