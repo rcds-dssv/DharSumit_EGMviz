@@ -166,7 +166,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     # Paper-coordinate positions derived from pixel offsets so the layout stays
     # consistent regardless of grid size.
     # x0_margin: left edge of both axis boxes, reaching into the y-axis label area.
-    x0_margin      <- -175 / data_width
+    x0_margin      <- -160 / data_width
     # x title: level with the x tick labels
     ann_x_title_y  <- 1 + 20  / data_height
     # y title: just above the topmost y tick label (top of data area)
