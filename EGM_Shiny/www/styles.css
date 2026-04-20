@@ -1,32 +1,10 @@
 /* ============================================================ */
-/* STATIC COLOR VARIABLES                                        */
-/* (data-visualization colors are in colors_runtime.css,        */
-/*  generated at startup by R/config.R)                         */
+/* STATIC COLOR VARIABLES                                       */
+/* most colors defined as vars in styles_runtime.css,           */
+/* generated at startup by R/app_config.R                       */
 /* ============================================================ */
 
-:root {
-    --color-body-bg:              #0a0e27;
-    --color-body-text:            white;
-    --color-container-shadow1:    rgba(0,0,0,0.075);
-    --color-container-shadow2:    rgba(102, 175, 233, 0.6);
-    --color-top-gradient1:        #667eea;
-    --color-top-gradient2:        #764ba2;
-    --color-container-bg:         #141b3d;
-    --color-container-border:     #1e2a5a;
-    --color-container-text:       #7c8db5;
-    --color-toggle-hover-bg:      #273a6e;
-    --color-toggle-hover-text:    #a8b8d8;
-    --color-toggle-active-bg:     #4f46e5;
-    --color-button-text:          #a78bfa;
-    --color-plot-path:            #3c4b6c;
-    --color-plot-text:            #cfdbf6;
-    --color-table-bg:             #0f1629;
-    --color-table-shadow:         rgba(79, 70, 229, 0.2);
-    --color-tag-default:          rgba(79, 70, 229, 0.3);
-    --color-tag-special-text:     #252a36;
-    --color-scroll-bg:            #1e1e1e;
-    --color-clicked-point-marker: white;
-}
+
 
 
 /* ============================================================ */
@@ -716,11 +694,6 @@ body {
     overflow: auto;
 }
 
-/* Arrow markers drawn by plot_interactions.js */
-#arrow_markers path {
-    fill: var(--color-clicked-point-marker);
-}
-
 /* Heatmap trace must not intercept mouse events -- the drag layer above it
    handles all plot interactions.  Without this the selection cursor can
    appear to "go behind" the heatmap cells. */
@@ -954,22 +927,22 @@ a.paper-card-link {
 
 /* Confidence-level tag colors (match egm_metadata in R/config.R) */
 .tag.high {
-    background: var(--color-high_confidence) !important;
+    background: var(--color-high-confidence) !important;
     color: var(--color-tag-special-text) !important;
 }
 
 .tag.medium {
-    background: var(--color-medium_confidence) !important;
+    background: var(--color-medium-confidence) !important;
     color: var(--color-tag-special-text) !important;
 }
 
 .tag.low {
-    background: var(--color-low_confidence) !important;
+    background: var(--color-low-confidence) !important;
     color: var(--color-tag-special-text) !important;
 }
 
 .tag.in_progress {
-    background: var(--color-in_progress) !important;
+    background: var(--color-in-progress) !important;
     color: var(--color-tag-special-text) !important;
 }
 
@@ -1279,7 +1252,7 @@ a.paper-card-link {
 .export-progress-bar {
     height: 100%;
     width: 38%;
-    background: var(--color-all_points);
+    background: var(--color-all-points);
     border-radius: 2px;
     animation: exportProgressSlide 1.6s ease-in-out infinite;
 }

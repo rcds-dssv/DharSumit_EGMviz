@@ -15,110 +15,11 @@ library(writexl)
 library(jsonlite)
 library(httr)
 
-
 # =============================================================================
-# DEFINITIONS
-# This section contains (hopefully) all of the variables one would need to 
-# change in order to implement basic tweaks to the dashboard
+# LOAD THE USER CONFIGURARION
+# this will pull in any settings that the user has modified
 # =============================================================================
-
-egm_definition <- list(
-    # The relative path to the data file.
-    datafile_path = "data/AAHHC_Scoping_2026_AMGclean.csv",
-
-    # The column name to use for the x axis of the EGM figure and the display name 
-    x_column = "WorkType",
-    x_column_display = "Work Type",
-
-    # The column name to use for the y axis of the EGM figure and the display name 
-    y_column = "Theme",
-    y_column_display = "Theme",
-
-    # Desired max and min pixel size for the points in the figure
-    plot_points_desired_max_px = 40,
-    plot_points_desired_min_px = 1,
-
-    # Minimum pixel size of each grid cell (row height and column width) in the plot.  
-    plot_cell_width_px = 50,
-    plot_cell_height_px = 50,
-
-    # A list of column names within the data file to be used in filtering.
-    # Dropdowns will be created programmatically for each of these items.
-    # The first vector contains the column names.
-    # The second vector contains the desired display name.
-    filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType"),
-    filter_dropdown_list_display = c("US Origin", "Research Type", "Study Setting", "Observational Study", "Review Type"),
-
-    # The column name to use for the confidence level indicator.
-    # If this column does not exist in the data, this functionality will be ignored.
-    confidence_column_name = NA,
-
-    # The column name to use for the in-progress indicator.
-    # If this column does not exist in the data, this functionality will be ignored.
-    in_progress_column_name = NA,
-
-    # Column containing the paper title, used as the card heading.
-    paper_title_column = "title",
-
-    # Column containing the DOI; used to build the doi.org link on each card.
-    # Set to NA to disable card linking.
-    paper_doi_column = "doi",
-
-    # Remaining citation fields shown as a compact inline block below the title.
-    # Display names are short labels shown before the value ("Vol.", "No.", "pp.").
-    # An empty string ("") means the value is shown without a label.
-    paper_citation_columns         = c("year", "authors", "journal", "volume", "issue", "pages", "doi"),
-    paper_citation_columns_display = c("",     "",        "Journal", "Vol.",   "No.",   "pp.",   "DOI"),
-    paper_citation_columns_bold    = c(TRUE,   FALSE,     FALSE,     FALSE,    FALSE,   FALSE,   FALSE),
-
-    # Additional metadata shown as labeled badge pills below the citation.
-    # Display names are the badge labels ("Setting: Hospital").
-    paper_meta_columns         = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType"),
-    paper_meta_columns_display = c("US Origin", "Research Type", "Study Setting", "Observational Study", "Review Type"),
-
-    # Mapping from data column names to standard BibTeX field names.
-    # Columns the user can sort the paper list by.  Must be valid column names.
-    paper_sort_columns         = c("year", "authors", "title"),
-    paper_sort_columns_display = c("Year", "Author", "Title"),
-
-    # Used by the export module to build BibEntry objects for BibTeX, APA,
-    # Vancouver, and RIS output.  Keys are column names in the CSV; values are
-    # BibTeX field names recognised by RefManageR.
-    paper_citation_bibtex_field_map = list(
-        title   = "title",
-        authors = "author",
-        year    = "year",
-        journal = "journal",
-        volume  = "volume",
-        issue   = "number",
-        pages   = "pages",
-        doi     = "doi"
-    ),
-
-    # Color pallette
-    # These values are also written to www/styles_runtime.css so the stylesheet
-    # can reference them as CSS custom properties (var(--color-*)).
-    colors = list(
-        all_points        = "#30a9ff",
-        high_confidence   = "#46A040",
-        medium_confidence = "#FDB915",
-        low_confidence    = "#CC3D3D",
-        in_progress       = "#FFC0CB",
-        heatmap_min       = "rgba(31,119,180,0)",    # fully transparent (same hue as all_points)
-        heatmap_max       = "rgba(31, 118, 180, 0.9)" # light blue tint at max count
-    )
-)
-
-# =============================================================================
-# SAVE COLORS FOR CSS
-# to ensure consistent colors, write to a css file that can be used by html/js
-# =============================================================================
-css <- paste0(
-    ":root {",
-    paste0("--color-", names(egm_definition$colors), ": ", unlist(egm_definition$colors), ";", collapse = ""),
-    "}"
-)
-writeLines(css, "www/styles_runtime.css")
+source("user_config.R")
 
 
 # =============================================================================
@@ -142,24 +43,24 @@ has_in_progress <- !is.na(egm_definition$in_progress_column_name)
 local({
     next_idx <- 2L
     meta <- list(
-        all = list(display_text = NULL, color = egm_definition$colors$all_points,
+        all = list(display_text = NULL, color = egm_definition$plot_colors$all_points,
                    index = 1L, offset_x = 0.00, offset_y = 0.00)
     )
     if (has_confidence) {
         meta$high   <- list(display_text = "High Confidence",
-                            color = egm_definition$colors$high_confidence,
+                            color = egm_definition$plot_colors$high_confidence,
                             index = next_idx,      offset_x =  0.35, offset_y =  0.35)
         meta$medium <- list(display_text = "Medium Confidence",
-                            color = egm_definition$colors$medium_confidence,
+                            color = egm_definition$plot_colors$medium_confidence,
                             index = next_idx + 1L, offset_x =  0.00, offset_y =  0.35)
         meta$low    <- list(display_text = "Low Confidence",
-                            color = egm_definition$colors$low_confidence,
+                            color = egm_definition$plot_colors$low_confidence,
                             index = next_idx + 2L, offset_x = -0.35, offset_y =  0.35)
         next_idx <- next_idx + 3L
     }
     if (has_in_progress) {
         meta$in_progress <- list(display_text = "In Progress",
-                                 color = egm_definition$colors$in_progress,
+                                 color = egm_definition$plot_colors$in_progress,
                                  index = next_idx, offset_x = -0.17, offset_y = -0.35)
     }
     egm_metadata <<- meta
@@ -231,12 +132,24 @@ df_all <- read_csv(egm_definition$datafile_path) %>%
 # sizing and marker scaling as the user applies filters.
 initial_egm_data <- create_egm_data(df_all)
 
+
+# =============================================================================
+# SAVE STYLES FOR CSS
+# write colors and other styles to a runtime css file that can be used by html/js
+# =============================================================================
+
 # Compute the fixed plot width (same formula as create_egm_figure) and write a
 # max-width rule so the plot-section-header never exceeds the plot right edge.
 local({
+    # gather the colors from the user_config.R file
+    plot_colors_css <- paste0("--color-", str_replace_all(names(egm_definition$plot_colors),'_','-'), ": ", unlist(egm_definition$plot_colors), ";", collapse = "")
+    web_colors_css <- paste0("--color-", str_replace_all(names(egm_definition$web_colors),'_','-'), ": ", unlist(egm_definition$web_colors), ";", collapse = "")
+    colors_css <- paste0(":root {", plot_colors_css, web_colors_css, "}")
+    # calculate the plot width
     n_x   <- length(unique(initial_egm_data$all$counts[[egm_definition$x_column]]))
     max_w <- n_x * egm_definition$plot_cell_width_px + 260 + 40
-    cat(paste0(".plot-section-header { max-width: ", max_w, "px; }
-"),
-        file = "www/styles_runtime.css", append = TRUE)
+    plot_width <- paste0(".plot-section-header { max-width: ", max_w, "px; }")
+    # combine and write to the file
+    output <- paste0(colors_css, '\n', plot_width)
+    writeLines(output, "www/styles_runtime.css")
 })

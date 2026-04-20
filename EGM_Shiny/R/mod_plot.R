@@ -235,8 +235,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             zmin       = 0,
             zmax       = heatmap_zmax,
             colorscale = list(
-                list(0, egm_definition$colors$heatmap_min),  # 0 papers 
-                list(1, egm_definition$colors$heatmap_max)   # max papers
+                list(0, egm_definition$plot_colors$heatmap_min),  # 0 papers 
+                list(1, egm_definition$plot_colors$heatmap_max)   # max papers
             ),
             showscale  = FALSE,
             hoverinfo  = "none",

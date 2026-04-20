@@ -1,6 +1,6 @@
-# global.R is sourced here so the app can also be launched via source("app.R")
+# app_config.R is sourced here so the app can also be launched via source("app.R")
 # in addition to the standard shiny::runApp() workflow.
-source("global.R")
+source("app_config.R")
 
 
 # =============================================================================
@@ -10,7 +10,7 @@ source("global.R")
 ui <- fluidPage(
 
     tags$head(
-        # styles_runtime.css is generated at startup by global.R
+        # styles_runtime.css is generated at startup by app_config.R
         tags$link(rel = "stylesheet", type = "text/css", href = "styles_runtime.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
         tags$script(src = "layout.js"),            # panel drag-resize and UI interaction
