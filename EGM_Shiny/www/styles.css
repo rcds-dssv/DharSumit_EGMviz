@@ -254,7 +254,7 @@ body {
 }
 
 .main-area.has-selection {
-    grid-template-columns: auto 6px minmax(100px, 1fr);
+    grid-template-columns: auto 6px minmax(150px, 1fr);
 }
 
 .main-area.has-selection .table-section {

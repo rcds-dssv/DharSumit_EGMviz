@@ -10,8 +10,8 @@
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 // Minimum table panel width — matches the CSS minmax() floor on the grid column.
-var MIN_TABLE_W = 100;
-var MIN_PLOT_W = 100;
+var MIN_TABLE_W = 150;
+var MIN_PLOT_W = 150;
 
 // Minimum heights for the papers and comparison sub-panels.
 var MIN_PAPERS_H     = 150;

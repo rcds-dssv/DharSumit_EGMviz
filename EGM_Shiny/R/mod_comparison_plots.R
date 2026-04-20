@@ -124,7 +124,7 @@ make_bar_plot <- function(labeled_df) {
         orientation = "h",
         marker      = list(color   = ~.group_color,
                            line    = list(width = 0)),
-        hovertemplate = "%{y}<br>Papers: %{x}<extra></extra>"
+        hovertemplate = "%{y}<br>N Papers: %{x}<extra></extra>"
     ) %>%
         cp_layout(xlab = "Number of papers") %>%
         cp_config()
@@ -166,13 +166,13 @@ make_year_plot <- function(labeled_df) {
             marker        = list(color   = groups$.group_color[i],
                                  line    = list(width = 0)),
             hovertemplate = paste0(groups$.group_label[i],
-                                   "<br>Year: %{x}<br>Papers: %{y}<extra></extra>")
+                                   "<br>Year: %{x}<br>N Papers: %{y}<extra></extra>")
         )
     }
 
     p %>%
         layout(barmode = "stack") %>%
-        cp_layout(xlab = "Year", ylab = "Papers",
+        cp_layout(xlab = "Year", ylab = "Number of Papers",
                   show_legend = nrow(groups) > 1) %>%
         cp_config()
 }
@@ -216,13 +216,13 @@ make_meta_plot <- function(labeled_df, meta_col,
                                  line    = list(width = 0)),
             hovertemplate = paste0(groups$.group_label[i], "<br>",
                                    meta_display_name,
-                                   ": %{y}<br>Papers: %{x}<extra></extra>")
+                                   ": %{y}<br>N Papers: %{x}<extra></extra>")
         )
     }
 
     p %>%
         layout(barmode = "group") %>%
-        cp_layout(xlab = "Papers", ylab = meta_display_name,
+        cp_layout(xlab = "Number of Papers", ylab = meta_display_name,
                   show_legend = nrow(groups) > 1) %>%
         cp_config()
 }
