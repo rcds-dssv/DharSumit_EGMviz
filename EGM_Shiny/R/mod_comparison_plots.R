@@ -53,30 +53,75 @@ build_labeled_data <- function(clicked_info, egm_data, x_col, y_col) {
 
 
 # =============================================================================
+# Minimum height helper
+# =============================================================================
+
+# Returns the minimum pixel height needed for a comparison plot so that axis
+# tick labels and legend entries don't overlap.
+#
+# Bar:  50 px per group (2-line wrapped labels + spacing)
+# Year: 330 px base + 15 px per group beyond the first 2 (legend rows)
+# Meta: counts actual (group, meta_val) bars drawn — applies the same
+#       NA / "" / "Other" filter used in make_meta_plot so empty cells
+#       don't inflate the estimate.  Height = n_cats cluster rows × 12 px
+#       gap + actual bar count × 22 px + overhead.
+#
+# All values include the cp_layout margin overhead (~120 px total t+b).
+compute_cp_min_height <- function(labeled_df, plot_type, meta_col = NULL) {
+    OVERHEAD <- 120L
+    MIN_H    <- 200L
+    if (is.null(labeled_df) || nrow(labeled_df) == 0) return(MIN_H)
+
+    n_groups <- dplyr::n_distinct(labeled_df$.group_label)
+
+    if (plot_type == "bar")
+        return(max(MIN_H, OVERHEAD + n_groups * 50L))
+
+    if (plot_type == "year")
+        return(max(MIN_H, 330L + max(0L, n_groups - 2L) * 15L))
+
+    if (plot_type == "meta" &&
+        !is.null(meta_col) && meta_col %in% names(labeled_df)) {
+        # Mirror make_meta_plot's filter so we count only bars actually drawn
+        filtered <- labeled_df %>%
+            dplyr::filter(!is.na(.data[[meta_col]]),
+                          trimws(as.character(.data[[meta_col]])) != "",
+                          as.character(.data[[meta_col]]) != "Other")
+        if (nrow(filtered) == 0) return(MIN_H)
+        n_cats     <- dplyr::n_distinct(filtered[[meta_col]])
+        n_bars     <- dplyr::n_distinct(
+                          filtered$.group_label, filtered[[meta_col]])
+        return(max(MIN_H, OVERHEAD + n_cats * 12L + n_bars * 22L))
+    }
+
+    return(MIN_H)
+}
+
+
+# =============================================================================
 # Plot builders
 # =============================================================================
 
-# Shared plotly layout settings for the dark theme.
+# Shared plotly layout settings.
+# Note: font/grid colors below apply to the downloaded image only.
+# In the browser, plotly SVG text and grid strokes are overridden via styles.css.
 # plotly:: prefix avoids masking by httr::layout or base::layout.
 cp_layout <- function(p, xlab = "", ylab = "", show_legend = FALSE) {
-    txt  <- egm_definition$plot_colors$plot_text
-    grid <- egm_definition$plot_colors$plot_path
-
     plotly::layout(p,
-        font          = list(color = txt, size = 11),
-        xaxis = list(title = list(text = xlab, font = list(size = 12)),
-                     gridcolor    = grid, 
-                     linecolor     = grid,
-                     zerolinecolor = grid,
-                     tickfont     = list(color = txt)),
+        font          = list(color = "black", size = 11),
+        xaxis = list(title        = list(text = xlab, font = list(size = 12)),
+                     gridcolor    = "#cccccc",
+                     linecolor    = "#cccccc",
+                     zerolinecolor = "#cccccc",
+                     tickfont     = list(color = "black")),
         yaxis = list(title        = list(text = ylab, font = list(size = 12)),
-                     gridcolor    = grid, 
-                     linecolor     = grid,
-                     zerolinecolor = grid,
-                     tickfont     = list(color = txt)),
+                     gridcolor    = "#cccccc",
+                     linecolor    = "#cccccc",
+                     zerolinecolor = "#cccccc",
+                     tickfont     = list(color = "black")),
         margin     = list(l = 60, r = 20, t = 40, b = 60, pad = 2),
         showlegend = show_legend,
-        legend     = list(font        = list(color = txt, size = 10),
+        legend     = list(font        = list(color = "black", size = 10),
                           bgcolor     = "rgba(0,0,0,0)",
                           orientation = "h", x = 0, y = -0.15)
     )
@@ -97,12 +142,11 @@ cp_config <- function(p) {
 
 # Placeholder shown when no selection is active or data is unavailable.
 cp_placeholder <- function(msg = "Select one or more EGM points to see comparison plots.") {
-    txt <- egm_definition$plot_colors$plot_text
     plot_ly() %>%
         add_annotations(text = msg, x = 0.5, y = 0.5,
                         xref = "paper", yref = "paper",
                         showarrow = FALSE,
-                        font = list(color = txt, size = 13)) %>%
+                        font = list(color = "black", size = 13)) %>%
         cp_layout() %>%
         cp_config()
 }
@@ -114,7 +158,8 @@ make_bar_plot <- function(labeled_df) {
     counts <- labeled_df %>%
         dplyr::group_by(.group_label, .group_color, .group_idx) %>%
         dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-        dplyr::arrange(.group_idx)
+        dplyr::arrange(.group_idx) %>%
+        dplyr::mutate(.group_label = wrap_for_plotly(.group_label, width = 25))
 
     plot_ly(
         data        = counts,
@@ -142,7 +187,8 @@ make_year_plot <- function(labeled_df) {
     }
 
     df <- labeled_df %>%
-        dplyr::mutate(.year = suppressWarnings(as.integer(.data[[year_col]]))) %>%
+        dplyr::mutate(.year        = suppressWarnings(as.integer(.data[[year_col]])),
+                      .group_label = wrap_for_plotly(.group_label, width = 25)) %>%
         dplyr::filter(!is.na(.year))
 
     if (nrow(df) == 0)
@@ -194,9 +240,11 @@ make_meta_plot <- function(labeled_df, meta_col,
         return(cp_placeholder("No data for the selected meta column."))
 
     counts <- df %>%
-        dplyr::mutate(.meta_val = as.character(.data[[meta_col]])) %>%
+        dplyr::mutate(.meta_val    = as.character(.data[[meta_col]]),
+                      .group_label = wrap_for_plotly(.group_label, width = 25)) %>%
         dplyr::group_by(.group_label, .group_color, .group_idx, .meta_val) %>%
-        dplyr::summarise(n = dplyr::n(), .groups = "drop")
+        dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+        dplyr::mutate(.meta_val = wrap_for_plotly(.meta_val, width = 20))
 
     groups <- counts %>%
         dplyr::select(.group_label, .group_color, .group_idx) %>%
@@ -248,7 +296,12 @@ mod_comparison_plots_ui <- function(id) {
         ),
         div(
             class = "comparison-plot-wrapper",
-            plotlyOutput(ns("plot"), height = "100%")
+            # cp_inner height is 100% (fills panel) OR the computed min-height
+            # (whichever is larger), set via sendCustomMessage → layout.js.
+            # This lets the wrapper scroll when many groups/categories are shown.
+            div(id = ns("cp_inner"), style = "height: 100%;",
+                plotlyOutput(ns("plot"), height = "100%")
+            )
         )
     )
 }
@@ -316,13 +369,25 @@ mod_comparison_plots_server <- function(id, clicked_info, egm_data) {
 
         output$plot <- renderPlotly({
             ld <- labeled_data()
-            if (is.null(ld) || nrow(ld) == 0) return(cp_placeholder())
+            if (is.null(ld) || nrow(ld) == 0) {
+                session$sendCustomMessage("setCompPlotHeight",
+                    list(wrapperId = session$ns("cp_inner"), height = 200L))
+                return(cp_placeholder())
+            }
 
-            switch(active_type(),
+            type <- active_type()
+            mc   <- if (type == "meta") {
+                if (!is.null(input$meta_col)) input$meta_col else isolate(active_meta())
+            } else NULL
+
+            min_h <- compute_cp_min_height(ld, type, mc)
+            session$sendCustomMessage("setCompPlotHeight",
+                list(wrapperId = session$ns("cp_inner"), height = min_h))
+
+            switch(type,
                 bar  = make_bar_plot(ld),
                 year = make_year_plot(ld),
                 meta = {
-                    mc <- if (!is.null(input$meta_col)) input$meta_col else isolate(active_meta())
                     if (is.null(mc))
                         return(cp_placeholder("No meta columns configured."))
                     disp_idx <- match(mc, egm_definition$paper_meta_columns)

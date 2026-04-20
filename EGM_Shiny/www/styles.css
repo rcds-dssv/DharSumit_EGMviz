@@ -25,7 +25,7 @@ body {
     padding: 0;
     overflow: auto;
     min-width: 1000px;
-    min-height: 800px;
+    min-height: 600px;
 }
 
 /* Reset Shiny default container padding */
@@ -64,7 +64,7 @@ body {
 }
 
 .header-text h1 {
-    margin: 0 0 8px 0;
+    margin: 0;
     font-size: 32px;
     letter-spacing: 1px;
 }
@@ -172,6 +172,7 @@ body {
 .filters-reset-row {
     display: flex;
     justify-content: flex-start;
+    margin-top: 14px;
 }
 
 .filters-reset-btn {
@@ -244,8 +245,8 @@ body {
     grid-template-rows: 1fr;
     align-items: stretch;
     flex: 1;
-    min-height: 0px;
-    overflow: visible;
+    min-height: 0;
+    overflow: hidden;  /* bounds the 1fr row to the flex-computed height so children can't escape the viewport */
 }
 
 .main-area .table-section,
@@ -774,6 +775,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    overflow: hidden;         /* prevent right panel from exceeding the grid row height */
     transition: all 0.3s ease;
 }
 
@@ -960,32 +962,37 @@ a.paper-card-link {
 /* WebKit (Chrome, Safari, Edge) */
 @supports selector(::-webkit-scrollbar) {
     .paper-list::-webkit-scrollbar,
-    .plot-wrapper::-webkit-scrollbar {
+    .plot-wrapper::-webkit-scrollbar,
+    .comparison-plot-wrapper::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
 
     .paper-list::-webkit-scrollbar-track,
-    .plot-wrapper::-webkit-scrollbar-track {
+    .plot-wrapper::-webkit-scrollbar-track,
+    .comparison-plot-wrapper::-webkit-scrollbar-track {
         background: var(--color-scroll-bg);
         border-radius: 4px;
     }
 
     .paper-list::-webkit-scrollbar-thumb,
-    .plot-wrapper::-webkit-scrollbar-thumb {
+    .plot-wrapper::-webkit-scrollbar-thumb,
+    .comparison-plot-wrapper::-webkit-scrollbar-thumb {
         background-color: var(--color-plot-path);
         border-radius: 4px;
         border: 2px solid var(--color-scroll-bg);
     }
 
     .paper-list::-webkit-scrollbar-thumb:hover,
-    .plot-wrapper::-webkit-scrollbar-thumb:hover {
+    .plot-wrapper::-webkit-scrollbar-thumb:hover,
+    .comparison-plot-wrapper::-webkit-scrollbar-thumb:hover {
         background-color: var(--color-container-text);
     }
 
     /* Remove scrollbar arrows */
     .paper-list::-webkit-scrollbar-button,
-    .plot-wrapper::-webkit-scrollbar-button {
+    .plot-wrapper::-webkit-scrollbar-button,
+    .comparison-plot-wrapper::-webkit-scrollbar-button {
         display: none;
     }
 }
@@ -993,7 +1000,8 @@ a.paper-card-link {
 /* Firefox */
 @-moz-document url-prefix() {
     .paper-list,
-    .plot-wrapper {
+    .plot-wrapper,
+    .comparison-plot-wrapper {
         scrollbar-width: thin;
         scrollbar-color: var(--color-plot-path) var(--color-scroll-bg);
     }
@@ -1036,6 +1044,7 @@ a.paper-card-link {
 
 .v-resize-handle {
     flex: 0 0 6px;
+    min-height: 0;               /* prevents flex min-content from overriding flex-basis */
     background: var(--color-container-border);
     cursor: row-resize;
     user-select: none;
@@ -1194,8 +1203,9 @@ a.paper-card-link {
 .comparison-plot-wrapper {
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    overflow-y: auto;         /* scrolls when plot min-height exceeds panel height */
     position: relative;
+    padding-bottom: 8px;      /* prevents the bottom of the plot being flush-clipped */
 }
 
 /* Make Shiny + plotly output fill the wrapper */
@@ -1204,6 +1214,15 @@ a.paper-card-link {
 .comparison-plot-wrapper .js-plotly-plot {
     height: 100% !important;
     width: 100% !important;
+}
+
+/* Override comparison plot grid/axis line strokes to theme color in browser.
+   Text is already covered by the broad .plot-container.plotly .main-svg text rule. */
+.comparison-plot-wrapper .main-svg .gridlayer path,
+.comparison-plot-wrapper .main-svg .zerolinelayer path,
+.comparison-plot-wrapper .main-svg .xlines-above path,
+.comparison-plot-wrapper .main-svg .ylines-above path {
+    stroke: var(--color-plot-path) !important;
 }
 
 /* ── Paper card group dots ─────────────────────────────────────── */

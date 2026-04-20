@@ -129,9 +129,10 @@ bib_col_name <- function(bib_key) {
 # paper-card group dots with a consistent palette.
 make_group_info <- function(clicked_info) {
     if (is.null(clicked_info) || length(clicked_info) == 0) return(NULL)
-    pal    <- egm_definition$comparison_colors
     n      <- length(clicked_info)
-    colors <- pal[(seq_len(n) - 1L) %% length(pal) + 1L]
+    # Generate n perceptually-uniform colors from viridis, trimming the extreme
+    # dark-purple (begin) and bright-yellow (end) so all colors read clearly.
+    colors <- viridisLite::viridis(n, begin = 0.15, end = 0.85, option = "viridis")
     lapply(seq_len(n), function(i) {
         pt <- clicked_info[[i]]
         list(x = pt$clicked_x, y = pt$clicked_y,

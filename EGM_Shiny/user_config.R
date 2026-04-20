@@ -92,13 +92,6 @@ egm_definition <- list(
         plot_text         = "#cfdbf6"
     ),
 
-    # Qualitative palette for comparison plot groups.
-    # One color per selected EGM point; cycles if more than 8 groups are selected.
-    comparison_colors = c(
-        "#e6c35a", "#e05c5c", "#5ae6a0", "#5ab4e6",
-        "#a05ae6", "#e65aa5", "#5ae6e6", "#e6a05a"
-    ),
-
     web_colors = list(
         body_bg           = "#0a0e27",
         body_text         = "white",

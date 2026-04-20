@@ -63,6 +63,35 @@ document.addEventListener("DOMContentLoaded", function() {
             e.preventDefault();
         });
     }
+
+    // One-time initialisation of comparison-subpanel flex-basis.
+    // The CSS default is flex: 0 0 300px, which may exceed the available
+    // space in a short viewport.  The drag handler already caps it correctly
+    // (maxH = tableSection.offsetHeight - 6 - MIN_PAPERS_H), but that only
+    // runs after the user drags.  Here we apply the same cap the first time
+    // table-section becomes visible (gains a positive height), so the initial
+    // render is already correct and no drag is needed to fix it.
+    var tableSection = document.getElementById("table_section");
+    if (tableSection && typeof ResizeObserver !== "undefined") {
+        var _cpInitObserver = new ResizeObserver(function(entries) {
+            var tsH = entries[0].contentRect.height;
+            if (tsH <= 0) return;                            // still hidden — wait
+
+            var compPanel = document.getElementById("comparison_subpanel");
+            if (!compPanel || compPanel.dataset.flexInitialized) {
+                _cpInitObserver.disconnect();
+                return;
+            }
+
+            var maxH     = tsH - 6 - MIN_PAPERS_H;
+            var currentH = compPanel.offsetHeight || 300;
+            var h        = Math.max(MIN_COMPARISON_H, Math.min(currentH, maxH));
+            compPanel.style.flex              = "0 0 " + h + "px";
+            compPanel.dataset.flexInitialized = "1";
+            _cpInitObserver.disconnect();
+        });
+        _cpInitObserver.observe(tableSection);
+    }
 });
 
 document.addEventListener("mousemove", function(e) {
@@ -107,6 +136,20 @@ document.addEventListener("mouseup", function() {
     if (handle) handle.classList.remove("dragging");
     document.body.style.cursor     = "";
     document.body.style.userSelect = "";
+});
+
+
+// ── Comparison plot minimum height ───────────────────────────────────────────
+//
+// R computes how many px are needed to prevent label/legend overlap and sends
+// this value here.  Setting min-height (not height) on cp_inner means:
+//   - when the panel is taller than min-height, the plot still fills the panel
+//   - when the panel is shorter, cp_inner grows and the wrapper scrolls
+
+Shiny.addCustomMessageHandler("setCompPlotHeight", function(msg) {
+    var el = document.getElementById(msg.wrapperId);
+    if (!el) return;
+    el.style.minHeight = msg.height + "px";
 });
 
 

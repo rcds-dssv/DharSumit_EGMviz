@@ -33,7 +33,7 @@ ui <- fluidPage(
             div(
                 class = "header-text",
                 tags$h1("HEARING LITERATURE EVIDENCE GAP MAP"),
-                tags$p("Explore hearing research papers plotted by study type and health outcome. Bubble size reflects the number of papers at each intersection."),
+                tags$span("Explore hearing research papers by study type. Bubble size reflects the number of papers at each intersection."),
                 tags$button(
                     class   = "how-to-use-btn",
                     onclick = "document.getElementById('egm-help-modal').classList.add('open')",

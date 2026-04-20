@@ -26,13 +26,13 @@ mod_filter_ui <- function(id) {
             selectInput(ns(col), label = NULL, choices = choices)
         )
     })
+    filter_reset_button <- div(class = "filters-reset-row",
+            actionButton(ns("reset_filters"), "Reset all filters", class = "reset-btn filters-reset-btn")
+        )
 
     div(class = "toolbar-filters",
         tags$span(class = "toolbar-section-label", "Filters"),
-        div(class = "filters-grid", filter_items),
-        div(class = "filters-reset-row",
-            actionButton(ns("reset_filters"), "Reset all filters", class = "reset-btn filters-reset-btn")
-        )
+        div(class = "filters-grid", filter_items, filter_reset_button)
     )
 }
 
