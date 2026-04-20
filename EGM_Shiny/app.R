@@ -31,7 +31,16 @@ ui <- fluidPage(
         div(
             class = "header-instructions",
             div(
-                class = "header-text",
+                class = "section-strip",
+                tags$button(
+                    class   = "section-collapse-btn",
+                    onclick = "toggleSectionCollapse(this)",
+                    HTML("&#9652;")
+                ),
+                tags$span(class = "section-collapsed-title", "Instructions")
+            ),
+            div(
+                class = "section-main header-text",
                 tags$h1("HEARING LITERATURE EVIDENCE GAP MAP"),
                 tags$span("Explore hearing research papers by study type. Bubble size reflects the number of papers at each intersection."),
                 tags$button(
@@ -45,7 +54,19 @@ ui <- fluidPage(
         # Always-visible controls toolbar: Filters grid on the left, Toggles column on the right
         div(
             class = "controls-toolbar",
-            mod_filter_ui("egm")
+            div(
+                class = "section-strip",
+                tags$button(
+                    class   = "section-collapse-btn",
+                    onclick = "toggleSectionCollapse(this)",
+                    HTML("&#9652;")
+                ),
+                tags$span(class = "section-collapsed-title", "Filters")
+            ),
+            div(
+                class = "section-main",
+                mod_filter_ui("egm")
+            )
         ),
 
         # Main area: plot on the left, paper table on the right

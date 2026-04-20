@@ -60,7 +60,10 @@ body {
     flex-shrink: 0;
     background: linear-gradient(135deg, var(--color-top-gradient1) 0%, var(--color-top-gradient2) 100%);
     color: var(--color-body-text);
-    padding: 20px;
+}
+
+.header-instructions .section-main {
+    padding: 2px 20px 20px;
 }
 
 .header-text h1 {
@@ -89,12 +92,75 @@ body {
 .controls-toolbar {
     flex-shrink: 0;
     display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    padding: 10px 20px;
+    flex-direction: column;
     background: var(--color-container-bg);
     border-bottom: 1px solid var(--color-container-border);
 }
+
+.controls-toolbar .section-main {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 10px 20px;
+}
+
+/* ── Section collapse strip ────────────────────────────────── */
+
+/* Thin strip at the top of header-instructions and controls-toolbar.
+   Always visible; contains the collapse toggle button and (when collapsed)
+   a short label so the user knows what the section is. */
+.section-strip {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 20px;
+    padding: 0 8px;
+}
+
+.section-collapse-btn {
+    background: transparent;
+    border: 1px solid var(--color-container-text);
+    border-radius: 3px;
+    color: inherit;
+    font-size: 14px;
+    line-height: 1;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    opacity: 0.65;
+    transition: opacity 0.15s, border-color 0.15s;
+}
+
+.section-collapse-btn:hover {
+    opacity: 1;
+    border-color: currentColor;
+}
+
+.section-collapsed-title {
+    display: none;
+    font-size: 12px;
+    color: inherit;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
+/* Collapsed: hide main content, show label; strip alone defines the height */
+.header-instructions.section-collapsed .section-main,
+.controls-toolbar.section-collapsed .section-main {
+    display: none;
+}
+
+.header-instructions.section-collapsed .section-collapsed-title,
+.controls-toolbar.section-collapsed .section-collapsed-title {
+    display: inline;
+}
+
 
 /* ── Filters section ───────────────────────────────────────── */
 
