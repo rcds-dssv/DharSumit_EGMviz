@@ -10,6 +10,8 @@ source("app_config.R")
 ui <- fluidPage(
 
     tags$head(
+        # Google material icons for bar chart icon
+        tags$link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=insert_chart"),
         # styles_runtime.css is generated at startup by app_config.R
         tags$link(rel = "stylesheet", type = "text/css", href = "styles_runtime.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),

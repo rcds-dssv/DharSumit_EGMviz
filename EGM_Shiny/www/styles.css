@@ -918,13 +918,19 @@ a.paper-card-link {
 }
 
 .paper-tags .tag {
-    background: var(--color-tag-default);
-    color: var(--color-button-text);
+    color: var(--color-plot-text);
     padding: 3px 8px;
     border-radius: 3px;
     font-size: 10px;
 }
 
+.tag.x-column{
+    background: var(--color-tag-default-x);
+}
+
+.tag.y-column{
+    background: var(--color-tag-default-y);
+}
 /* Confidence-level tag colors (match egm_metadata in R/config.R) */
 .tag.high {
     background: var(--color-high-confidence) !important;
@@ -1106,7 +1112,7 @@ a.paper-card-link {
 }
 
 .comparison-header-left h3 {
-    font-size: 16px;
+    font-size: 24px;
     color: var(--color-button-text);
     margin: 0;
     font-weight: 600;
@@ -1214,22 +1220,9 @@ a.paper-card-link {
     margin-bottom: 0;
 }
 
-.group-dots {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding-top: 3px;
-    flex-shrink: 0;
+.group_chart_icons{
+    line-height: 10px;
 }
-
-.group-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: block;
-    flex-shrink: 0;
-}
-
 
 /* ============================================================ */
 /* SHINY OVERRIDES                                               */

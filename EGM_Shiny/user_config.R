@@ -60,8 +60,8 @@ egm_definition <- list(
 
     # Mapping from data column names to standard BibTeX field names.
     # Columns the user can sort the paper list by.  Must be valid column names.
-    paper_sort_columns         = c("year", "authors", "title"),
-    paper_sort_columns_display = c("Year", "Author", "Title"),
+    paper_sort_columns         = c("year", "authors", "title", "WorkType", "Theme"),
+    paper_sort_columns_display = c("Year", "Author", "Title", "Work Type", "Theme"),
 
     # Used by the export module to build BibEntry objects for BibTeX, APA,
     # Vancouver, and RIS output.  Keys are column names in the CSV; values are
@@ -86,7 +86,7 @@ egm_definition <- list(
         medium_confidence = "#FDB915",
         low_confidence    = "#CC3D3D",
         in_progress       = "#FFC0CB",
-        heatmap_min       = "rgba(31,119,180,0)",    # fully transparent (same hue as all_points)
+        heatmap_min       = "rgba(0,0,0,0)",    # fully transparent
         heatmap_max       = "rgba(31, 118, 180, 0.9)", # light blue tint at max count
         plot_path         = "#3c4b6c",
         plot_text         = "#cfdbf6"
@@ -103,7 +103,7 @@ egm_definition <- list(
         body_bg           = "#0a0e27",
         body_text         = "white",
         top_gradient1     = "#667eea",
-        top_gradient2     = "#764ba2",
+        top_gradient2     = "#a78bfa",
         container_bg      = "#141b3d",
         container_border  = "#1e2a5a",
         container_text    = "#7c8db5",
@@ -112,7 +112,8 @@ egm_definition <- list(
         button_text       = "#a78bfa",
         table_bg          = "#0f1629",
         table_shadow      = "rgba(79, 70, 229, 0.2)",
-        tag_default       = "rgba(79, 70, 229, 0.3)",
+        tag_default_x     = "#667fe260",
+        tag_default_y     = "#a78bf260",
         tag_special_text  = "#252a36",
         scroll_bg         = "#1e1e1e"
     )

@@ -264,18 +264,19 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
 
     # Rectangle shapes framing the axis label areas.
     axis_box_line  <- list(color = "rgba(160,170,200,0.35)", width = 1)
-    axis_box_fill  <- "rgba(255,255,255,0.04)"
+    axis_box_fill_x  <- egm_definition$web_colors$tag_default_x
+    axis_box_fill_y  <- egm_definition$web_colors$tag_default_y
     top_box <- list(
         type = "rect", xref = "paper", yref = "paper",
         x0 = x0_margin, x1 = 1.0,
         y0 = 1.0,       y1 = top_box_y1,
-        fillcolor = axis_box_fill, line = axis_box_line
+        fillcolor = axis_box_fill_x, line = axis_box_line
     )
     left_box <- list(
         type = "rect", xref = "paper", yref = "paper",
         x0 = x0_margin, x1 = 0.0,
         y0 = 0.0,       y1 = 1.0,
-        fillcolor = axis_box_fill, line = axis_box_line
+        fillcolor = axis_box_fill_y, line = axis_box_line
     )
 
     # Note: font colors below apply to the downloaded image only.
