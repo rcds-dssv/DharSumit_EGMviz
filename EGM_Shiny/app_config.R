@@ -13,11 +13,11 @@ library(stringr)
 library(shinyWidgets)
 library(writexl)
 library(jsonlite)
-library(httr)
 
 # =============================================================================
 # LOAD THE USER CONFIGURARION
-# this will pull in any settings that the user has modified
+# this will pull in the settings from the user config file 
+# (below the colors are writting to a separate styles_runtime.css file)
 # =============================================================================
 source("user_config.R")
 
