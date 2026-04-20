@@ -86,19 +86,32 @@ ui <- fluidPage(
             div(
                 class = "table-section",
                 id    = "table_section",
+
+                # Papers sub-panel (top)
                 div(
-                    class = "table-header",
+                    class = "papers-subpanel",
+                    id    = "papers_subpanel",
                     div(
-                        class = "table-header-top",
-                        div(class = "table-header-top-left",  tags$h3("Selected papers")),
-                        div(class = "table-header-top-right",
-                            mod_sort_ui("egm"),
-                            mod_export_citations_ui("egm")
-                        )
+                        class = "table-header",
+                        div(
+                            class = "table-header-top",
+                            div(class = "table-header-top-left",  tags$h3("Selected papers")),
+                            div(class = "table-header-top-right",
+                                mod_sort_ui("egm"),
+                                mod_export_citations_ui("egm")
+                            )
+                        ),
+                        mod_click_plot_header_ui("egm")
                     ),
-                    mod_click_plot_header_ui("egm")   # paper count + selection tags
+                    mod_click_plot_content_ui("egm")
                 ),
-                mod_click_plot_content_ui("egm")      # scrollable list of paper cards
+
+                # Draggable divider between papers and comparison plots
+                div(class = "v-resize-handle", id = "v_resize_handle",
+                    div(class = "v-resize-handle-grip")),
+
+                # Comparison plots sub-panel (bottom)
+                mod_comparison_plots_ui("egm")
             )
         )
     )
@@ -150,6 +163,12 @@ server <- function(input, output, session) {
         "egm",
         clicked_df   = egm_selection$clicked_df,
         clicked_info = egm_selection$clicked_info
+    )
+
+    mod_comparison_plots_server(
+        "egm",
+        clicked_info = egm_selection$clicked_info,
+        egm_data     = egm_data
     )
 }
 

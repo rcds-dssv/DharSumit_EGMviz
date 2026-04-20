@@ -77,7 +77,7 @@ create_table_header_html <- function(selected_info, df) {
 #   2. Citation     -- compact inline block with short labeled fields
 #   3. EGM tags     -- x/y axis values + optional confidence / in-progress badges
 #   4. Meta badges  -- labeled pills for paper_meta_columns ("Setting: Hospital")
-create_table_cards_html <- function(df) {
+create_table_cards_html <- function(df, groups = NULL) {
     if (is.null(df) || nrow(df) == 0) return(div(class = "paper-list"))
 
     title_col    <- egm_definition$paper_title_column
@@ -100,12 +100,32 @@ create_table_cards_html <- function(df) {
     cards <- lapply(seq_len(nrow(df)), function(i) {
         row <- df[i, , drop = FALSE]
 
-        # -- 1. Title ----------------------------------------------------------
+        # -- 1. Group dots + Title ---------------------------------------------
+        # Colored dots indicate which selected EGM group(s) this paper belongs to.
+        group_dots <- if (!is.null(groups)) {
+            matching <- Filter(function(g) {
+                !is_blank(row[[x_col]]) && !is_blank(row[[y_col]]) &&
+                row[[x_col]] == g$x && row[[y_col]] == g$y
+            }, groups)
+            if (length(matching) > 0) {
+                div(class = "group-dots",
+                    lapply(matching, function(g)
+                        tags$span(class = "group-dot",
+                                  style = paste0("background:", g$color),
+                                  title = paste0(g$x, " / ", g$y))
+                    )
+                )
+            }
+        }
+
         title_text <- if (!is.null(title_col) && !is.na(title_col) &&
                          title_col %in% names(row) && !is_blank(row[[title_col]])) {
             as.character(row[[title_col]])
         } else "(No title)"
-        title <- tags$h4(paste0(i, ". ", title_text))
+        title <- div(class = "paper-card-title-row",
+            group_dots,
+            tags$h4(paste0(i, ". ", title_text))
+        )
 
         # -- 2. Citation block -------------------------------------------------
         # Build inline field elements then join with middot separators.
@@ -335,7 +355,7 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         })
 
         output$table_content <- renderUI({
-            create_table_cards_html(clicked_df())
+            create_table_cards_html(clicked_df(), groups = make_group_info(clicked_info()))
         })
 
         # Return the selection state so other modules (e.g. mod_export) can

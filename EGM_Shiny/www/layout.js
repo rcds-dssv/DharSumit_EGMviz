@@ -13,14 +13,27 @@
 var MIN_TABLE_W = 100;
 var MIN_PLOT_W = 100;
 
+// Minimum heights for the papers and comparison sub-panels.
+var MIN_PAPERS_H     = 150;
+var MIN_COMPARISON_H = 150;
+
 
 // ── Draggable resize handle ───────────────────────────────────────────────────
+
+// ── Horizontal (plot / table) resize ─────────────────────────────────────────
 
 var _resizeDragging = false;
 var _resizeStartX   = 0;
 var _resizeStartW   = 0;
 
+// ── Vertical (papers / comparison) resize ────────────────────────────────────
+
+var _vResizeDragging = false;
+var _vResizeStartY   = 0;
+var _vResizeStartH   = 0;
+
 document.addEventListener("DOMContentLoaded", function() {
+    // Horizontal handle
     var handle = document.getElementById("resize_handle");
     if (!handle) return;
     handle.addEventListener("mousedown", function(e) {
@@ -34,9 +47,39 @@ document.addEventListener("DOMContentLoaded", function() {
         document.body.style.userSelect = "none";
         e.preventDefault();
     });
+
+    // Vertical handle
+    var vHandle = document.getElementById("v_resize_handle");
+    if (vHandle) {
+        vHandle.addEventListener("mousedown", function(e) {
+            var compPanel = document.getElementById("comparison_subpanel");
+            if (!compPanel) return;
+            _vResizeDragging = true;
+            _vResizeStartY   = e.clientY;
+            _vResizeStartH   = compPanel.offsetHeight;
+            vHandle.classList.add("dragging");
+            document.body.style.cursor     = "row-resize";
+            document.body.style.userSelect = "none";
+            e.preventDefault();
+        });
+    }
 });
 
 document.addEventListener("mousemove", function(e) {
+    // Vertical resize
+    if (_vResizeDragging) {
+        var compPanel    = document.getElementById("comparison_subpanel");
+        var tableSection = document.getElementById("table_section");
+        if (compPanel && tableSection) {
+            // Dragging up (negative delta) increases the comparison panel height.
+            var maxH = tableSection.offsetHeight - 6 - MIN_PAPERS_H;
+            var newH = Math.min(maxH,
+                       Math.max(MIN_COMPARISON_H,
+                                _vResizeStartH - (e.clientY - _vResizeStartY)));
+            compPanel.style.flex = "0 0 " + newH + "px";
+        }
+    }
+
     if (!_resizeDragging) return;
     var plotSection = document.getElementById("plot_section");
     var mainArea    = document.getElementById("main_area");
@@ -51,6 +94,13 @@ document.addEventListener("mousemove", function(e) {
 });
 
 document.addEventListener("mouseup", function() {
+    if (_vResizeDragging) {
+        _vResizeDragging = false;
+        var vHandle = document.getElementById("v_resize_handle");
+        if (vHandle) vHandle.classList.remove("dragging");
+        document.body.style.cursor     = "";
+        document.body.style.userSelect = "";
+    }
     if (!_resizeDragging) return;
     _resizeDragging = false;
     var handle = document.getElementById("resize_handle");

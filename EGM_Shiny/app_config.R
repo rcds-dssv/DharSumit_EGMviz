@@ -113,6 +113,34 @@ create_egm_data <- function(df_in) {
 
 
 # =============================================================================
+# SHARED HELPERS (used by multiple modules)
+# =============================================================================
+
+# Returns the data column name for a given BibTeX field key.
+# e.g. bib_col_name("year") -> "year", bib_col_name("author") -> "authors"
+bib_col_name <- function(bib_key) {
+    fmap <- egm_definition$paper_citation_bibtex_field_map
+    m <- names(fmap)[unlist(fmap) == bib_key]
+    if (length(m) == 0) NA_character_ else m[[1]]
+}
+
+# Returns a list of group descriptors — one per clicked_info entry — each with
+# fields x, y, trace_id, color, and idx.  Used to colour comparison plots and
+# paper-card group dots with a consistent palette.
+make_group_info <- function(clicked_info) {
+    if (is.null(clicked_info) || length(clicked_info) == 0) return(NULL)
+    pal    <- egm_definition$comparison_colors
+    n      <- length(clicked_info)
+    colors <- pal[(seq_len(n) - 1L) %% length(pal) + 1L]
+    lapply(seq_len(n), function(i) {
+        pt <- clicked_info[[i]]
+        list(x = pt$clicked_x, y = pt$clicked_y,
+             trace_id = pt$trace_id, color = colors[i], idx = i)
+    })
+}
+
+
+# =============================================================================
 # DATA LOADING
 # =============================================================================
 

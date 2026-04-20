@@ -995,6 +995,243 @@ a.paper-card-link {
 
 
 /* ============================================================ */
+/* PAPERS / COMPARISON SUB-PANELS                                */
+/* ============================================================ */
+
+/* Papers sub-panel — takes remaining height after comparison panel */
+.papers-subpanel {
+    flex: 1;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Shiny output wrapper inside papers-subpanel needs to flex through */
+.papers-subpanel > #egm-table_content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Comparison plots sub-panel — initial height set here; JS drag overrides it */
+.comparison-subpanel {
+    flex: 0 0 300px;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-container-border);
+    background: var(--color-table-bg);
+    overflow: hidden;
+}
+
+/* ── Vertical drag-resize handle ──────────────────────────────── */
+
+.v-resize-handle {
+    flex: 0 0 6px;
+    background: var(--color-container-border);
+    cursor: row-resize;
+    user-select: none;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    transition: background 0.15s;
+}
+
+/* Horizontal grip bar — mirrors the vertical resize-handle-grip */
+.v-resize-handle-grip {
+    height: 14px;
+    width: 26px;
+    background: var(--color-container-bg);
+    border: 1px solid var(--color-container-border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    pointer-events: none;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+}
+
+/* Three horizontally-aligned dots inside the grip */
+.v-resize-handle-grip::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--color-container-text);
+    box-shadow:
+        -6px 0 0 var(--color-container-text),
+         6px 0 0 var(--color-container-text);
+    opacity: 0.45;
+    transition: opacity 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.v-resize-handle:hover,
+.v-resize-handle.dragging {
+    background: var(--color-toggle-active-bg);
+}
+
+.v-resize-handle:hover .v-resize-handle-grip,
+.v-resize-handle.dragging .v-resize-handle-grip {
+    border-color: var(--color-toggle-active-bg);
+    background: var(--color-container-border);
+}
+
+.v-resize-handle:hover .v-resize-handle-grip::before,
+.v-resize-handle.dragging .v-resize-handle-grip::before {
+    opacity: 1;
+    background: var(--color-button-text);
+    box-shadow:
+        -6px 0 0 var(--color-button-text),
+         6px 0 0 var(--color-button-text);
+}
+
+/* ── Comparison panel header ──────────────────────────────────── */
+
+.comparison-header {
+    flex: 0 0 auto;
+    padding: 10px 20px 8px;
+    background: var(--color-container-bg);
+    border-bottom: 1px solid var(--color-container-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.comparison-header-left h3 {
+    font-size: 16px;
+    color: var(--color-button-text);
+    margin: 0;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.comparison-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+/* ── Plot-type switcher ───────────────────────────────────────── */
+
+.cp-type-link {
+    font-size: 12px;
+    color: var(--color-container-text);
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 0;
+    transition: color 0.15s;
+    white-space: nowrap;
+}
+
+.cp-type-link:hover {
+    color: var(--color-button-text);
+}
+
+.cp-type-link.cp-type-active {
+    color: var(--color-button-text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-toggle-active-bg);
+}
+
+.cp-type-sep {
+    font-size: 12px;
+    color: var(--color-container-border);
+    padding: 0 2px;
+    user-select: none;
+}
+
+/* Meta column dropdown inlined with the switcher */
+.comparison-header-right .shiny-input-container {
+    margin-bottom: 0 !important;
+    width: auto !important;
+}
+
+.comparison-header-right .selectize-input {
+    background: var(--color-body-bg) !important;
+    border: 1px solid var(--color-container-border) !important;
+    color: var(--color-body-text) !important;
+    padding: 3px 28px 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    box-shadow: none !important;
+    min-height: 0;
+}
+
+.comparison-header-right .selectize-dropdown {
+    background: var(--color-body-bg);
+    border: 1px solid var(--color-container-border);
+    color: var(--color-body-text);
+}
+
+.comparison-header-right .selectize-dropdown-content .option {
+    background: var(--color-body-bg);
+    color: var(--color-body-text);
+    padding: 6px 10px;
+    font-size: 11px;
+}
+
+.comparison-header-right .selectize-dropdown-content .option:hover {
+    background: var(--color-container-border);
+}
+
+/* ── Comparison plot wrapper ──────────────────────────────────── */
+
+.comparison-plot-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Make Shiny + plotly output fill the wrapper */
+.comparison-plot-wrapper .shiny-html-output,
+.comparison-plot-wrapper .plotly.html-widget,
+.comparison-plot-wrapper .js-plotly-plot {
+    height: 100% !important;
+    width: 100% !important;
+}
+
+/* ── Paper card group dots ─────────────────────────────────────── */
+
+.paper-card-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.paper-card-title-row h4 {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.group-dots {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding-top: 3px;
+    flex-shrink: 0;
+}
+
+.group-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: block;
+    flex-shrink: 0;
+}
+
+
+/* ============================================================ */
 /* SHINY OVERRIDES                                               */
 /* ============================================================ */
 
