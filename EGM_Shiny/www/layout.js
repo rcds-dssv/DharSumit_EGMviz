@@ -215,6 +215,21 @@ function toggleSectionCollapse(btn) {
 }
 
 
+// ── Light / dark theme toggle ─────────────────────────────────────────────────
+
+// Switches the data-theme attribute on <html> between "dark" and "light" and
+// persists the user's choice in localStorage.
+// The icon on the toggle button is driven entirely by CSS (::before pseudo-element)
+// so no JS manipulation of button content is needed here.
+function toggleTheme() {
+    var html     = document.documentElement;
+    var isDark   = html.getAttribute("data-theme") !== "light";
+    var newTheme = isDark ? "light" : "dark";
+    html.setAttribute("data-theme", newTheme);
+    try { localStorage.setItem("egm-theme", newTheme); } catch(e) {}
+}
+
+
 // ── Close <details> dropdowns on outside click ────────────────────────────────
 
 document.addEventListener("click", function(e) {

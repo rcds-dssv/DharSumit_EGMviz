@@ -170,10 +170,23 @@ initial_egm_data <- create_egm_data(df_all)
 # Compute the fixed plot width (same formula as create_egm_figure) and write a
 # max-width rule so the plot-section-header never exceeds the plot right edge.
 local({
+    make_css_vars <- function(lst) {
+        paste0("--color-", str_replace_all(names(lst), "_", "-"), ": ",
+               unlist(lst), ";", collapse = "")
+    }
+
     # gather the colors from the user_config.R file
-    plot_colors_css <- paste0("--color-", str_replace_all(names(egm_definition$plot_colors),'_','-'), ": ", unlist(egm_definition$plot_colors), ";", collapse = "")
-    web_colors_css <- paste0("--color-", str_replace_all(names(egm_definition$web_colors),'_','-'), ": ", unlist(egm_definition$web_colors), ";", collapse = "")
-    colors_css <- paste0(":root {", plot_colors_css, web_colors_css, "}")
+    # plot_colors are theme-invariant data-visualization colors → :root
+    # web_dark_colors are the default (dark) UI colors → :root
+    # web_light_colors override in [data-theme="light"]
+    plot_vars  <- make_css_vars(egm_definition$plot_colors)
+    dark_vars  <- make_css_vars(egm_definition$web_dark_colors)
+    light_vars <- make_css_vars(egm_definition$web_light_colors)
+
+    colors_css <- paste0(
+        ":root {", plot_vars, dark_vars, "}",
+        "[data-theme=\"light\"] {", light_vars, "}"
+    )
     # calculate the plot width
     n_x   <- length(unique(initial_egm_data$all$counts[[egm_definition$x_column]]))
     max_w <- n_x * egm_definition$plot_cell_width_px + 260 + 40
