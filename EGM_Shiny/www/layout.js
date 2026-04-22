@@ -124,22 +124,20 @@ document.addEventListener("mousemove", function(e) {
 
 document.addEventListener("mouseup", function() {
     if (_vResizeDragging) {
-        console.log("[mouseup] vertical drag ended");
         _vResizeDragging = false;
         var vHandle = document.getElementById("v_resize_handle");
         if (vHandle) vHandle.classList.remove("dragging");
         document.body.style.cursor     = "";
         document.body.style.userSelect = "";
-        requestAnimationFrame(resizeComparisonPlot);
+        resizeComparisonPlot();
     }
     if (!_resizeDragging) return;
-    console.log("[mouseup] horizontal drag ended");
     _resizeDragging = false;
     var handle = document.getElementById("resize_handle");
     if (handle) handle.classList.remove("dragging");
     document.body.style.cursor     = "";
     document.body.style.userSelect = "";
-    requestAnimationFrame(resizeComparisonPlot);
+    resizeComparisonPlot();
 });
 
 
@@ -147,26 +145,22 @@ document.addEventListener("mouseup", function() {
 
 // Tells plotly to re-fit the comparison plot to its current container size.
 // Called after either drag handle is released and after window resize.
+// Debounced so rapid calls (e.g. window resize events) only fire once settled.
+var _windowResizeTimer = null;
 function resizeComparisonPlot() {
-    console.log("[resizeComparisonPlot] called");
-    if (!window.Plotly) { console.log("[resizeComparisonPlot] Plotly not found"); return; }
+    if (!window.Plotly) return;
     var gd = document.querySelector("#comparison_subpanel .js-plotly-plot");
-    console.log("[resizeComparisonPlot] gd =", gd);
     if (gd) {
-        var w = gd.offsetWidth, h = gd.offsetHeight;
-        console.log("[resizeComparisonPlot] before resize: offsetWidth=" + w + " offsetHeight=" + h);
-        Plotly.Plots.resize(gd);
-        console.log("[resizeComparisonPlot] after resize: offsetWidth=" + gd.offsetWidth + " offsetHeight=" + gd.offsetHeight);
+        clearTimeout(_windowResizeTimer);
+        _windowResizeTimer = setTimeout(function() {
+            Plotly.relayout(gd, { width: gd.offsetWidth });
+        }, 150);
     }
 }
 
 // Debounced window resize so we only fire once the user stops dragging the
 // browser edge (not on every pixel of movement).
-var _windowResizeTimer = null;
-window.addEventListener("resize", function() {
-    clearTimeout(_windowResizeTimer);
-    _windowResizeTimer = setTimeout(resizeComparisonPlot, 150);
-});
+window.addEventListener("resize", resizeComparisonPlot);
 
 
 // ── Comparison plot minimum height ───────────────────────────────────────────
