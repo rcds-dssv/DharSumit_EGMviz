@@ -4,6 +4,13 @@
 /* generated at startup by R/app_config.R                       */
 /* ============================================================ */
 
+/* Panel size constants — layout.js reads these at runtime so they are the
+   single source of truth for the draggable-panel minimum sizes. */
+:root {
+    --min-panel-w: 20px;   /* hard minimum width  for plot / table panels */
+    --min-panel-h: 20px;   /* hard minimum height for papers / comparison panels */
+}
+
 
 
 
@@ -321,7 +328,7 @@ body {
 }
 
 .main-area.has-selection {
-    grid-template-columns: auto 6px minmax(20px, 1fr);
+    grid-template-columns: auto 6px minmax(var(--min-panel-w), 1fr);
 }
 
 .main-area.has-selection .table-section {
@@ -1081,7 +1088,7 @@ a.paper-card-link {
 /* Papers sub-panel — takes remaining height after comparison panel */
 .papers-subpanel {
     flex: 1;
-    min-height: 20px;
+    min-height: var(--min-panel-h);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1098,7 +1105,7 @@ a.paper-card-link {
 /* Comparison plots sub-panel — initial height set here; JS drag overrides it */
 .comparison-subpanel {
     flex: 0 0 300px;
-    min-height: 20px;
+    min-height: var(--min-panel-h);
     display: flex;
     flex-direction: column;
     border-top: 1px solid var(--color-container-border);

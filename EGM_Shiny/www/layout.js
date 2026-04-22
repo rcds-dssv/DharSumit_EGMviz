@@ -9,13 +9,12 @@
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-// Hard minimum sizes for draggable panels (px).
-// These are enforced by the JS drag handlers; the CSS minmax() / min-height values
-// must match (or be kept ≤) these numbers — layout.js is the single source of truth.
-var MIN_TABLE_W      = 20;
-var MIN_PLOT_W       = 20;
-var MIN_PAPERS_H     = 20;
-var MIN_COMPARISON_H = 20;
+// Hard minimum sizes for draggable panels.
+// Values are read from the --min-panel-w / --min-panel-h CSS custom properties
+// defined in styles.css (:root), which is the single source of truth.
+// Declared here at module scope so they are accessible to all event handlers;
+// assigned inside DOMContentLoaded once computed styles are available.
+var MIN_TABLE_W, MIN_PLOT_W, MIN_PAPERS_H, MIN_COMPARISON_H;
 
 // When a panel shrinks below this size the panel contents are hidden and a
 // label strip is shown instead.  The user can still drag further down to the
@@ -39,6 +38,13 @@ var _vResizeStartY   = 0;
 var _vResizeStartH   = 0;
 
 document.addEventListener("DOMContentLoaded", function() {
+    // Read minimum panel sizes from CSS custom properties (styles.css :root).
+    var _root   = getComputedStyle(document.documentElement);
+    var _minW   = parseInt(_root.getPropertyValue("--min-panel-w")) || 20;
+    var _minH   = parseInt(_root.getPropertyValue("--min-panel-h")) || 20;
+    MIN_TABLE_W = MIN_PLOT_W       = _minW;
+    MIN_PAPERS_H = MIN_COMPARISON_H = _minH;
+
     // Horizontal handle
     var handle = document.getElementById("resize_handle");
     if (!handle) return;
