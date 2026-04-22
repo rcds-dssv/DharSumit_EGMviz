@@ -78,6 +78,7 @@ ui <- fluidPage(
             div(
                 class = "plot-section",
                 id    = "plot_section",
+                div(class = "panel-strip panel-strip-v", "EGM Plot"),
                 div(
                     class = "plot-section-header",
                     div(
@@ -110,10 +111,13 @@ ui <- fluidPage(
                 class = "table-section",
                 id    = "table_section",
 
+                div(class = "panel-strip panel-strip-v", "Selected Papers and Comparison Plots"),
+
                 # Papers sub-panel (top)
                 div(
                     class = "papers-subpanel",
                     id    = "papers_subpanel",
+                    div(class = "panel-strip panel-strip-h", "Selected Papers"),
                     div(
                         class = "table-header",
                         div(

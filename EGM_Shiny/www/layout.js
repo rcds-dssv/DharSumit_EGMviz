@@ -9,13 +9,19 @@
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-// Minimum table panel width — matches the CSS minmax() floor on the grid column.
-var MIN_TABLE_W = 150;
-var MIN_PLOT_W = 150;
+// Hard minimum sizes for draggable panels (px).
+// These are enforced by the JS drag handlers; the CSS minmax() / min-height values
+// must match (or be kept ≤) these numbers — layout.js is the single source of truth.
+var MIN_TABLE_W      = 20;
+var MIN_PLOT_W       = 20;
+var MIN_PAPERS_H     = 20;
+var MIN_COMPARISON_H = 20;
 
-// Minimum heights for the papers and comparison sub-panels.
-var MIN_PAPERS_H     = 150;
-var MIN_COMPARISON_H = 150;
+// When a panel shrinks below this size the panel contents are hidden and a
+// label strip is shown instead.  The user can still drag further down to the
+// hard minimum above.
+var COLLAPSE_W = 100;
+var COLLAPSE_H = 100;
 
 
 // ── Draggable resize handle ───────────────────────────────────────────────────
@@ -106,6 +112,14 @@ document.addEventListener("mousemove", function(e) {
                        Math.max(MIN_COMPARISON_H,
                                 _vResizeStartH - (e.clientY - _vResizeStartY)));
             compPanel.style.flex = "0 0 " + newH + "px";
+
+            // Toggle collapsed strip when panels shrink below the threshold.
+            compPanel.classList.toggle("panel-collapsed", newH < COLLAPSE_H);
+            var papersPanel = document.getElementById("papers_subpanel");
+            if (papersPanel) {
+                var papersH = tableSection.offsetHeight - 6 - newH;
+                papersPanel.classList.toggle("panel-collapsed", papersH < COLLAPSE_H);
+            }
         }
     }
 
@@ -120,6 +134,14 @@ document.addEventListener("mousemove", function(e) {
 
     plotSection.style.width = newW + "px";
     // The plot figure size is fixed — the wrapper scrolls if the panel is narrower.
+
+    // Toggle collapsed strip when panels shrink below the threshold.
+    plotSection.classList.toggle("panel-collapsed", newW < COLLAPSE_W);
+    var tableSection = document.getElementById("table_section");
+    if (tableSection && mainArea) {
+        var tableW = mainArea.offsetWidth - 6 - newW;
+        tableSection.classList.toggle("panel-collapsed", tableW < COLLAPSE_W);
+    }
 });
 
 document.addEventListener("mouseup", function() {

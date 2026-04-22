@@ -321,7 +321,7 @@ body {
 }
 
 .main-area.has-selection {
-    grid-template-columns: auto 6px minmax(150px, 1fr);
+    grid-template-columns: auto 6px minmax(20px, 1fr);
 }
 
 .main-area.has-selection .table-section {
@@ -1081,7 +1081,7 @@ a.paper-card-link {
 /* Papers sub-panel — takes remaining height after comparison panel */
 .papers-subpanel {
     flex: 1;
-    min-height: 150px;
+    min-height: 20px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1098,12 +1098,61 @@ a.paper-card-link {
 /* Comparison plots sub-panel — initial height set here; JS drag overrides it */
 .comparison-subpanel {
     flex: 0 0 300px;
-    min-height: 150px;
+    min-height: 20px;
     display: flex;
     flex-direction: column;
     border-top: 1px solid var(--color-container-border);
     background: var(--color-table-bg);
     overflow: hidden;
+}
+
+/* ── Panel collapse strips ──────────────────────────────────────── */
+
+/* Hidden by default; shown when the parent gains .panel-collapsed. */
+.panel-strip {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--color-container-text);
+    user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+    letter-spacing: 0.04em;
+}
+
+/* Vertical strip — for panels that collapse horizontally (plot / table) */
+.panel-strip-v {
+    flex: 1;
+    width: 100%;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    padding: 8px 0;
+    color: inherit;
+}
+
+/* Horizontal strip — for panels that collapse vertically (papers / comparison) */
+.panel-strip-h {
+    flex: 1;
+    width: 100%;
+    padding: 0 8px;
+    color: inherit;
+}
+
+/* Show strip when collapsed */
+.plot-section.panel-collapsed > .panel-strip,
+.table-section.panel-collapsed > .panel-strip,
+.papers-subpanel.panel-collapsed > .panel-strip,
+.comparison-subpanel.panel-collapsed > .panel-strip {
+    display: flex;
+}
+
+/* Hide all other direct children when collapsed */
+.plot-section.panel-collapsed > *:not(.panel-strip),
+.table-section.panel-collapsed > *:not(.panel-strip),
+.papers-subpanel.panel-collapsed > *:not(.panel-strip),
+.comparison-subpanel.panel-collapsed > *:not(.panel-strip) {
+    display: none !important;
 }
 
 /* ── Vertical drag-resize handle ──────────────────────────────── */

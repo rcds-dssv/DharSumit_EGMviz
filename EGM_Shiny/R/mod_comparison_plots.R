@@ -285,6 +285,7 @@ mod_comparison_plots_ui <- function(id) {
     div(
         class = "comparison-subpanel",
         id    = "comparison_subpanel",
+        div(class = "panel-strip panel-strip-h", "Comparison Plots"),
         div(
             class = "comparison-header",
             div(class = "comparison-header-left", tags$h3("Comparison Plots")),
