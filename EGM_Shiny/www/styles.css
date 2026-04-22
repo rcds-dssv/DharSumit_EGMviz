@@ -1,32 +1,17 @@
 /* ============================================================ */
-/* STATIC COLOR VARIABLES                                        */
-/* (data-visualization colors are in colors_runtime.css,        */
-/*  generated at startup by R/config.R)                         */
+/* STATIC COLOR VARIABLES                                       */
+/* most colors defined as vars in styles_runtime.css,           */
+/* generated at startup by R/app_config.R                       */
 /* ============================================================ */
 
+/* Panel size constants — layout.js reads these at runtime so they are the
+   single source of truth for the draggable-panel minimum sizes. */
 :root {
-    --color-body-bg:              #0a0e27;
-    --color-body-text:            white;
-    --color-container-shadow1:    rgba(0,0,0,0.075);
-    --color-container-shadow2:    rgba(102, 175, 233, 0.6);
-    --color-top-gradient1:        #667eea;
-    --color-top-gradient2:        #764ba2;
-    --color-container-bg:         #141b3d;
-    --color-container-border:     #1e2a5a;
-    --color-container-text:       #7c8db5;
-    --color-toggle-hover-bg:      #273a6e;
-    --color-toggle-hover-text:    #a8b8d8;
-    --color-toggle-active-bg:     #4f46e5;
-    --color-button-text:          #a78bfa;
-    --color-plot-path:            #3c4b6c;
-    --color-plot-text:            #cfdbf6;
-    --color-table-bg:             #0f1629;
-    --color-table-shadow:         rgba(79, 70, 229, 0.2);
-    --color-tag-default:          rgba(79, 70, 229, 0.3);
-    --color-tag-special-text:     #252a36;
-    --color-scroll-bg:            #1e1e1e;
-    --color-clicked-point-marker: white;
+    --min-panel-w: 20px;   /* hard minimum width  for plot / table panels */
+    --min-panel-h: 20px;   /* hard minimum height for papers / comparison panels */
 }
+
+
 
 
 /* ============================================================ */
@@ -47,7 +32,7 @@ body {
     padding: 0;
     overflow: auto;
     min-width: 1000px;
-    min-height: 800px;
+    min-height: 600px;
 }
 
 /* Reset Shiny default container padding */
@@ -82,11 +67,14 @@ body {
     flex-shrink: 0;
     background: linear-gradient(135deg, var(--color-top-gradient1) 0%, var(--color-top-gradient2) 100%);
     color: var(--color-body-text);
-    padding: 20px;
+}
+
+.header-instructions .section-main {
+    padding: 2px 20px 20px;
 }
 
 .header-text h1 {
-    margin: 0 0 8px 0;
+    margin: 0;
     font-size: 32px;
     letter-spacing: 1px;
 }
@@ -111,12 +99,75 @@ body {
 .controls-toolbar {
     flex-shrink: 0;
     display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    padding: 10px 20px;
+    flex-direction: column;
     background: var(--color-container-bg);
     border-bottom: 1px solid var(--color-container-border);
 }
+
+.controls-toolbar .section-main {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 10px 20px;
+}
+
+/* ── Section collapse strip ────────────────────────────────── */
+
+/* Thin strip at the top of header-instructions and controls-toolbar.
+   Always visible; contains the collapse toggle button and (when collapsed)
+   a short label so the user knows what the section is. */
+.section-strip {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 20px;
+    padding: 0 8px;
+}
+
+.section-collapse-btn {
+    background: transparent;
+    border: 1px solid var(--color-container-text);
+    border-radius: 3px;
+    color: inherit;
+    font-size: 14px;
+    line-height: 1;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    opacity: 0.65;
+    transition: opacity 0.15s, border-color 0.15s;
+}
+
+.section-collapse-btn:hover {
+    opacity: 1;
+    border-color: currentColor;
+}
+
+.section-collapsed-title {
+    display: none;
+    font-size: 12px;
+    color: inherit;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
+/* Collapsed: hide main content, show label; strip alone defines the height */
+.header-instructions.section-collapsed .section-main,
+.controls-toolbar.section-collapsed .section-main {
+    display: none;
+}
+
+.header-instructions.section-collapsed .section-collapsed-title,
+.controls-toolbar.section-collapsed .section-collapsed-title {
+    display: inline;
+}
+
 
 /* ── Filters section ───────────────────────────────────────── */
 
@@ -194,6 +245,7 @@ body {
 .filters-reset-row {
     display: flex;
     justify-content: flex-start;
+    margin-top: 14px;
 }
 
 .filters-reset-btn {
@@ -266,8 +318,8 @@ body {
     grid-template-rows: 1fr;
     align-items: stretch;
     flex: 1;
-    min-height: 0px;
-    overflow: visible;
+    min-height: 0;
+    overflow: hidden;  /* bounds the 1fr row to the flex-computed height so children can't escape the viewport */
 }
 
 .main-area .table-section,
@@ -276,7 +328,7 @@ body {
 }
 
 .main-area.has-selection {
-    grid-template-columns: auto 6px minmax(100px, 1fr);
+    grid-template-columns: auto 6px minmax(var(--min-panel-w), 1fr);
 }
 
 .main-area.has-selection .table-section {
@@ -716,11 +768,6 @@ body {
     overflow: auto;
 }
 
-/* Arrow markers drawn by plot_interactions.js */
-#arrow_markers path {
-    fill: var(--color-clicked-point-marker);
-}
-
 /* Heatmap trace must not intercept mouse events -- the drag layer above it
    handles all plot interactions.  Without this the selection cursor can
    appear to "go behind" the heatmap cells. */
@@ -801,6 +848,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    overflow: hidden;         /* prevent right panel from exceeding the grid row height */
     transition: all 0.3s ease;
 }
 
@@ -945,31 +993,37 @@ a.paper-card-link {
 }
 
 .paper-tags .tag {
-    background: var(--color-tag-default);
-    color: var(--color-button-text);
+    color: var(--color-plot-text);
     padding: 3px 8px;
     border-radius: 3px;
     font-size: 10px;
 }
 
+.tag.x-column{
+    background: var(--color-tag-default-x);
+}
+
+.tag.y-column{
+    background: var(--color-tag-default-y);
+}
 /* Confidence-level tag colors (match egm_metadata in R/config.R) */
 .tag.high {
-    background: var(--color-high_confidence) !important;
+    background: var(--color-high-confidence) !important;
     color: var(--color-tag-special-text) !important;
 }
 
 .tag.medium {
-    background: var(--color-medium_confidence) !important;
+    background: var(--color-medium-confidence) !important;
     color: var(--color-tag-special-text) !important;
 }
 
 .tag.low {
-    background: var(--color-low_confidence) !important;
+    background: var(--color-low-confidence) !important;
     color: var(--color-tag-special-text) !important;
 }
 
 .tag.in_progress {
-    background: var(--color-in_progress) !important;
+    background: var(--color-in-progress) !important;
     color: var(--color-tag-special-text) !important;
 }
 
@@ -981,32 +1035,37 @@ a.paper-card-link {
 /* WebKit (Chrome, Safari, Edge) */
 @supports selector(::-webkit-scrollbar) {
     .paper-list::-webkit-scrollbar,
-    .plot-wrapper::-webkit-scrollbar {
+    .plot-wrapper::-webkit-scrollbar,
+    .comparison-plot-wrapper::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
 
     .paper-list::-webkit-scrollbar-track,
-    .plot-wrapper::-webkit-scrollbar-track {
+    .plot-wrapper::-webkit-scrollbar-track,
+    .comparison-plot-wrapper::-webkit-scrollbar-track {
         background: var(--color-scroll-bg);
         border-radius: 4px;
     }
 
     .paper-list::-webkit-scrollbar-thumb,
-    .plot-wrapper::-webkit-scrollbar-thumb {
+    .plot-wrapper::-webkit-scrollbar-thumb,
+    .comparison-plot-wrapper::-webkit-scrollbar-thumb {
         background-color: var(--color-plot-path);
         border-radius: 4px;
         border: 2px solid var(--color-scroll-bg);
     }
 
     .paper-list::-webkit-scrollbar-thumb:hover,
-    .plot-wrapper::-webkit-scrollbar-thumb:hover {
+    .plot-wrapper::-webkit-scrollbar-thumb:hover,
+    .comparison-plot-wrapper::-webkit-scrollbar-thumb:hover {
         background-color: var(--color-container-text);
     }
 
     /* Remove scrollbar arrows */
     .paper-list::-webkit-scrollbar-button,
-    .plot-wrapper::-webkit-scrollbar-button {
+    .plot-wrapper::-webkit-scrollbar-button,
+    .comparison-plot-wrapper::-webkit-scrollbar-button {
         display: none;
     }
 }
@@ -1014,12 +1073,297 @@ a.paper-card-link {
 /* Firefox */
 @-moz-document url-prefix() {
     .paper-list,
-    .plot-wrapper {
+    .plot-wrapper,
+    .comparison-plot-wrapper {
         scrollbar-width: thin;
         scrollbar-color: var(--color-plot-path) var(--color-scroll-bg);
     }
 }
 
+
+/* ============================================================ */
+/* PAPERS / COMPARISON SUB-PANELS                                */
+/* ============================================================ */
+
+/* Papers sub-panel — takes remaining height after comparison panel */
+.papers-subpanel {
+    flex: 1;
+    min-height: var(--min-panel-h);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Shiny output wrapper inside papers-subpanel needs to flex through */
+.papers-subpanel > #egm-table_content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Comparison plots sub-panel — initial height set here; JS drag overrides it */
+.comparison-subpanel {
+    flex: 0 0 300px;
+    min-height: var(--min-panel-h);
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-container-border);
+    background: var(--color-table-bg);
+    overflow: hidden;
+}
+
+/* ── Panel collapse strips ──────────────────────────────────────── */
+
+/* Hidden by default; shown when the parent gains .panel-collapsed. */
+.panel-strip {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--color-container-text);
+    user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+    letter-spacing: 0.04em;
+}
+
+/* Vertical strip — for panels that collapse horizontally (plot / table) */
+.panel-strip-v {
+    flex: 1;
+    width: 100%;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    padding: 8px 0;
+    color: inherit;
+}
+
+/* Horizontal strip — for panels that collapse vertically (papers / comparison) */
+.panel-strip-h {
+    flex: 1;
+    width: 100%;
+    padding: 0 8px;
+    color: inherit;
+}
+
+/* Show strip when collapsed */
+.plot-section.panel-collapsed > .panel-strip,
+.table-section.panel-collapsed > .panel-strip,
+.papers-subpanel.panel-collapsed > .panel-strip,
+.comparison-subpanel.panel-collapsed > .panel-strip {
+    display: flex;
+}
+
+/* Hide all other direct children when collapsed */
+.plot-section.panel-collapsed > *:not(.panel-strip),
+.table-section.panel-collapsed > *:not(.panel-strip),
+.papers-subpanel.panel-collapsed > *:not(.panel-strip),
+.comparison-subpanel.panel-collapsed > *:not(.panel-strip) {
+    display: none !important;
+}
+
+/* ── Vertical drag-resize handle ──────────────────────────────── */
+
+.v-resize-handle {
+    flex: 0 0 6px;
+    min-height: 0;               /* prevents flex min-content from overriding flex-basis */
+    background: var(--color-container-border);
+    cursor: row-resize;
+    user-select: none;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    transition: background 0.15s;
+}
+
+/* Horizontal grip bar — mirrors the vertical resize-handle-grip */
+.v-resize-handle-grip {
+    height: 14px;
+    width: 26px;
+    background: var(--color-container-bg);
+    border: 1px solid var(--color-container-border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    pointer-events: none;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+}
+
+/* Three horizontally-aligned dots inside the grip */
+.v-resize-handle-grip::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--color-container-text);
+    box-shadow:
+        -6px 0 0 var(--color-container-text),
+         6px 0 0 var(--color-container-text);
+    opacity: 0.45;
+    transition: opacity 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.v-resize-handle:hover,
+.v-resize-handle.dragging {
+    background: var(--color-toggle-active-bg);
+}
+
+.v-resize-handle:hover .v-resize-handle-grip,
+.v-resize-handle.dragging .v-resize-handle-grip {
+    border-color: var(--color-toggle-active-bg);
+    background: var(--color-container-border);
+}
+
+.v-resize-handle:hover .v-resize-handle-grip::before,
+.v-resize-handle.dragging .v-resize-handle-grip::before {
+    opacity: 1;
+    background: var(--color-button-text);
+    box-shadow:
+        -6px 0 0 var(--color-button-text),
+         6px 0 0 var(--color-button-text);
+}
+
+/* ── Comparison panel header ──────────────────────────────────── */
+
+.comparison-header {
+    flex: 0 0 auto;
+    padding: 10px 20px 8px;
+    background: var(--color-container-bg);
+    border-bottom: 1px solid var(--color-container-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.comparison-header-left h3 {
+    font-size: 24px;
+    color: var(--color-button-text);
+    margin: 0;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.comparison-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+/* ── Plot-type switcher ───────────────────────────────────────── */
+
+.cp-type-link {
+    font-size: 12px;
+    color: var(--color-container-text);
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 0;
+    transition: color 0.15s;
+    white-space: nowrap;
+}
+
+.cp-type-link:hover {
+    color: var(--color-button-text);
+}
+
+.cp-type-link.cp-type-active {
+    color: var(--color-button-text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-toggle-active-bg);
+}
+
+.cp-type-sep {
+    font-size: 12px;
+    color: var(--color-container-border);
+    padding: 0 2px;
+    user-select: none;
+}
+
+/* Meta column dropdown inlined with the switcher */
+.comparison-header-right .shiny-input-container {
+    margin-bottom: 0 !important;
+    width: auto !important;
+}
+
+.comparison-header-right .selectize-input {
+    background: var(--color-body-bg) !important;
+    border: 1px solid var(--color-container-border) !important;
+    color: var(--color-body-text) !important;
+    padding: 3px 28px 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    box-shadow: none !important;
+    min-height: 0;
+}
+
+.comparison-header-right .selectize-dropdown {
+    background: var(--color-body-bg);
+    border: 1px solid var(--color-container-border);
+    color: var(--color-body-text);
+}
+
+.comparison-header-right .selectize-dropdown-content .option {
+    background: var(--color-body-bg);
+    color: var(--color-body-text);
+    padding: 6px 10px;
+    font-size: 11px;
+}
+
+.comparison-header-right .selectize-dropdown-content .option:hover {
+    background: var(--color-container-border);
+}
+
+/* ── Comparison plot wrapper ──────────────────────────────────── */
+
+.comparison-plot-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;         /* scrolls when plot min-height exceeds panel height */
+    position: relative;
+    padding-bottom: 8px;      /* prevents the bottom of the plot being flush-clipped */
+}
+
+/* Make Shiny + plotly output fill the wrapper */
+.comparison-plot-wrapper .shiny-html-output,
+.comparison-plot-wrapper .plotly.html-widget,
+.comparison-plot-wrapper .js-plotly-plot {
+    height: 100% !important;
+    width: 100% !important;
+}
+
+/* Override comparison plot grid/axis line strokes to theme color in browser.
+   Text is already covered by the broad .plot-container.plotly .main-svg text rule. */
+.comparison-plot-wrapper .main-svg .gridlayer path,
+.comparison-plot-wrapper .main-svg .zerolinelayer path,
+.comparison-plot-wrapper .main-svg .xlines-above path,
+.comparison-plot-wrapper .main-svg .ylines-above path {
+    stroke: var(--color-plot-path) !important;
+}
+
+/* ── Paper card group dots ─────────────────────────────────────── */
+
+.paper-card-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.paper-card-title-row h4 {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.group_chart_icons{
+    line-height: 10px;
+}
 
 /* ============================================================ */
 /* SHINY OVERRIDES                                               */
@@ -1236,55 +1580,4 @@ a.paper-card-link {
     line-height: 1.55;
     margin-bottom: 3px;
     opacity: 0.9;
-}
-/* ── Export processing overlay ──────────────────────────────────────────────── */
-
-/* Compact, non-closeable overlay shown while citation API calls are running.
-   Reuses .modal-overlay (display/position/backdrop) from the help modal. */
-.export-processing-content.modal-content {
-    width: min(360px, 85vw);
-    max-height: none;
-}
-
-.export-processing-body {
-    text-align: center;
-    padding: 28px 24px 24px;
-    overflow: visible;
-}
-
-.export-processing-title {
-    font-size: 15px;
-    font-weight: 600;
-    margin: 0 0 16px 0 !important;
-    opacity: 1 !important;
-}
-
-.export-processing-note {
-    font-size: 12px !important;
-    opacity: 0.6 !important;
-    margin-top: 14px !important;
-}
-
-/* Indeterminate progress bar — a moving fill that signals activity.
-   R's WebSocket messages are batched until the observer returns, so
-   real percentages are not possible in synchronous Shiny. */
-.export-progress-track {
-    width: 100%;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.export-progress-bar {
-    height: 100%;
-    width: 38%;
-    background: var(--color-all_points);
-    border-radius: 2px;
-    animation: exportProgressSlide 1.6s ease-in-out infinite;
-}
-
-@keyframes exportProgressSlide {
-    0%   { transform: translateX(-160%); }
-    100% { transform: translateX(380%);  }
 }

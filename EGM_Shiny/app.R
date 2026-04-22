@@ -1,6 +1,6 @@
-# global.R is sourced here so the app can also be launched via source("app.R")
+# app_config.R is sourced here so the app can also be launched via source("app.R")
 # in addition to the standard shiny::runApp() workflow.
-source("global.R")
+source("app_config.R")
 
 
 # =============================================================================
@@ -10,7 +10,9 @@ source("global.R")
 ui <- fluidPage(
 
     tags$head(
-        # styles_runtime.css is generated at startup by global.R
+        # Google material icons for bar chart icon
+        tags$link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=insert_chart"),
+        # styles_runtime.css is generated at startup by app_config.R
         tags$link(rel = "stylesheet", type = "text/css", href = "styles_runtime.css"),
         tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
         tags$script(src = "layout.js"),            # panel drag-resize and UI interaction
@@ -29,9 +31,18 @@ ui <- fluidPage(
         div(
             class = "header-instructions",
             div(
-                class = "header-text",
+                class = "section-strip",
+                tags$button(
+                    class   = "section-collapse-btn",
+                    onclick = "toggleSectionCollapse(this)",
+                    HTML("&#9652;")
+                ),
+                tags$span(class = "section-collapsed-title", "Instructions")
+            ),
+            div(
+                class = "section-main header-text",
                 tags$h1("HEARING LITERATURE EVIDENCE GAP MAP"),
-                tags$p("Explore hearing research papers plotted by study type and health outcome. Bubble size reflects the number of papers at each intersection."),
+                tags$span("Explore hearing research papers by study type. Bubble size reflects the number of papers at each intersection."),
                 tags$button(
                     class   = "how-to-use-btn",
                     onclick = "document.getElementById('egm-help-modal').classList.add('open')",
@@ -43,7 +54,19 @@ ui <- fluidPage(
         # Always-visible controls toolbar: Filters grid on the left, Toggles column on the right
         div(
             class = "controls-toolbar",
-            mod_filter_ui("egm")
+            div(
+                class = "section-strip",
+                tags$button(
+                    class   = "section-collapse-btn",
+                    onclick = "toggleSectionCollapse(this)",
+                    HTML("&#9652;")
+                ),
+                tags$span(class = "section-collapsed-title", "Filters")
+            ),
+            div(
+                class = "section-main",
+                mod_filter_ui("egm")
+            )
         ),
 
         # Main area: plot on the left, paper table on the right
@@ -55,6 +78,7 @@ ui <- fluidPage(
             div(
                 class = "plot-section",
                 id    = "plot_section",
+                div(class = "panel-strip panel-strip-v", "EGM Plot"),
                 div(
                     class = "plot-section-header",
                     div(
@@ -86,19 +110,35 @@ ui <- fluidPage(
             div(
                 class = "table-section",
                 id    = "table_section",
+
+                div(class = "panel-strip panel-strip-v", "Selected Papers and Comparison Plots"),
+
+                # Papers sub-panel (top)
                 div(
-                    class = "table-header",
+                    class = "papers-subpanel",
+                    id    = "papers_subpanel",
+                    div(class = "panel-strip panel-strip-h", "Selected Papers"),
                     div(
-                        class = "table-header-top",
-                        div(class = "table-header-top-left",  tags$h3("Selected papers")),
-                        div(class = "table-header-top-right",
-                            mod_sort_ui("egm"),
-                            mod_export_citations_ui("egm")
-                        )
+                        class = "table-header",
+                        div(
+                            class = "table-header-top",
+                            div(class = "table-header-top-left",  tags$h3("Selected papers")),
+                            div(class = "table-header-top-right",
+                                mod_sort_ui("egm"),
+                                mod_export_citations_ui("egm")
+                            )
+                        ),
+                        mod_click_plot_header_ui("egm")
                     ),
-                    mod_click_plot_header_ui("egm")   # paper count + selection tags
+                    mod_click_plot_content_ui("egm")
                 ),
-                mod_click_plot_content_ui("egm")      # scrollable list of paper cards
+
+                # Draggable divider between papers and comparison plots
+                div(class = "v-resize-handle", id = "v_resize_handle",
+                    div(class = "v-resize-handle-grip")),
+
+                # Comparison plots sub-panel (bottom)
+                mod_comparison_plots_ui("egm")
             )
         )
     )
@@ -150,6 +190,12 @@ server <- function(input, output, session) {
         "egm",
         clicked_df   = egm_selection$clicked_df,
         clicked_info = egm_selection$clicked_info
+    )
+
+    mod_comparison_plots_server(
+        "egm",
+        clicked_info = egm_selection$clicked_info,
+        egm_data     = egm_data
     )
 }
 

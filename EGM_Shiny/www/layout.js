@@ -9,18 +9,43 @@
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-// Minimum table panel width — matches the CSS minmax() floor on the grid column.
-var MIN_TABLE_W = 100;
-var MIN_PLOT_W = 100;
+// Hard minimum sizes for draggable panels.
+// Values are read from the --min-panel-w / --min-panel-h CSS custom properties
+// defined in styles.css (:root), which is the single source of truth.
+// Declared here at module scope so they are accessible to all event handlers;
+// assigned inside DOMContentLoaded once computed styles are available.
+var MIN_TABLE_W, MIN_PLOT_W, MIN_PAPERS_H, MIN_COMPARISON_H;
+
+// When a panel shrinks below this size the panel contents are hidden and a
+// label strip is shown instead.  The user can still drag further down to the
+// hard minimum above.
+var COLLAPSE_W = 100;
+var COLLAPSE_H = 100;
 
 
 // ── Draggable resize handle ───────────────────────────────────────────────────
+
+// ── Horizontal (plot / table) resize ─────────────────────────────────────────
 
 var _resizeDragging = false;
 var _resizeStartX   = 0;
 var _resizeStartW   = 0;
 
+// ── Vertical (papers / comparison) resize ────────────────────────────────────
+
+var _vResizeDragging = false;
+var _vResizeStartY   = 0;
+var _vResizeStartH   = 0;
+
 document.addEventListener("DOMContentLoaded", function() {
+    // Read minimum panel sizes from CSS custom properties (styles.css :root).
+    var _root   = getComputedStyle(document.documentElement);
+    var _minW   = parseInt(_root.getPropertyValue("--min-panel-w")) || 20;
+    var _minH   = parseInt(_root.getPropertyValue("--min-panel-h")) || 20;
+    MIN_TABLE_W = MIN_PLOT_W       = _minW;
+    MIN_PAPERS_H = MIN_COMPARISON_H = _minH;
+
+    // Horizontal handle
     var handle = document.getElementById("resize_handle");
     if (!handle) return;
     handle.addEventListener("mousedown", function(e) {
@@ -34,9 +59,76 @@ document.addEventListener("DOMContentLoaded", function() {
         document.body.style.userSelect = "none";
         e.preventDefault();
     });
+
+    // Vertical handle
+    var vHandle = document.getElementById("v_resize_handle");
+    if (vHandle) {
+        vHandle.addEventListener("mousedown", function(e) {
+            var compPanel = document.getElementById("comparison_subpanel");
+            if (!compPanel) return;
+            _vResizeDragging = true;
+            _vResizeStartY   = e.clientY;
+            _vResizeStartH   = compPanel.offsetHeight;
+            vHandle.classList.add("dragging");
+            document.body.style.cursor     = "row-resize";
+            document.body.style.userSelect = "none";
+            e.preventDefault();
+        });
+    }
+
+    // One-time initialisation of comparison-subpanel flex-basis.
+    // The CSS default is flex: 0 0 300px, which may exceed the available
+    // space in a short viewport.  The drag handler already caps it correctly
+    // (maxH = tableSection.offsetHeight - 6 - MIN_PAPERS_H), but that only
+    // runs after the user drags.  Here we apply the same cap the first time
+    // table-section becomes visible (gains a positive height), so the initial
+    // render is already correct and no drag is needed to fix it.
+    var tableSection = document.getElementById("table_section");
+    if (tableSection && typeof ResizeObserver !== "undefined") {
+        var _cpInitObserver = new ResizeObserver(function(entries) {
+            var tsH = entries[0].contentRect.height;
+            if (tsH <= 0) return;                            // still hidden — wait
+
+            var compPanel = document.getElementById("comparison_subpanel");
+            if (!compPanel || compPanel.dataset.flexInitialized) {
+                _cpInitObserver.disconnect();
+                return;
+            }
+
+            var maxH     = tsH - 6 - MIN_PAPERS_H;
+            var currentH = compPanel.offsetHeight || 300;
+            var h        = Math.max(MIN_COMPARISON_H, Math.min(currentH, maxH));
+            compPanel.style.flex              = "0 0 " + h + "px";
+            compPanel.dataset.flexInitialized = "1";
+            _cpInitObserver.disconnect();
+        });
+        _cpInitObserver.observe(tableSection);
+    }
 });
 
 document.addEventListener("mousemove", function(e) {
+    // Vertical resize
+    if (_vResizeDragging) {
+        var compPanel    = document.getElementById("comparison_subpanel");
+        var tableSection = document.getElementById("table_section");
+        if (compPanel && tableSection) {
+            // Dragging up (negative delta) increases the comparison panel height.
+            var maxH = tableSection.offsetHeight - 6 - MIN_PAPERS_H;
+            var newH = Math.min(maxH,
+                       Math.max(MIN_COMPARISON_H,
+                                _vResizeStartH - (e.clientY - _vResizeStartY)));
+            compPanel.style.flex = "0 0 " + newH + "px";
+
+            // Toggle collapsed strip when panels shrink below the threshold.
+            compPanel.classList.toggle("panel-collapsed", newH < COLLAPSE_H);
+            var papersPanel = document.getElementById("papers_subpanel");
+            if (papersPanel) {
+                var papersH = tableSection.offsetHeight - 6 - newH;
+                papersPanel.classList.toggle("panel-collapsed", papersH < COLLAPSE_H);
+            }
+        }
+    }
+
     if (!_resizeDragging) return;
     var plotSection = document.getElementById("plot_section");
     var mainArea    = document.getElementById("main_area");
@@ -48,16 +140,79 @@ document.addEventListener("mousemove", function(e) {
 
     plotSection.style.width = newW + "px";
     // The plot figure size is fixed — the wrapper scrolls if the panel is narrower.
+
+    // Toggle collapsed strip when panels shrink below the threshold.
+    plotSection.classList.toggle("panel-collapsed", newW < COLLAPSE_W);
+    var tableSection = document.getElementById("table_section");
+    if (tableSection && mainArea) {
+        var tableW = mainArea.offsetWidth - 6 - newW;
+        tableSection.classList.toggle("panel-collapsed", tableW < COLLAPSE_W);
+    }
 });
 
 document.addEventListener("mouseup", function() {
+    if (_vResizeDragging) {
+        _vResizeDragging = false;
+        var vHandle = document.getElementById("v_resize_handle");
+        if (vHandle) vHandle.classList.remove("dragging");
+        document.body.style.cursor     = "";
+        document.body.style.userSelect = "";
+        resizeComparisonPlot();
+    }
     if (!_resizeDragging) return;
     _resizeDragging = false;
     var handle = document.getElementById("resize_handle");
     if (handle) handle.classList.remove("dragging");
     document.body.style.cursor     = "";
     document.body.style.userSelect = "";
+    resizeComparisonPlot();
 });
+
+
+// ── Comparison plot resize ────────────────────────────────────────────────────
+
+// Tells plotly to re-fit the comparison plot to its current container size.
+// Called after either drag handle is released and after window resize.
+// Debounced so rapid calls (e.g. window resize events) only fire once settled.
+var _windowResizeTimer = null;
+function resizeComparisonPlot() {
+    if (!window.Plotly) return;
+    var gd = document.querySelector("#comparison_subpanel .js-plotly-plot");
+    if (gd) {
+        clearTimeout(_windowResizeTimer);
+        _windowResizeTimer = setTimeout(function() {
+            Plotly.relayout(gd, { width: gd.offsetWidth });
+        }, 150);
+    }
+}
+
+// Debounced window resize so we only fire once the user stops dragging the
+// browser edge (not on every pixel of movement).
+window.addEventListener("resize", resizeComparisonPlot);
+
+
+// ── Comparison plot minimum height ───────────────────────────────────────────
+//
+// R computes how many px are needed to prevent label/legend overlap and sends
+// this value here.  Setting min-height (not height) on cp_inner means:
+//   - when the panel is taller than min-height, the plot still fills the panel
+//   - when the panel is shorter, cp_inner grows and the wrapper scrolls
+
+Shiny.addCustomMessageHandler("setCompPlotHeight", function(msg) {
+    var el = document.getElementById(msg.wrapperId);
+    if (!el) return;
+    el.style.minHeight = msg.height + "px";
+});
+
+
+// ── Section collapse (header-instructions / controls-toolbar) ────────────────
+
+function toggleSectionCollapse(btn) {
+    var section = btn.closest(".header-instructions, .controls-toolbar");
+    if (!section) return;
+    var collapsed = section.classList.toggle("section-collapsed");
+    btn.innerHTML = collapsed ? "&#9662;" : "&#9652;";  // ▾ collapsed, ▴ expanded
+}
 
 
 // ── Close <details> dropdowns on outside click ────────────────────────────────

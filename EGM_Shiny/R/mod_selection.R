@@ -62,8 +62,8 @@ create_table_header_html <- function(selected_info, df) {
         tags$div(
             tags$p("Selection attributes:"),
             tags$div(class = "paper-tags",
-                lapply(unique_x, function(v) tags$span(class = "tag", v)),
-                lapply(unique_y, function(v) tags$span(class = "tag", v)),
+                lapply(unique_x, function(v) tags$span(class = "tag x-column", v)),
+                lapply(unique_y, function(v) tags$span(class = "tag y-column", v)),
                 # CSS class "tag high" / "tag medium" / etc. controls badge color
                 lapply(trace_display_pairs, function(td)
                     tags$span(class = paste("tag", td$trace_id), td$display_text))
@@ -77,7 +77,7 @@ create_table_header_html <- function(selected_info, df) {
 #   2. Citation     -- compact inline block with short labeled fields
 #   3. EGM tags     -- x/y axis values + optional confidence / in-progress badges
 #   4. Meta badges  -- labeled pills for paper_meta_columns ("Setting: Hospital")
-create_table_cards_html <- function(df) {
+create_table_cards_html <- function(df, groups = NULL) {
     if (is.null(df) || nrow(df) == 0) return(div(class = "paper-list"))
 
     title_col    <- egm_definition$paper_title_column
@@ -100,12 +100,14 @@ create_table_cards_html <- function(df) {
     cards <- lapply(seq_len(nrow(df)), function(i) {
         row <- df[i, , drop = FALSE]
 
-        # -- 1. Title ----------------------------------------------------------
+        # -- 1. Title ---------------------------------------------
         title_text <- if (!is.null(title_col) && !is.na(title_col) &&
                          title_col %in% names(row) && !is_blank(row[[title_col]])) {
             as.character(row[[title_col]])
         } else "(No title)"
-        title <- tags$h4(paste0(i, ". ", title_text))
+        title <- div(class = "paper-card-title-row",
+            tags$h4(paste0(i, ". ", title_text))
+        )
 
         # -- 2. Citation block -------------------------------------------------
         # Build inline field elements then join with middot separators.
@@ -134,6 +136,7 @@ create_table_cards_html <- function(df) {
         }
 
         # -- 3. EGM attribute tags ---------------------------------------------
+        # this includes a color-coded icon for the comparison figure
         conf_tag <- if (has_confidence && !is.na(row[[conf_col]])) {
             level <- row[[conf_col]]
             tags$span(class = paste("tag", tolower(conf_labels[level])),
@@ -143,13 +146,31 @@ create_table_cards_html <- function(df) {
                                row[[in_prog_col]] > 0) {
             tags$span(class = "tag in_progress", "In Progress")
         }
+        
+        group_chart_icons <- if (!is.null(groups)) {
+            matching <- Filter(function(g) {
+                !is_blank(row[[x_col]]) && !is_blank(row[[y_col]]) &&
+                row[[x_col]] == g$x && row[[y_col]] == g$y
+            }, groups)
+            if (length(matching) > 0) {
+                span(class = "group_chart_icons",
+                    lapply(matching, function(g)
+                        tags$span(class = "material-symbols-outlined", 
+                            style = paste0("font-size:20px; color:", g$color),
+                            "insert_chart"
+                        )
+                    )
+                )
+            }
+        }
+
         egm_tags <- tags$div(class = "paper-tags",
-            tags$span(class = "tag", row[[x_col]]),
-            tags$span(class = "tag", row[[y_col]]),
-            conf_tag, in_progress_tag
+            tags$span(class = "tag x-column", row[[x_col]]),
+            tags$span(class = "tag y-column", row[[y_col]]),
+            conf_tag, in_progress_tag, group_chart_icons
         )
 
-        # -- 4. Meta rows (italic label: separated by vertical bar) -----------------
+        # -- 5. Meta rows (italic label: separated by vertical bar) -----------------
         meta_items <- Filter(Negate(is.null), lapply(seq_along(meta_cols), function(j) {
             col <- meta_cols[[j]]
             lbl <- meta_display[[j]]
@@ -335,7 +356,7 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         })
 
         output$table_content <- renderUI({
-            create_table_cards_html(clicked_df())
+            create_table_cards_html(clicked_df(), groups = make_group_info(clicked_info()))
         })
 
         # Return the selection state so other modules (e.g. mod_export) can
