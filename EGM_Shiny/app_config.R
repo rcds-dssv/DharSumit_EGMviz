@@ -3,7 +3,6 @@
 # =============================================================================
 
 library(shiny)
-library(ggplot2)
 library(dplyr)
 library(readr)
 library(tidyr)
@@ -191,14 +190,9 @@ local({
     n_x   <- length(unique(initial_egm_data$all$counts[[egm_definition$x_column]]))
     max_w <- n_x * egm_definition$plot_cell_width_px + 260 + 40
     plot_width <- paste0(".plot-section-header { max-width: ", max_w, "px; }")
+    comp_height <- paste0(".comparison-subpanel { flex: 0 0 ", egm_definition$comparison_panel_default_height_px, "px; }")
     # combine and write to the file
-    output <- paste0(colors_css, '\n', plot_width)
+    output <- paste0(colors_css, '\n', plot_width, '\n', comp_height)
     writeLines(output, "www/styles_runtime.css")
 })
 
-# Write the default theme to a generated JS file so layout.js can reference it
-# without needing an inline script in app.R.
-writeLines(
-    paste0("window.EGM_DEFAULT_THEME = \"", egm_definition$default_theme, "\";"),
-    "www/config.js"
-)

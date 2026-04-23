@@ -361,6 +361,11 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
             create_table_cards_html(clicked_df(), groups = make_group_info(clicked_info()))
         })
 
+        # Keep outputs live even when their panel is collapsed (display:none).
+        # Without this, Shiny suspends hidden outputs and they go stale.
+        outputOptions(output, "table_header",  suspendWhenHidden = FALSE)
+        outputOptions(output, "table_content", suspendWhenHidden = FALSE)
+
         # Return the selection state so other modules (e.g. mod_export) can
         # react to it without duplicating the observer logic.
         list(

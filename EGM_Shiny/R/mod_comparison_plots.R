@@ -142,7 +142,7 @@ cp_config <- function(p) {
 
 # Placeholder shown when no selection is active or data is unavailable.
 cp_placeholder <- function(msg = "Select one or more EGM points to see comparison plots.") {
-    plot_ly() %>%
+    plot_ly(type = "scatter", mode = "markers") %>%
         add_annotations(text = msg, x = 0.5, y = 0.5,
                         xref = "paper", yref = "paper",
                         showarrow = FALSE,
@@ -399,5 +399,10 @@ mod_comparison_plots_server <- function(id, clicked_info, egm_data) {
                 }
             )
         })
+
+        # Keep outputs live even when their panel is collapsed (display:none).
+        # Without this, Shiny suspends hidden outputs and they go stale.
+        outputOptions(output, "type_switcher", suspendWhenHidden = FALSE)
+        outputOptions(output, "plot",          suspendWhenHidden = FALSE)
     })
 }

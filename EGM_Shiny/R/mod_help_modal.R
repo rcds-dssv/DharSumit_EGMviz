@@ -1,12 +1,12 @@
 # =============================================================================
 # mod_help_modal — help modal UI
 #
-# Returns a fixed-position overlay div (hidden by default) containing
+# Returns a fixed-position overlay div (visible at load) containing
 # instructions for first-time users.  Visibility is toggled client-side
 # via the .open CSS class; no Shiny server logic is required.
 #
 # Sections are rendered conditionally using the has_confidence and
-# has_in_progress flags (set in global.R) so the instructions always match
+# has_in_progress flags (set in app_config.R) so the instructions always match
 # the data that is actually loaded.
 #
 # Public interface:
@@ -60,8 +60,8 @@ help_modal_ui <- function() {
     # ── Export formats list ────────────────────────────────────────────────────
     # Data formats are always available; citation formats are listed by name.
     export_data_items <- list(
-        tags$li(HTML("<strong>CSV / Excel / JSON</strong> \u2014 downloads a spreadsheet of the selected papers with all metadata fields")),
-        tags$li(HTML("<strong>APA / Vancouver / AMA / Chicago BibTeX / RIS</strong> \u2014 fetches formatted citations and saves them as a text file"))
+        tags$li(HTML("<strong>CSV / Excel / JSON</strong> \u2014 contains all bibliographic and metadata fields from the selected papers")),
+        tags$li(HTML("<strong>APA / AMA / Chicago / BibTeX / RIS</strong> \u2014 follows the given citation format, and excludes metadata fields"))
     )
 
     # ── Modal HTML ─────────────────────────────────────────────────────────────
@@ -84,10 +84,10 @@ help_modal_ui <- function() {
                 class = "modal-body",
 
                 # ── Intro section ──────────────────────────────────────────
-                
+
                 div(class = "modal-section",
                     tags$h2("Welcome"),
-                    tags$p("Explore hearing research papers by study type in an interactive dashboard."),
+                    tags$p(egm_definition$app_description),
                     tags$p(HTML(
                         "Start by reading the instructions below. When you're ready, use the <strong>\u00d7</strong> in the upper-right ",
                         "or type <strong>Esc</strong> on your keyboard to close this box and start exploring the data. ",
@@ -99,7 +99,7 @@ help_modal_ui <- function() {
                 # ── Credits section ────────────────────────────────────────
                 div(class = "modal-section",
                     tags$h3("Acknowledgements"),
-                    tags$p("FILL IN")
+                    tags$p(egm_definition$app_acknowledgements)
                 ),
 
 
@@ -157,9 +157,7 @@ help_modal_ui <- function() {
                 div(class = "modal-section",
                     tags$h3("Exporting Papers"),
                     tags$p("With papers selected, open the Export dropdown (top-right of the paper panel) to choose a format and click Download:"),
-                    tags$ul(export_data_items),
-                    tags$p("For citation formats, the app contacts the Crossref API to fetch formatted references. A progress indicator will appear while citations are being retrieved. The download begins automatically when fetching is complete."),
-                    tags$p("If any papers are missing DOI information or cannot be retrieved from the API, a summary will appear listing which papers were skipped and why.")
+                    tags$ul(export_data_items)
                 ),
 
                 div(class = "modal-section",

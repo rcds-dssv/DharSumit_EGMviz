@@ -54,14 +54,6 @@ body {
 /* TITLE AND INSTRUCTIONS                                        */
 /* ============================================================ */
 
-.header-title {
-    text-align: center;
-    margin-bottom: 20px;
-    color: var(--color-body-text);
-    font-size: 42px;
-    letter-spacing: 2px;
-}
-
 /* Header bar: gradient background, instructions text only */
 .header-instructions {
     flex-shrink: 0;
@@ -255,32 +247,9 @@ body {
 
 .filters-item select,
 .filters-grid .selectize-input {
-    background: var(--color-body-bg) !important;
-    border: 1px solid var(--color-container-border) !important;
-    color: var(--color-body-text) !important;
     padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    box-shadow: none !important;
     width: 100%;
     min-height: 0;
-}
-
-/* Selectize open-dropdown panel */
-.filters-grid .selectize-dropdown {
-    background: var(--color-body-bg);
-    border: 1px solid var(--color-container-border);
-    color: var(--color-body-text);
-}
-
-.filters-grid .selectize-dropdown-content .option {
-    background: var(--color-body-bg);
-    color: var(--color-body-text);
-    padding: 6px 10px;
-}
-
-.filters-grid .selectize-dropdown-content .option:hover {
-    background: var(--color-container-border);
 }
 
 .filters-reset-row {
@@ -565,21 +534,6 @@ body {
         0  6px 0 var(--color-button-text);
 }
 
-.plot-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.plot-header h2,
-.plot-header h3 {
-    font-size: 20px;
-    color: var(--color-body-text);
-    margin: 0;
-    font-weight: 600;
-}
-
 /* Reset / Export buttons */
 .reset-btn {
     background: transparent !important;
@@ -636,14 +590,13 @@ body {
     border-color: var(--color-toggle-active-bg) !important;
 }
 
-.sort-dir-btn.active {
+.sort-dir-btn.active,
+.sort-dir-btn:focus,
+.sort-dir-btn.focus {
     background: var(--color-body-bg) !important;
     border-color: var(--color-container-border) !important;
-    box-shadow: none !important;
-}
-.sort-dir-btn:focus,.sort-dir-btn.focus  {
-    background: var(--color-body-bg) !important;
     color: var(--color-body-text) !important;
+    box-shadow: none !important;
 }
 
 .sort-select-wrapper .shiny-input-container {
@@ -666,32 +619,9 @@ body {
 }
 
 .sort-select-wrapper .selectize-input {
-    background: var(--color-body-bg) !important;
-    border: 1px solid var(--color-container-border) !important;
-    color: var(--color-body-text) !important;
     padding: 4px 28px 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    box-shadow: none !important;
     min-height: 0;
     white-space: nowrap;
-}
-
-.sort-select-wrapper .selectize-dropdown {
-    background: var(--color-body-bg);
-    border: 1px solid var(--color-container-border);
-    color: var(--color-body-text);
-}
-
-.sort-select-wrapper .selectize-dropdown-content .option {
-    background: var(--color-body-bg);
-    color: var(--color-body-text);
-    padding: 6px 10px;
-    font-size: 12px;
-}
-
-.sort-select-wrapper .selectize-dropdown-content .option:hover {
-    background: var(--color-container-border);
 }
 
 /* The export button is still a <details>/<summary> dropdown */
@@ -765,30 +695,10 @@ body {
 
 .export-dropdown select,
 .export-dropdown .selectize-input {
-    background: var(--color-body-bg) !important;
-    border: 1px solid var(--color-container-border) !important;
-    color: var(--color-body-text) !important;
-    border-radius: 4px;
-    font-size: 12px;
-    box-shadow: none !important;
     width: 100%;
 }
 
-.export-dropdown .selectize-dropdown {
-    background: var(--color-body-bg);
-    border: 1px solid var(--color-container-border);
-    color: var(--color-body-text);
-}
-
-.export-dropdown .selectize-dropdown-content .option {
-    background: var(--color-body-bg);
-    color: var(--color-body-text);
-    padding: 8px 12px;
-}
-
-.export-dropdown .selectize-dropdown-content .option:hover {
-    background: var(--color-container-border);
-}
+.export-dropdown .selectize-dropdown-content .option { padding: 8px 12px; }
 
 /* downloadButton renders as an <a> tag; match the reset-btn look */
 .export-download-btn {
@@ -845,7 +755,7 @@ body {
 
 /* Total N annotation uses the theme-aware plot_text color so it toggles
    with light/dark mode.  The 'total-n-label' class is added to the annotation
-   <g> element via htmlwidgets::onRender in mod_egm_plot.R after each render
+   <g> element by a MutationObserver in layout.js after each render
    (R's plotly schema strips the cssclass annotation property before
    serialisation, so it cannot be set from R directly). */
 .plot-wrapper .plot-container.plotly .main-svg .annotation.total-n-label text {
@@ -1038,10 +948,6 @@ a.paper-card-link {
     margin-right: 4px;
 }
 
-.paper-meta-value {
-    font-weight: normal;
-}
-
 .paper-tags {
     display: flex;
     gap: 6px;
@@ -1161,9 +1067,8 @@ a.paper-card-link {
     flex-direction: column;
 }
 
-/* Comparison plots sub-panel — initial height set here; JS drag overrides it */
+/* Comparison plots sub-panel — flex-basis set via styles_runtime.css from user_config.R; JS drag overrides it */
 .comparison-subpanel {
-    flex: 0 0 300px;
     min-height: var(--min-panel-h);
     display: flex;
     flex-direction: column;
@@ -1352,32 +1257,12 @@ a.paper-card-link {
 }
 
 .comparison-header-right .selectize-input {
-    background: var(--color-body-bg) !important;
-    border: 1px solid var(--color-container-border) !important;
-    color: var(--color-body-text) !important;
     padding: 3px 28px 3px 8px;
-    border-radius: 4px;
     font-size: 11px;
-    box-shadow: none !important;
     min-height: 0;
 }
 
-.comparison-header-right .selectize-dropdown {
-    background: var(--color-body-bg);
-    border: 1px solid var(--color-container-border);
-    color: var(--color-body-text);
-}
-
-.comparison-header-right .selectize-dropdown-content .option {
-    background: var(--color-body-bg);
-    color: var(--color-body-text);
-    padding: 6px 10px;
-    font-size: 11px;
-}
-
-.comparison-header-right .selectize-dropdown-content .option:hover {
-    background: var(--color-container-border);
-}
+.comparison-header-right .selectize-dropdown-content .option { font-size: 11px; }
 
 /* ── Comparison plot wrapper ──────────────────────────────────── */
 
@@ -1425,6 +1310,53 @@ a.paper-card-link {
 }
 
 /* ============================================================ */
+/* SHARED SELECTIZE STYLES                                       */
+/* Base appearance for all selectize dropdowns in the app.      */
+/* Context blocks above keep only their unique padding/sizing.  */
+/* ============================================================ */
+
+.filters-item select,
+.filters-grid .selectize-input,
+.sort-select-wrapper .selectize-input,
+.export-dropdown select,
+.export-dropdown .selectize-input,
+.comparison-header-right .selectize-input {
+    background: var(--color-body-bg) !important;
+    border: 1px solid var(--color-container-border) !important;
+    color: var(--color-body-text) !important;
+    box-shadow: none !important;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.filters-grid .selectize-dropdown,
+.sort-select-wrapper .selectize-dropdown,
+.export-dropdown .selectize-dropdown,
+.comparison-header-right .selectize-dropdown {
+    background: var(--color-body-bg);
+    border: 1px solid var(--color-container-border);
+    color: var(--color-body-text);
+}
+
+.filters-grid .selectize-dropdown-content .option,
+.sort-select-wrapper .selectize-dropdown-content .option,
+.export-dropdown .selectize-dropdown-content .option,
+.comparison-header-right .selectize-dropdown-content .option {
+    background: var(--color-body-bg);
+    color: var(--color-body-text);
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.filters-grid .selectize-dropdown-content .option:hover,
+.sort-select-wrapper .selectize-dropdown-content .option:hover,
+.export-dropdown .selectize-dropdown-content .option:hover,
+.comparison-header-right .selectize-dropdown-content .option:hover {
+    background: var(--color-container-border);
+}
+
+
+/* ============================================================ */
 /* SHINY OVERRIDES                                               */
 /* ============================================================ */
 
@@ -1440,24 +1372,6 @@ a.paper-card-link {
 
 .main-area [class*="col-"] {
     padding: 0 !important;
-}
-
-
-/* ============================================================ */
-/* UTILITY CLASSES                                               */
-/* ============================================================ */
-
-.hidden {
-    display: none !important;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
-.fade-in {
-    animation: fadeIn 0.3s ease-in;
 }
 
 
@@ -1627,24 +1541,3 @@ a.paper-card-link {
     .modal-body::-webkit-scrollbar-button { display: none; }
 }
 
-/* ── Export modal body ──────────────────────────────────────────────────────── */
-
-.modal-body p {
-    margin: 0 0 6px 0;
-    font-size: 13px;
-    color: var(--color-body-text);
-    opacity: 0.95;
-}
-
-.modal-body ul {
-    margin: 2px 0 10px 0;
-    padding-left: 18px;
-}
-
-.modal-body li {
-    font-size: 13px;
-    color: var(--color-body-text);
-    line-height: 1.55;
-    margin-bottom: 3px;
-    opacity: 0.9;
-}
