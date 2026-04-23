@@ -99,7 +99,7 @@ help_modal_ui <- function() {
                 # ── Credits section ────────────────────────────────────────
                 div(class = "modal-section",
                     tags$h3("Acknowledgements"),
-                    tags$p(egm_definition$app_acknowledgements)
+                    tags$p(HTML(egm_definition$app_acknowledgements))
                 ),
 
 
