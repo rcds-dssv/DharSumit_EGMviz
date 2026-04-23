@@ -87,8 +87,10 @@ egm_definition <- list(
         medium_confidence = "#FDB915",
         low_confidence    = "#CC3D3D",
         in_progress       = "#FFC0CB",
-        heatmap_min       = "rgba(0,0,0,0)",         # fully transparent
-        heatmap_max       = "rgba(31, 118, 180, 0.9)" # blue tint at max count
+        heatmap_min       = "rgba(0,0,0,0)", # fully transparent
+        heatmap_max       = "rgba(31, 118, 180, 0.9)", # blue tint at max count
+        x_axis_bg         = "#32417B", # x axis background color, and used for tags in paper panel
+        y_axis_bg         = "#4B4581"  # y axis background color, and used for tags in paper panel
     ),
 
     # Dark-mode UI colors (default theme).
@@ -106,8 +108,6 @@ egm_definition <- list(
         button_text          = "#a78bfa",
         table_bg             = "#0f1629",
         table_shadow         = "rgba(79, 70, 229, 0.2)",
-        tag_default_x        = "#667fe260",
-        tag_default_y        = "#a78bf260",
         tag_special_text     = "#252a36",
         scroll_bg            = "#1e1e1e",
         plot_path            = "#3c4b6c",
@@ -134,8 +134,6 @@ egm_definition <- list(
         button_text          = "#4f46e5",
         table_bg             = "#eef0fb",
         table_shadow         = "rgba(79, 70, 229, 0.12)",
-        tag_default_x        = "#667fe230",
-        tag_default_y        = "#a78bf230",
         tag_special_text     = "#ffffff",
         scroll_bg            = "#dde0f0",
         plot_path            = "#a0a8cc",

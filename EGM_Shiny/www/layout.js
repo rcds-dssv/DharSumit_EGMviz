@@ -7,6 +7,20 @@
 // =============================================================================
 
 
+// ── Initial theme setup ───────────────────────────────────────────────────────
+// This IIFE runs synchronously (before CSS is parsed) to set data-theme on
+// <html>, preventing a flash of the wrong theme.  The default theme comes from
+// window.EGM_DEFAULT_THEME, written to config.js by app_config.R at startup.
+// localStorage overrides the default on subsequent visits.
+(function () {
+    var s = null;
+    try { s = localStorage.getItem("egm-theme"); } catch (e) {}
+    document.documentElement.setAttribute(
+        "data-theme", s || window.EGM_DEFAULT_THEME || "dark"
+    );
+})();
+
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 // Hard minimum sizes for draggable panels.

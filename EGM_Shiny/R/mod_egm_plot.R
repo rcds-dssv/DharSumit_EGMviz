@@ -264,8 +264,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
 
     # Rectangle shapes framing the axis label areas.
     axis_box_line  <- list(color = "rgba(160,170,200,0.35)", width = 1)
-    axis_box_fill_x  <- egm_definition$web_dark_colors$tag_default_x
-    axis_box_fill_y  <- egm_definition$web_dark_colors$tag_default_y
+    axis_box_fill_x  <- egm_definition$plot_colors$x_axis_bg
+    axis_box_fill_y  <- egm_definition$plot_colors$y_axis_bg
     top_box <- list(
         type = "rect", xref = "paper", yref = "paper",
         x0 = x0_margin, x1 = 1.0,

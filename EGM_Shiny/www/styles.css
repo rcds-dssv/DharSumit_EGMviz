@@ -1036,11 +1036,11 @@ a.paper-card-link {
 }
 
 .tag.x-column{
-    background: var(--color-tag-default-x);
+    background: var(--color-x-axis-bg);
 }
 
 .tag.y-column{
-    background: var(--color-tag-default-y);
+    background: var(--color-y-axis-bg);
 }
 /* Confidence-level tag colors (match egm_metadata in R/config.R) */
 .tag.high {

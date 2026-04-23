@@ -80,6 +80,7 @@ help_modal_ui <- function() {
                 tags$button(
                     class   = "modal-close-btn",
                     onclick = "document.getElementById('egm-help-modal').classList.remove('open')",
+                    title   = "Close",
                     HTML("&times;")
                 )
             ),

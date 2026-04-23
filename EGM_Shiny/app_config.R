@@ -195,3 +195,10 @@ local({
     output <- paste0(colors_css, '\n', plot_width)
     writeLines(output, "www/styles_runtime.css")
 })
+
+# Write the default theme to a generated JS file so layout.js can reference it
+# without needing an inline script in app.R.
+writeLines(
+    paste0("window.EGM_DEFAULT_THEME = \"", egm_definition$default_theme, "\";"),
+    "www/config.js"
+)
