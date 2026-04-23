@@ -126,4 +126,4 @@ The following actions are taken in the code:
 
 ## Development
 
-This codebase was developed by [Aaron M.\ Geller](https://www.it.northwestern.edu/departments/it-services-support/research/staff/geller.html) with assistance from [Claude](https://claude.ai) (Anthropic).
+This codebase was developed by [Aaron M. Geller](https://www.it.northwestern.edu/departments/it-services-support/research/staff/geller.html) with assistance from [Claude](https://claude.ai) (Anthropic).
