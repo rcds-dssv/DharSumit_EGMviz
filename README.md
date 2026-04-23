@@ -115,10 +115,12 @@ The default theme is injected as an inline `<script>` tag by `app.R` so `layout.
 
 ## Data notes
 
+The data file is not included on GitHub.  In order for the app to run, you must include a datafile (e.g., within the `EGM_Shiny/data/` directory which you may have to create).  Update the settings in `EGM_Shiny/user_config.R` as needed to accommodate your data file.     
+
+The following actions are taken in the code:
 - NA values in the x/y axis columns are replaced with `"Other"` at load time.
 - NA values in filter columns are replaced with `"Other"` at load time.
 - `"Other"` and `"None Given"` categories are sorted to the end of each axis.
-- See `data/README.md` for data cleaning history and a list of papers with missing or broken DOIs.
 
 ---
 
