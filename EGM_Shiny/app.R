@@ -12,10 +12,10 @@ ui <- fluidPage(
     tags$head(
         # Google material icons for bar chart icon
         tags$link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=insert_chart"),
-        # config.js (generated at startup by app_config.R) exposes EGM_DEFAULT_THEME.
-        # layout.js must come before the CSS links so its top-level theme IIFE runs
-        # before CSS is parsed, preventing a flash of the wrong theme.
-        tags$script(src = "config.js"),
+        # Inline script exposes EGM_DEFAULT_THEME before layout.js runs, so the
+        # top-level theme IIFE in layout.js can read it before CSS is parsed,
+        # preventing a flash of the wrong theme.
+        tags$script(HTML(paste0("window.EGM_DEFAULT_THEME=\"", egm_definition$default_theme, "\""))),
         tags$script(src = "layout.js"),            # panel drag-resize and UI interaction
         tags$script(src = "plot_interactions.js"),  # plot click/selection handlers
         # styles_runtime.css is generated at startup by app_config.R
@@ -54,8 +54,8 @@ ui <- fluidPage(
             ),
             div(
                 class = "section-main header-text",
-                tags$h1("HEARING LITERATURE EVIDENCE GAP MAP"),
-                tags$span("Explore hearing research papers by study type. Bubble size reflects the number of papers at each intersection."),
+                tags$h1(egm_definition$app_title),
+                tags$span(egm_definition$app_description),
                 tags$button(
                     class   = "how-to-use-btn",
                     onclick = "document.getElementById('egm-help-modal').classList.add('open')",

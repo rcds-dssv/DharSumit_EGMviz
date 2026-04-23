@@ -8,7 +8,19 @@ egm_definition <- list(
     # The relative path to the data file.
     datafile_path = "data/AAHHC_Scoping_2026_AMGclean.csv",
 
-    # The column name to use for the x axis of the EGM figure and the display name 
+    # App title shown in the header bar and the help modal welcome section.
+    app_title = "HEARING LITERATURE EVIDENCE GAP MAP",
+
+    # Short description shown below the title in the header bar and in the help modal.
+    app_description = "Explore hearing research papers by study type. Bubble size reflects the number of papers at each intersection.",
+
+    # Acknowledgements text shown in the help modal. Replace with your own credits.
+    app_acknowledgements = "FILL IN",
+
+    # Initial height (px) of the comparison plots sub-panel. The user can drag to resize.
+    comparison_panel_default_height_px = 300,
+
+    # The column name to use for the x axis of the EGM figure and the display name
     x_column = "WorkType",
     x_column_display = "Work Type",
 

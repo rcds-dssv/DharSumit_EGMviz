@@ -2,9 +2,9 @@
 # mod_filter — demographic filter controls
 #
 # Reads filter_dropdown_list and filter_dropdown_list_display from
-# egm_definition (global.R) to programmatically generate one dropdown per
+# egm_definition (user_config.R) to programmatically generate one dropdown per
 # filter column.  Choices are "Any" plus every unique value in that column
-# (NA values have already been replaced with "None Given" in global.R).
+# (NA values have already been replaced with "Other" in app_config.R).
 #
 # When any filter changes the module re-filters df_all, rebuilds egm_data,
 # and increments reset_egm_trigger to clear the table.

@@ -50,14 +50,6 @@ filter_export_cols <- function(df) {
 # Citation field helpers
 # =============================================================================
 
-# Returns the data column name mapped to a given BibTeX field key.
-# e.g. bib_col_name("author") -> "authors"
-bib_col_name <- function(bib_key) {
-    fmap <- egm_definition$paper_citation_bibtex_field_map
-    m <- names(fmap)[unlist(fmap) == bib_key]
-    if (length(m) == 0) NA_character_ else m[[1]]
-}
-
 # Safely extract a field from a single-row data frame by BibTeX key name.
 # Returns `default` when the column is absent, NA, or whitespace-only.
 cite_val <- function(row, bib_key, default = "") {
