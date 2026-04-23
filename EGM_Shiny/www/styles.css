@@ -149,6 +149,47 @@ body {
     border-color: currentColor;
 }
 
+/* ── Theme toggle button ─────────────────────────────────────── */
+
+.theme-toggle-btn {
+    margin-left: auto;           /* pushes the button to the right end of the strip */
+    background: transparent;
+    border: 1px solid var(--color-container-text);
+    border-radius: 3px;
+    color: inherit;
+    font-size: 13px;
+    line-height: 1;
+    height: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: stretch;
+    padding: 0;
+    flex-shrink: 0;
+    opacity: 0.65;
+    overflow: hidden;
+    transition: opacity 0.15s, border-color 0.15s;
+}
+
+.theme-toggle-btn:hover {
+    opacity: 1;
+    border-color: currentColor;
+}
+
+/* Both icons always visible; the one matching the current theme is highlighted */
+.theme-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 100%;
+    transition: background 0.15s;
+}
+
+[data-theme="light"] .theme-icon-light,
+[data-theme="dark"]  .theme-icon-dark {
+    background: rgba(128, 128, 128, 0.35);
+}
+
 .section-collapsed-title {
     display: none;
     font-size: 12px;
@@ -795,6 +836,22 @@ body {
     fill: var(--color-plot-text) !important;
 }
 
+/* EGM plot only: axis tick labels and title annotations use the fixed
+   egm_plot_text color (theme-invariant) so they always read against the
+   colored axis-background boxes. */
+.plot-wrapper .plot-container.plotly .main-svg text {
+    fill: var(--color-egm-plot-text) !important;
+}
+
+/* Total N annotation uses the theme-aware plot_text color so it toggles
+   with light/dark mode.  The 'total-n-label' class is added to the annotation
+   <g> element via htmlwidgets::onRender in mod_egm_plot.R after each render
+   (R's plotly schema strips the cssclass annotation property before
+   serialisation, so it cannot be set from R directly). */
+.plot-wrapper .plot-container.plotly .main-svg .annotation.total-n-label text {
+    fill: var(--color-plot-text) !important;
+}
+
 .plot-container.plotly .main-svg .shapelayer path {
     stroke: var(--color-plot-path) !important;
     stroke-width: 1px !important;
@@ -954,7 +1011,7 @@ a.paper-card-link {
 
 .cite-label {
     font-size: 10px;
-    color: var(--color-muted-text, #888);
+    color: var(--color-muted-text);
     margin-right: 1px;
 }
 
@@ -977,7 +1034,7 @@ a.paper-card-link {
 }
 
 .paper-meta-label {
-    color: var(--color-muted-text, #888);
+    color: var(--color-muted-text);
     margin-right: 4px;
 }
 
@@ -1000,11 +1057,13 @@ a.paper-card-link {
 }
 
 .tag.x-column{
-    background: var(--color-tag-default-x);
+    background: var(--color-x-axis-bg);
+    color: var(--color-egm-plot-text);
 }
 
 .tag.y-column{
-    background: var(--color-tag-default-y);
+    background: var(--color-y-axis-bg);
+    color: var(--color-egm-plot-text);
 }
 /* Confidence-level tag colors (match egm_metadata in R/config.R) */
 .tag.high {
@@ -1411,7 +1470,7 @@ a.paper-card-link {
     position: fixed;
     inset: 0;
     z-index: 1000;
-    background: rgba(0, 0, 0, 0.65);
+    background: var(--color-modal-overlay);
     align-items: center;
     justify-content: center;
 }
@@ -1536,7 +1595,7 @@ a.paper-card-link {
 /* "How to Use" button in the header-text */
 .how-to-use-btn {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--color-how-to-use-border);
     color: var(--color-body-text);
     padding: 6px 16px;
     border-radius: 4px;
@@ -1548,7 +1607,7 @@ a.paper-card-link {
 }
 
 .how-to-use-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--color-how-to-use-hover-bg);
     border-color: white;
 }
 

@@ -54,3 +54,4 @@ rsconnect/
 
 # produced by the code
 EGM_Shiny/www/styles_runtime.css
+EGM_Shiny/www/config.js

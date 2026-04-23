@@ -12,11 +12,15 @@ ui <- fluidPage(
     tags$head(
         # Google material icons for bar chart icon
         tags$link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=insert_chart"),
+        # config.js (generated at startup by app_config.R) exposes EGM_DEFAULT_THEME.
+        # layout.js must come before the CSS links so its top-level theme IIFE runs
+        # before CSS is parsed, preventing a flash of the wrong theme.
+        tags$script(src = "config.js"),
+        tags$script(src = "layout.js"),            # panel drag-resize and UI interaction
+        tags$script(src = "plot_interactions.js"),  # plot click/selection handlers
         # styles_runtime.css is generated at startup by app_config.R
         tags$link(rel = "stylesheet", type = "text/css", href = "styles_runtime.css"),
-        tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
-        tags$script(src = "layout.js"),            # panel drag-resize and UI interaction
-        tags$script(src = "plot_interactions.js")  # plot click/selection handlers
+        tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
     ),
 
     # tags$h1(class = "header-title", "HEARING LITERATURE EVIDENCE GAP MAP"),
@@ -35,9 +39,18 @@ ui <- fluidPage(
                 tags$button(
                     class   = "section-collapse-btn",
                     onclick = "toggleSectionCollapse(this)",
+                    title   = "Collapse / expand this section",
                     HTML("&#9652;")
                 ),
-                tags$span(class = "section-collapsed-title", "Instructions")
+                tags$span(class = "section-collapsed-title", "Instructions"),
+                tags$button(
+                    id      = "theme-toggle-btn",
+                    class   = "theme-toggle-btn",
+                    onclick = "toggleTheme()",
+                    title   = "Toggle light / dark mode",
+                    tags$span(class = "theme-icon theme-icon-light", HTML("&#9728;")),  # ☀
+                    tags$span(class = "theme-icon theme-icon-dark",  HTML("&#9789;"))   # ☽
+                )
             ),
             div(
                 class = "section-main header-text",
@@ -46,6 +59,7 @@ ui <- fluidPage(
                 tags$button(
                     class   = "how-to-use-btn",
                     onclick = "document.getElementById('egm-help-modal').classList.add('open')",
+                    title   = "Open the help and instructions panel",
                     "Information and Instructions"
                 )
             )
@@ -59,6 +73,7 @@ ui <- fluidPage(
                 tags$button(
                     class   = "section-collapse-btn",
                     onclick = "toggleSectionCollapse(this)",
+                    title   = "Collapse / expand this section",
                     HTML("&#9652;")
                 ),
                 tags$span(class = "section-collapsed-title", "Filters")

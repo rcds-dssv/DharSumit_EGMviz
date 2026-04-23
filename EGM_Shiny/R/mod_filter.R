@@ -27,7 +27,8 @@ mod_filter_ui <- function(id) {
         )
     })
     filter_reset_button <- div(class = "filters-reset-row",
-            actionButton(ns("reset_filters"), "Reset all filters", class = "reset-btn filters-reset-btn")
+            actionButton(ns("reset_filters"), "Reset all filters", class = "reset-btn filters-reset-btn",
+                         title = "Clear all filter selections")
         )
 
     div(class = "toolbar-filters",

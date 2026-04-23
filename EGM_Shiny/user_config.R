@@ -77,37 +77,83 @@ egm_definition <- list(
         doi     = "doi"
     ),
 
-    # Color pallette
-    # These values are also written to www/styles_runtime.css so the stylesheet
-    # can reference them as CSS custom properties (var(--color-*)).
+    # Color palette — plot data colors (same for both light and dark themes).
+    # These are written to styles_runtime.css as --color-* CSS custom properties.
+    #
+    # egm_plot_text: theme-invariant color used for EGM plot axis tick labels,
+    #   axis title annotations, and the WorkType/Theme tags in the paper panel.
+    #
+    # plot_text (in web_dark/light_colors): theme-aware color used for comparison
+    #   plot text, the Total N annotation in the EGM plot, and general UI text.
+    #
+    # plot_path (in web_dark/light_colors): theme-aware color used for EGM grid
+    #   lines, comparison plot grid lines, mode-bar icons, and scrollbar thumbs.
+    #   It cannot be moved to plot_colors because it is used outside the EGM plot.
     plot_colors = list(
         all_points        = "#30a9ff",
         high_confidence   = "#46A040",
         medium_confidence = "#FDB915",
         low_confidence    = "#CC3D3D",
         in_progress       = "#FFC0CB",
-        heatmap_min       = "rgba(0,0,0,0)",    # fully transparent
-        heatmap_max       = "rgba(31, 118, 180, 0.9)", # light blue tint at max count
-        plot_path         = "#3c4b6c",
-        plot_text         = "#cfdbf6"
+        heatmap_min       = "rgba(0,0,0,0)", # fully transparent
+        heatmap_max       = "rgba(31, 118, 180, 0.9)", # blue tint at max count
+        x_axis_bg         = "#32417B", # x axis background color, and used for tags in paper panel
+        y_axis_bg         = "#4B4581",  # y axis background color, and used for tags in paper panel
+        egm_plot_text     = "#cfdbf6"
     ),
 
-    web_colors = list(
-        body_bg           = "#0a0e27",
-        body_text         = "white",
-        top_gradient1     = "#667eea",
-        top_gradient2     = "#a78bfa",
-        container_bg      = "#141b3d",
-        container_border  = "#1e2a5a",
-        container_text    = "#7c8db5",
-        toggle_hover_bg   = "#273a6e",
-        toggle_active_bg  = "#4f46e5",
-        button_text       = "#a78bfa",
-        table_bg          = "#0f1629",
-        table_shadow      = "rgba(79, 70, 229, 0.2)",
-        tag_default_x     = "#667fe260",
-        tag_default_y     = "#a78bf260",
-        tag_special_text  = "#252a36",
-        scroll_bg         = "#1e1e1e"
-    )
+    # Dark-mode UI colors (default theme).
+    # All keys are written as --color-* CSS custom properties in :root {}.
+    web_dark_colors = list(
+        body_bg              = "#0a0e27",
+        body_text            = "white",
+        top_gradient1        = "#667eea",
+        top_gradient2        = "#a78bfa",
+        container_bg         = "#141b3d",
+        container_border     = "#1e2a5a",
+        container_text       = "#7c8db5",
+        toggle_hover_bg      = "#273a6e",
+        toggle_active_bg     = "#4f46e5",
+        button_text          = "#a78bfa",
+        table_bg             = "#0f1629",
+        table_shadow         = "rgba(79, 70, 229, 0.2)",
+        tag_special_text     = "#252a36",
+        scroll_bg            = "#1e1e1e",
+        plot_path            = "#3c4b6c",
+        plot_text            = "#cfdbf6",
+        muted_text           = "#888888",
+        modal_overlay        = "rgba(0, 0, 0, 0.65)",
+        how_to_use_border    = "rgba(255, 255, 255, 0.5)",
+        how_to_use_hover_bg  = "rgba(255, 255, 255, 0.15)"
+    ),
+
+    # Light-mode UI colors.
+    # Keys are written as --color-* CSS custom properties in [data-theme="light"] {},
+    # overriding the dark-mode defaults above.
+    web_light_colors = list(
+        body_bg              = "#f4f5fc",
+        body_text            = "#1a1a2e",
+        top_gradient1        = "#667eea",
+        top_gradient2        = "#a78bfa",
+        container_bg         = "#ffffff",
+        container_border     = "#cdd0e8",
+        container_text       = "#555b7a",
+        toggle_hover_bg      = "#e8eaf6",
+        toggle_active_bg     = "#4f46e5",
+        button_text          = "#4f46e5",
+        table_bg             = "#eef0fb",
+        table_shadow         = "rgba(79, 70, 229, 0.12)",
+        tag_special_text     = "#ffffff",
+        scroll_bg            = "#dde0f0",
+        plot_path            = "#a0a8cc",
+        plot_text            = "#1a1a2e",
+        muted_text           = "#8a90aa",
+        modal_overlay        = "rgba(0, 0, 0, 0.45)",
+        how_to_use_border    = "rgba(255, 255, 255, 0.5)",
+        how_to_use_hover_bg  = "rgba(255, 255, 255, 0.2)"
+    ),
+
+    # Default theme on app load ("dark" or "light").
+    # Users can toggle in the UI; their preference is saved in localStorage.
+    default_theme = "dark"
 )

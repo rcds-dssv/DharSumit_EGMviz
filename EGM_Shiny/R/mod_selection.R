@@ -228,7 +228,8 @@ mod_click_plot_content_ui <- function(id) {
 
 mod_deselect_ui <- function(id) {
     ns <- NS(id)
-    actionButton(ns("deselect_all"), "Deselect all", class = "reset-btn filters-reset-btn")
+    actionButton(ns("deselect_all"), "Deselect all", class = "reset-btn filters-reset-btn",
+                 title = "Deselect all highlighted bubbles on the plot")
 }
 
 mod_sort_ui <- function(id) {
@@ -248,7 +249,8 @@ mod_sort_ui <- function(id) {
 
 mod_click_reset_ui <- function(id) {
     ns <- NS(id)
-    actionButton(ns("reset_plot"), "Reset Selection", class = "reset-btn")
+    actionButton(ns("reset_plot"), "Reset Selection", class = "reset-btn",
+                 title = "Clear the current paper selection")
 }
 
 mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col) {

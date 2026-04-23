@@ -295,7 +295,8 @@ mod_export_citations_server <- function(id, clicked_df, clicked_info) {
                             selected = "csv"
                         ),
                         actionButton(ns("check_download"), "Download",
-                                     class = "reset-btn export-download-btn")
+                                     class = "reset-btn export-download-btn",
+                                     title = "Download the selected papers in the chosen format")
                     )
                 )
             )

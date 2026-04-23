@@ -7,6 +7,20 @@
 // =============================================================================
 
 
+// ── Initial theme setup ───────────────────────────────────────────────────────
+// This IIFE runs synchronously (before CSS is parsed) to set data-theme on
+// <html>, preventing a flash of the wrong theme.  The default theme comes from
+// window.EGM_DEFAULT_THEME, written to config.js by app_config.R at startup.
+// localStorage overrides the default on subsequent visits.
+(function () {
+    var s = null;
+    try { s = localStorage.getItem("egm-theme"); } catch (e) {}
+    document.documentElement.setAttribute(
+        "data-theme", s || window.EGM_DEFAULT_THEME || "dark"
+    );
+})();
+
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 // Hard minimum sizes for draggable panels.
@@ -215,6 +229,21 @@ function toggleSectionCollapse(btn) {
 }
 
 
+// ── Light / dark theme toggle ─────────────────────────────────────────────────
+
+// Switches the data-theme attribute on <html> between "dark" and "light" and
+// persists the user's choice in localStorage.
+// The icon on the toggle button is driven entirely by CSS (::before pseudo-element)
+// so no JS manipulation of button content is needed here.
+function toggleTheme() {
+    var html     = document.documentElement;
+    var isDark   = html.getAttribute("data-theme") !== "light";
+    var newTheme = isDark ? "light" : "dark";
+    html.setAttribute("data-theme", newTheme);
+    try { localStorage.setItem("egm-theme", newTheme); } catch(e) {}
+}
+
+
 // ── Close <details> dropdowns on outside click ────────────────────────────────
 
 document.addEventListener("click", function(e) {
@@ -239,3 +268,37 @@ document.addEventListener("keydown", function(e) {
         if (modal) modal.classList.remove("open");
     }
 });
+
+
+// ── EGM plot: tag Total N annotation for theme-aware CSS colouring ────────────
+//
+// plotly's R package strips unknown annotation properties (including cssclass)
+// before serialisation, so the 'total-n-label' class cannot be set from R.
+// Instead, a MutationObserver watches for the plotly widget to appear inside
+// #plot_wrapper; once found, tagTotalN() is called immediately and again after
+// every plotly_afterplot event (which fires after every responsive re-draw,
+// preventing the class from being lost when plotly recreates the SVG elements).
+(function () {
+    function tagTotalN(el) {
+        el.querySelectorAll(".annotation text").forEach(function (t) {
+            if (t.textContent.indexOf("Total N") >= 0) {
+                var ann = t.closest(".annotation");
+                if (ann) ann.classList.add("total-n-label");
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var wrapper = document.getElementById("plot_wrapper");
+        if (!wrapper) return;
+
+        var observer = new MutationObserver(function () {
+            var el = wrapper.querySelector(".js-plotly-plot");
+            if (!el) return;
+            observer.disconnect();
+            tagTotalN(el);
+            el.on("plotly_afterplot", function () { tagTotalN(el); });
+        });
+        observer.observe(wrapper, { childList: true, subtree: true });
+    });
+}());
