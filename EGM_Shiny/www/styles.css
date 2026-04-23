@@ -1498,14 +1498,16 @@ a.paper-card-link {
     padding: 18px 52px;           /* side padding = button width + gap */
     border-bottom: 1px solid var(--color-container-border);
     flex-shrink: 0;
+    
 }
 
-.modal-header h2 {
+.modal-header h1 {
     margin: 0;
-    font-size: 20px;
+    font-size: 30px;
     color: var(--color-body-text);
     font-weight: 600;
     text-align: center;
+    text-transform: uppercase;
 }
 
 .modal-close-btn {
@@ -1548,6 +1550,12 @@ a.paper-card-link {
 
 .modal-section:last-child {
     margin-bottom: 0;
+}
+
+.modal-section h2 {
+    font-size: 20px;
+    color: var(--color-top-gradient1);
+    text-transform: uppercase;
 }
 
 .modal-section h3 {
