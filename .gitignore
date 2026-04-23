@@ -46,8 +46,9 @@ docs/
 # translation temp files
 po/*~
 
-# RStudio Connect folder
+# RStudio Connect folder and token cache
 rsconnect/
+~/.rsconnect
 
 # data
 *data/
