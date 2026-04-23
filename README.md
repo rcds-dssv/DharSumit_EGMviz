@@ -119,3 +119,9 @@ The default theme is injected as an inline `<script>` tag by `app.R` so `layout.
 - NA values in filter columns are replaced with `"Other"` at load time.
 - `"Other"` and `"None Given"` categories are sorted to the end of each axis.
 - See `data/README.md` for data cleaning history and a list of papers with missing or broken DOIs.
+
+---
+
+## Development
+
+This codebase was developed by [Aaron M.\ Geller](https://www.it.northwestern.edu/departments/it-services-support/research/staff/geller.html) with assistance from [Claude](https://claude.ai) (Anthropic).
