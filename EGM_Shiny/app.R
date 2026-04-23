@@ -93,7 +93,7 @@ ui <- fluidPage(
             div(
                 class = "plot-section",
                 id    = "plot_section",
-                div(class = "panel-strip panel-strip-v", "EGM Plot"),
+                div(class = "panel-strip panel-strip-v", "Evidence Gap Map"),
                 div(
                     class = "plot-section-header",
                     div(

@@ -19,36 +19,32 @@ help_modal_ui <- function() {
     # Always include the "Summary" entry; confidence and in-progress entries
     # are added only when the corresponding data columns exist.
     dot_items <- list(
-        tags$div(HTML("<span class='dot-swatch' style='background:var(--color-all_points)'></span><strong>Blue \u2014 Summary:</strong> every paper at that cell"))
+        tags$div(HTML("<span class='dot-swatch' style='background:var(--color-all-points)'></span><strong>Blue \u2014 Summary:</strong> every paper at that cell"))
     )
     if (has_confidence) {
         dot_items <- c(dot_items, list(
-            tags$div(HTML("<span class='dot-swatch' style='background:var(--color-high_confidence)'></span><strong>Green \u2014 High Confidence:</strong> papers rated at the highest confidence level")),
-            tags$div(HTML("<span class='dot-swatch' style='background:var(--color-medium_confidence)'></span><strong>Yellow \u2014 Medium Confidence:</strong> papers rated at medium confidence")),
-            tags$div(HTML("<span class='dot-swatch' style='background:var(--color-low_confidence)'></span><strong>Red \u2014 Low Confidence:</strong> papers rated at the lowest confidence level"))
+            tags$div(HTML("<span class='dot-swatch' style='background:var(--color-high-confidence)'></span><strong>Green \u2014 High Confidence:</strong> papers rated at the highest confidence level")),
+            tags$div(HTML("<span class='dot-swatch' style='background:var(--color-medium-confidence)'></span><strong>Yellow \u2014 Medium Confidence:</strong> papers rated at medium confidence")),
+            tags$div(HTML("<span class='dot-swatch' style='background:var(--color-low-confidence)'></span><strong>Red \u2014 Low Confidence:</strong> papers rated at the lowest confidence level"))
         ))
     }
     if (has_in_progress) {
         dot_items <- c(dot_items, list(
-            tags$div(HTML("<span class='dot-swatch' style='background:var(--color-in_progress)'></span><strong>Pink \u2014 In Progress:</strong> ongoing studies"))
+            tags$div(HTML("<span class='dot-swatch' style='background:var(--color-in-progress)'></span><strong>Pink \u2014 In Progress:</strong> ongoing studies"))
         ))
     }
 
     # ── Filters list ───────────────────────────────────────────────────────────
     # Built from egm_definition so the descriptions always match the loaded data.
     filter_items <- lapply(seq_along(egm_definition$filter_dropdown_list), function(i) {
-        tags$li(HTML(paste0(
-            "<strong>", egm_definition$filter_dropdown_list_display[i], "</strong>",
-            " \u2014 filter papers by ", tolower(egm_definition$filter_dropdown_list_display[i])
-        )))
+        tags$li(HTML(paste0("<strong>", egm_definition$filter_dropdown_list_display[i], "</strong>")))
     })
 
     # ── Toggles list ───────────────────────────────────────────────────────────
     # Always include Table, Heatmap, Summary; add optional toggles when present.
     toggle_items <- list(
-        tags$li(HTML("<strong>Table</strong> \u2014 shows or hides the paper detail panel on the right")),
         tags$li(HTML("<strong>Heatmap</strong> \u2014 shows or hides the cell-shading overlay (darker = more papers)")),
-        tags$li(HTML("<strong>Summary Dots</strong> \u2014 shows or hides the blue Summary dots"))
+        tags$li(HTML("<strong>Summary Dots</strong> \u2014 shows or hides the Summary dots"))
     )
     if (has_confidence) {
         toggle_items <- c(toggle_items, list(
@@ -57,7 +53,7 @@ help_modal_ui <- function() {
     }
     if (has_in_progress) {
         toggle_items <- c(toggle_items, list(
-            tags$li(HTML("<strong>In Progress Dots</strong> \u2014 shows or hides the pink In Progress dots"))
+            tags$li(HTML("<strong>In Progress Dots</strong> \u2014 shows or hides the In Progress dots"))
         ))
     }
 
@@ -71,12 +67,12 @@ help_modal_ui <- function() {
     # ── Modal HTML ─────────────────────────────────────────────────────────────
     tags$div(
         id    = "egm-help-modal",
-        class = "modal-overlay",
+        class = "modal-overlay open",
         div(
             class = "modal-content",
             div(
                 class = "modal-header",
-                tags$h2("Instructions"),
+                tags$h1("Information and Instructions"),
                 tags$button(
                     class   = "modal-close-btn",
                     onclick = "document.getElementById('egm-help-modal').classList.remove('open')",
@@ -86,6 +82,31 @@ help_modal_ui <- function() {
             ),
             div(
                 class = "modal-body",
+
+                # ── Intro section ──────────────────────────────────────────
+                
+                div(class = "modal-section",
+                    tags$h2("Welcome"),
+                    tags$p("Explore hearing research papers by study type in an interactive dashboard."),
+                    tags$p(HTML(
+                        "Start by reading the instructions below. When you're ready, use the <strong>\u00d7</strong> in the upper-right ",
+                        "or type <strong>Esc</strong> on your keyboard to close this box and start exploring the data. ",
+                        "(You can reopen this section by clicking the ",
+                        "<em>Information and Instructions</em> button at the top of the main page.)"
+                    ))
+                ),
+
+                # ── Credits section ────────────────────────────────────────
+                div(class = "modal-section",
+                    tags$h3("Acknowledgements"),
+                    tags$p("FILL IN")
+                ),
+
+
+                # ── Instructions header ────────────────────────────────────
+                div(class = "modal-section",
+                    tags$h2("Instructions")
+                ),
 
                 div(class = "modal-section",
                     tags$h3("Reading the Map"),
@@ -108,29 +129,29 @@ help_modal_ui <- function() {
 
                 div(class = "modal-section",
                     tags$h3("Selecting Papers"),
-                    tags$p("Use the box-select or lasso tool in the plotly toolbar (top-right corner of the chart). Click and drag to draw a selection around one or more bubbles \u2014 the paper panel on the right will populate with matching records, sorted by first author."),
-                    tags$p("Clicking directly on the chart without using a selection tool does not trigger the paper panel."),
-                    tags$p("To clear your selection, double-click anywhere on the chart.")
+                    tags$p("There are multiple ways to select papers from the map.  You can click on a single point and use 'Ctrl/Cmd' + click to add (or remove) points from your selection.  Alternatively, you can use the box-select or lasso tool in the plotly toolbar (top-right corner of the chart). For either tool, click and drag to draw a selection around one or more bubbles.  After selecting papers, the  panel on the right will populate with matching records."),
+                    tags$p("To clear your selection, double-click anywhere on the chart. or use the <em>Deselect all</em> button in the top-right corner of the map section.")
                 ),
 
                 div(class = "modal-section",
                     tags$h3("Filters"),
-                    tags$p("Open the Filters dropdown (right side of the header) to narrow the papers shown on the map:"),
+                    tags$p("Use the dropdowns within the filters panel to narrow the papers shown on the map:"),
                     tags$ul(filter_items),
                     tags$p("Changing a filter immediately re-renders the map and clears any current selection.")
                 ),
 
                 div(class = "modal-section",
                     tags$h3("Toggles"),
-                    tags$p("Open the Toggles dropdown (right side of the header) to show or hide individual layers:"),
+                    tags$p("Open the Toggles menu (upper-right corner of the map section) to show or hide individual layers:"),
                     tags$ul(toggle_items),
                     tags$p("Toggles update the chart instantly and do not clear your current selection.")
                 ),
 
                 div(class = "modal-section",
-                    tags$h3("Paper Panel"),
-                    tags$p("The panel on the right shows details for the papers in your current selection. At the top it displays the total paper count and colour-coded tags for the selected study types, themes, and confidence levels. Each paper appears as a card with its citation and metadata fields."),
-                    tags$p("Clicking a card opens the paper's DOI link in a new tab (when a DOI is available).")
+                    tags$h3("Papers Comparison Panel"),
+                    tags$p("The panel on the right shows details for the papers in your current selection."),
+                    tags$p("At the top you will see information about each paper, including a summary of the selection followed by a card for each paper with its citation and metadata fields.  Clicking a card opens the paper's DOI link in a new tab (when a DOI is available)."),
+                    tags$p("At the bottom you will see figures that compare various features of the papers in your selection.  Use the buttons in the top-right of this section to change the plot type.")
                 ),
 
                 div(class = "modal-section",
@@ -139,6 +160,11 @@ help_modal_ui <- function() {
                     tags$ul(export_data_items),
                     tags$p("For citation formats, the app contacts the Crossref API to fetch formatted references. A progress indicator will appear while citations are being retrieved. The download begins automatically when fetching is complete."),
                     tags$p("If any papers are missing DOI information or cannot be retrieved from the API, a summary will appear listing which papers were skipped and why.")
+                ),
+
+                div(class = "modal-section",
+                    tags$h3("Configuring the Page Layout"),
+                    tags$p("Many of the panels can be manually resized to better fit your screen. The top two panels can be collapsed upwards with the arrow buttons in the upper-left corners.  The panels below have click+draggable dividers that can be used to expand or shrink the sections."),
                 )
             )
         )
