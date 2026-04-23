@@ -1489,6 +1489,11 @@ a.paper-card-link {
     opacity: 0.9;
 }
 
+.modal-section a {
+    color: inherit;
+    text-decoration: underline;
+}
+
 .modal-section ul {
     margin: 4px 0 8px 0;
     padding-left: 18px;

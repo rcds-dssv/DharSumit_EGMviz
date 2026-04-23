@@ -66,6 +66,12 @@ shiny::runApp("EGM_Shiny")   # from the repo root
 
 The working directory must be `EGM_Shiny/` when calling `runApp()` because data and `www/` paths are relative to it.
 
+
+This app was deployed on shinyapps.io using the following command from the GitHub root directory:
+
+```r
+rsconnect::deployApp(appDir = "EGM_shiny", account = "ageller-rcds-northwestern")
+```
 ---
 
 ## Configuration
@@ -126,4 +132,4 @@ The following actions are taken in the code:
 
 ## Development
 
-This codebase was developed by [Aaron M.\ Geller](https://www.it.northwestern.edu/departments/it-services-support/research/staff/geller.html) with assistance from [Claude](https://claude.ai) (Anthropic).
+This codebase was developed by [Aaron M. Geller](https://www.it.northwestern.edu/departments/it-services-support/research/staff/geller.html) with assistance from [Claude](https://claude.ai) (Anthropic).  The literature review was performed by [Sumit Dhar](https://www.northwestern.edu/provost/about/bios/sumitrajit-sumit-dhar.html), [Jasleen Singh](https://www.umass.edu/public-health-sciences/about/directory/jasleen-singh) and their colleagues
