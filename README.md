@@ -2,7 +2,7 @@
 
 An interactive R Shiny dashboard for exploring hearing-related research literature as an **Evidence Gap Map (EGM)**. Papers are plotted as bubbles on a 2D grid — Work Type × Theme — where bubble size reflects the number of papers at each intersection. Users can filter the dataset, select bubbles to inspect individual papers, and export citations in multiple formats.
 
-**Live app:** [shinyapps.io](https://www.shinyapps.io/) *(placeholder — update with deployment URL)*
+**Live app:** [shinyapps.io](https://ageller-rcds-northwestern.shinyapps.io/egm_shiny/)
 
 ---
 
