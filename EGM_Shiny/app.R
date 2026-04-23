@@ -47,7 +47,9 @@ ui <- fluidPage(
                     id      = "theme-toggle-btn",
                     class   = "theme-toggle-btn",
                     onclick = "toggleTheme()",
-                    title   = "Toggle light / dark mode"
+                    title   = "Toggle light / dark mode",
+                    tags$span(class = "theme-icon theme-icon-light", HTML("&#9728;")),  # ☀
+                    tags$span(class = "theme-icon theme-icon-dark",  HTML("&#9789;"))   # ☽
                 )
             ),
             div(

@@ -270,13 +270,15 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
         type = "rect", xref = "paper", yref = "paper",
         x0 = x0_margin, x1 = 1.0,
         y0 = 1.0,       y1 = top_box_y1,
-        fillcolor = axis_box_fill_x, line = axis_box_line
+        fillcolor = axis_box_fill_x, line = axis_box_line,
+        layer = "below"
     )
     left_box <- list(
         type = "rect", xref = "paper", yref = "paper",
         x0 = x0_margin, x1 = 0.0,
         y0 = 0.0,       y1 = 1.0,
-        fillcolor = axis_box_fill_y, line = axis_box_line
+        fillcolor = axis_box_fill_y, line = axis_box_line,
+        layer = "below"
     )
 
     # Note: font colors below apply to the downloaded image only.
@@ -372,8 +374,6 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     egm_build
 }
 
-
-# ── Shiny module ──────────────────────────────────────────────────────────────
 
 mod_plot_ui <- function(id) {
     ns <- NS(id)

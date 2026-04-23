@@ -268,3 +268,37 @@ document.addEventListener("keydown", function(e) {
         if (modal) modal.classList.remove("open");
     }
 });
+
+
+// ── EGM plot: tag Total N annotation for theme-aware CSS colouring ────────────
+//
+// plotly's R package strips unknown annotation properties (including cssclass)
+// before serialisation, so the 'total-n-label' class cannot be set from R.
+// Instead, a MutationObserver watches for the plotly widget to appear inside
+// #plot_wrapper; once found, tagTotalN() is called immediately and again after
+// every plotly_afterplot event (which fires after every responsive re-draw,
+// preventing the class from being lost when plotly recreates the SVG elements).
+(function () {
+    function tagTotalN(el) {
+        el.querySelectorAll(".annotation text").forEach(function (t) {
+            if (t.textContent.indexOf("Total N") >= 0) {
+                var ann = t.closest(".annotation");
+                if (ann) ann.classList.add("total-n-label");
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var wrapper = document.getElementById("plot_wrapper");
+        if (!wrapper) return;
+
+        var observer = new MutationObserver(function () {
+            var el = wrapper.querySelector(".js-plotly-plot");
+            if (!el) return;
+            observer.disconnect();
+            tagTotalN(el);
+            el.on("plotly_afterplot", function () { tagTotalN(el); });
+        });
+        observer.observe(wrapper, { childList: true, subtree: true });
+    });
+}());

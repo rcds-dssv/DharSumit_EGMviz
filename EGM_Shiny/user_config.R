@@ -79,8 +79,16 @@ egm_definition <- list(
 
     # Color palette — plot data colors (same for both light and dark themes).
     # These are written to styles_runtime.css as --color-* CSS custom properties.
-    # Note: plot_path and plot_text (theme-dependent UI colors) live in
-    # web_dark_colors / web_light_colors below.
+    #
+    # egm_plot_text: theme-invariant color used for EGM plot axis tick labels,
+    #   axis title annotations, and the WorkType/Theme tags in the paper panel.
+    #
+    # plot_text (in web_dark/light_colors): theme-aware color used for comparison
+    #   plot text, the Total N annotation in the EGM plot, and general UI text.
+    #
+    # plot_path (in web_dark/light_colors): theme-aware color used for EGM grid
+    #   lines, comparison plot grid lines, mode-bar icons, and scrollbar thumbs.
+    #   It cannot be moved to plot_colors because it is used outside the EGM plot.
     plot_colors = list(
         all_points        = "#30a9ff",
         high_confidence   = "#46A040",
@@ -90,7 +98,8 @@ egm_definition <- list(
         heatmap_min       = "rgba(0,0,0,0)", # fully transparent
         heatmap_max       = "rgba(31, 118, 180, 0.9)", # blue tint at max count
         x_axis_bg         = "#32417B", # x axis background color, and used for tags in paper panel
-        y_axis_bg         = "#4B4581"  # y axis background color, and used for tags in paper panel
+        y_axis_bg         = "#4B4581",  # y axis background color, and used for tags in paper panel
+        egm_plot_text     = "#cfdbf6"
     ),
 
     # Dark-mode UI colors (default theme).
