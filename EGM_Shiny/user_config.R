@@ -14,8 +14,19 @@ egm_definition <- list(
     # Short description shown below the title in the header bar and in the help modal.
     app_description = "Explore hearing research papers by study type. Bubble size reflects the number of papers at each intersection.",
 
-    # Acknowledgements text shown in the help modal. Replace with your own credits.
-    app_acknowledgements = "FILL IN",
+    # Acknowledgements HTML shown in the help modal. Supports inline HTML (links, etc.).
+    app_acknowledgements = paste0(
+        'This app was developed by ',
+        '<a href="https://www.it.northwestern.edu/departments/it-services-support/research/staff/geller.html" ',
+        'target="_blank" rel="noopener noreferrer">Aaron M. Geller</a> ',
+        'with assistance from ',
+        '<a href="https://claude.ai" target="_blank" rel="noopener noreferrer">Claude</a> (Anthropic). ',
+        'The literature review was performed by ',
+        '<a href="https://www.northwestern.edu/provost/about/bios/sumitrajit-sumit-dhar.html" ',
+        'target="_blank" rel="noopener noreferrer">Sumit Dhar</a>, ',
+        '<a href="https://www.umass.edu/public-health-sciences/about/directory/jasleen-singh" ',
+        'target="_blank" rel="noopener noreferrer">Jasleen Singh</a> and their colleagues.'
+    ),
 
     # Initial height (px) of the comparison plots sub-panel. The user can drag to resize.
     comparison_panel_default_height_px = 300,
