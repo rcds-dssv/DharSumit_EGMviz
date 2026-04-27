@@ -6,7 +6,7 @@
 
 egm_definition <- list(
     # The relative path to the data file.
-    datafile_path = "data/AAHHC_Scoping_2026_AMGclean.csv",
+    datafile_path = "data/AAHHC_Scoping_2026_AMGclean_JS.csv",
 
     # App title shown in the header bar and the help modal welcome section.
     app_title = "HEARING LITERATURE EVIDENCE GAP MAP",
@@ -118,8 +118,8 @@ egm_definition <- list(
         medium_confidence = "#FDB915",
         low_confidence    = "#CC3D3D",
         in_progress       = "#FFC0CB",
-        heatmap_min       = "rgba(0,0,0,0)", # fully transparent
-        heatmap_max       = "rgba(31, 118, 180, 0.9)", # blue tint at max count
+        heatmap_min       = "rgba(31, 118, 180, 0.2)", # color at 1 paper
+        heatmap_max       = "rgba(31, 118, 180, 0.95)", # color at max count
         x_axis_bg         = "#32417B", # x axis background color, and used for tags in paper panel
         y_axis_bg         = "#4B4581",  # y axis background color, and used for tags in paper panel
         egm_plot_text     = "#cfdbf6"

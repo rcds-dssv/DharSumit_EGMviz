@@ -237,7 +237,9 @@ make_meta_plot <- function(labeled_df, meta_col,
                       as.character(.data[[meta_col]]) != "Other")
 
     if (nrow(df) == 0)
-        return(cp_placeholder("No data for the selected meta column."))
+        return(cp_placeholder("No data available to plot."))
+
+
 
     counts <- df %>%
         dplyr::mutate(.meta_val    = as.character(.data[[meta_col]]),
