@@ -61,10 +61,7 @@ build_labeled_data <- function(clicked_info, egm_data, x_col, y_col) {
 #
 # Bar:  50 px per group (2-line wrapped labels + spacing)
 # Year: 330 px base + 15 px per group beyond the first 2 (legend rows)
-# Meta: counts actual (group, meta_val) bars drawn — applies the same
-#       NA / "" / "Other" filter used in make_meta_plot so empty cells
-#       don't inflate the estimate.  Height = n_cats cluster rows × 12 px
-#       gap + actual bar count × 22 px + overhead.
+# Meta: counts actual (group, meta_val) bars drawn.
 #
 # All values include the cp_layout margin overhead (~120 px total t+b).
 compute_cp_min_height <- function(labeled_df, plot_type, meta_col = NULL) {
@@ -85,8 +82,7 @@ compute_cp_min_height <- function(labeled_df, plot_type, meta_col = NULL) {
         # Mirror make_meta_plot's filter so we count only bars actually drawn
         filtered <- labeled_df %>%
             dplyr::filter(!is.na(.data[[meta_col]]),
-                          trimws(as.character(.data[[meta_col]])) != "",
-                          as.character(.data[[meta_col]]) != "Other")
+                          trimws(as.character(.data[[meta_col]])) != "")
         if (nrow(filtered) == 0) return(MIN_H)
         n_cats     <- dplyr::n_distinct(filtered[[meta_col]])
         n_bars     <- dplyr::n_distinct(
@@ -260,8 +256,7 @@ make_meta_plot <- function(labeled_df, meta_col,
 
     df <- labeled_df %>%
         dplyr::filter(!is.na(.data[[meta_col]]),
-                      trimws(as.character(.data[[meta_col]])) != "",
-                      as.character(.data[[meta_col]]) != "Other")
+                      trimws(as.character(.data[[meta_col]])) != "")
 
     if (nrow(df) == 0)
         return(cp_placeholder("No data available to plot."))
