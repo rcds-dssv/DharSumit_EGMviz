@@ -161,6 +161,13 @@ make_bar_plot <- function(labeled_df) {
         dplyr::arrange(.group_idx) %>%
         dplyr::mutate(.group_label = wrap_for_plotly(.group_label, width = 25))
 
+    max_val <- max(counts$n)
+    x_axis_opts <- if (max_val <= 10) {
+        list(dtick = 1, tickformat = "d")
+    } else {
+        list(tickformat = "d", nticks = 10)
+    }
+
     plot_ly(
         data        = counts,
         y           = ~.group_label,
@@ -172,6 +179,7 @@ make_bar_plot <- function(labeled_df) {
         hovertemplate = "%{y}<br>N Papers: %{x}<extra></extra>"
     ) %>%
         cp_layout(xlab = "Number of papers") %>%
+        plotly::layout(xaxis = x_axis_opts) %>%
         cp_config()
 }
 
@@ -216,10 +224,29 @@ make_year_plot <- function(labeled_df) {
         )
     }
 
+    n_years <- dplyr::n_distinct(df$.year)
+    x_axis_opts <- if (n_years <= 10) {
+        list(dtick = 1, tickformat = "d")
+    } else {
+        list(tickformat = "d", nticks = 10)
+    }
+
+    max_y <- df %>%
+        dplyr::group_by(.year) %>%
+        dplyr::summarise(total = dplyr::n(), .groups = "drop") %>%
+        dplyr::pull(total) %>%
+        max()
+    y_axis_opts <- if (max_y <= 10) {
+        list(dtick = 1, tickformat = "d")
+    } else {
+        list(tickformat = "d", nticks = 10)
+    }
+
     p %>%
         layout(barmode = "stack") %>%
         cp_layout(xlab = "Year", ylab = "Number of Papers",
                   show_legend = nrow(groups) > 1) %>%
+        plotly::layout(xaxis = x_axis_opts, yaxis = y_axis_opts) %>%
         cp_config()
 }
 
@@ -270,10 +297,18 @@ make_meta_plot <- function(labeled_df, meta_col,
         )
     }
 
+    max_val <- max(counts$n)
+    x_axis_opts <- if (max_val <= 10) {
+        list(dtick = 1, tickformat = "d")
+    } else {
+        list(tickformat = "d", nticks = 10)
+    }
+
     p %>%
         layout(barmode = "group") %>%
         cp_layout(xlab = "Number of Papers", ylab = meta_display_name,
                   show_legend = nrow(groups) > 1) %>%
+        plotly::layout(xaxis = x_axis_opts) %>%
         cp_config()
 }
 
