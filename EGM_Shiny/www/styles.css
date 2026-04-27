@@ -216,9 +216,7 @@ body {
 /* Items flow column-by-column into two rows, filling available width */
 .filters-grid {
     display: grid;
-    grid-template-rows: auto auto;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(120px, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     column-gap: 12px;
     row-gap: 5px;
     align-items: start;

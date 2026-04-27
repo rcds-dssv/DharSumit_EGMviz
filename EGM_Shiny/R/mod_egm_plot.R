@@ -217,10 +217,10 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     # Cells are colored by the "all" paper count for the currently filtered data.
     # zmax is fixed to the initial (unfiltered) maximum so the color scale stays
     # consistent as filters are applied — the same approach used for dot sizing.
-    # Cells with a count of zero map to the transparent end of the scale.
-    # The color ramps from transparent (0 papers) to a neutral gray (90th-percentile papers).
+    # Cells with a count of 1 map to the heatmap_min color of the scale.
+    # The color ramps from 1 to the 90th-percentile number of papers.
     # Cap at the 90th percentile so one dominant cell does not wash out the rest.
-    # Cells above this value all show the maximum gray -- same logic as dot sizing.
+    # Cells above this value all show the heatmap_max color -- same logic as dot sizing.
     heatmap_zmax <- quantile(initial_egm_data$all$counts[[n_col]], 0.90, na.rm = TRUE)
     heatmap_z    <- build_heatmap_z(
         egm_data$all$counts, x_col, y_col, n_col, x_levels, y_levels
@@ -235,8 +235,9 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             zmin       = 0,
             zmax       = heatmap_zmax,
             colorscale = list(
-                list(0, egm_definition$plot_colors$heatmap_min),  # 0 papers 
-                list(1, egm_definition$plot_colors$heatmap_max)   # max papers
+                list(0, "rgba(0,0,0,0)"),  # 0 is fully transparent 
+                list(0.0001, egm_definition$plot_colors$heatmap_min),  # zmin papers 
+                list(1, egm_definition$plot_colors$heatmap_max)   # zmax papers
             ),
             showscale  = FALSE,
             hoverinfo  = "none",
