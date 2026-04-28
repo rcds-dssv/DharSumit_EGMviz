@@ -26,11 +26,14 @@ EGM_Shiny/
 │   ├── AAHHC_Scoping_2026_AMGclean.csv   # active dataset (referenced in user_config.R)
 │   └── README.md          # data cleaning notes and papers with broken DOIs
 ├── R/
-│   ├── mod_egm_plot.R     # plotly EGM figure builder + mod_plot_ui/server
+│   ├── mod_egm_plot.R     # plotly EGM figure builder + mod_plot_ui/server;
+│   │                      #   also defines wrap_for_plotly() (shared with
+│   │                      #   mod_comparison_plots.R) and build_heatmap_z()
 │   ├── mod_filter.R       # filter dropdowns + reset; updates egm_data reactive
 │   ├── mod_toggles.R      # heatmap / dot layer toggle switches; uses plotlyProxy
 │   ├── mod_papers.R       # plot click/lasso selection → paper cards table
-│   ├── mod_comparison_plots.R  # Count / Year / Meta comparison charts
+│   ├── mod_comparison_plots.R  # Count / Year / Meta comparison charts;
+│   │                      #   defines compute_cp_min_height() for dynamic plot sizing
 │   ├── mod_export.R       # CSV / Excel / JSON / APA / AMA / Chicago / BibTeX / RIS export
 │   └── mod_help_modal.R   # static help modal (client-side open/close only)
 └── www/
@@ -73,8 +76,7 @@ user_config.R
     └─► app_config.R  (startup)
             ├── reads CSV → df_all (global)
             ├── create_egm_data(df_all) → initial_egm_data (global)
-            ├── writes www/styles_runtime.css
-            └── writes www/config.js
+            └── writes www/styles_runtime.css
 
 server():
     egm_data (reactiveVal) ←── mod_filter_server  (re-filters df_all on dropdown change)
@@ -101,6 +103,14 @@ server():
 - **Runtime-generated file**: `www/styles_runtime.css` is written fresh each time `app_config.R` runs. Do not edit it manually; its content comes from `user_config.R`. The default theme is injected as an inline `<script>` in `app.R` (rather than a separate file) so `layout.js` can read it before CSS is parsed.
 
 - **`bib_col_name()`**: defined once in `app_config.R`. It maps a BibTeX field key (e.g. `"author"`) to the CSV column name via `egm_definition$paper_citation_bibtex_field_map`.
+
+- **`outputOptions(suspendWhenHidden = FALSE)`**: applied to outputs inside collapsible panels (`table_header`, `table_content` in `mod_papers.R`; `type_switcher`, `plot` in `mod_comparison_plots.R`). Without this, Shiny suspends reactive bindings when a panel is `display:none`, so expanding a previously-collapsed panel after a new selection shows stale content. Any new hidden output that must stay live needs the same treatment.
+
+- **Dynamic comparison plot height** (`compute_cp_min_height` + `setCompPlotHeight`): `mod_comparison_plots.R` computes the minimum pixel height needed to prevent label/legend overlap (based on number of groups and bars drawn) and sends it to `layout.js` via `session$sendCustomMessage("setCompPlotHeight", list(wrapperId, height))`. The JS handler sets `min-height` on the `#cp_inner` div. `.comparison-plot-wrapper` has `overflow-y: auto`, so when the panel is shorter than `min-height` the wrapper scrolls rather than clipping the plot.
+
+- **Heatmap 3-stop colorscale**: the heatmap trace uses stops at 0 (fully transparent), 0.0001 (`heatmap_min`), and 1.0 (`heatmap_max`). This keeps cells with 0 papers invisible while giving 1-paper cells the `heatmap_min` color. As a consequence, `heatmap_min` in `user_config.R` must **not** be fully transparent — use a low-opacity color (e.g. `rgba(31,118,180,0.2)`) so the visual ramp from 1 paper to max is meaningful.
+
+- **`app_acknowledgements` is HTML**: the value in `user_config.R` is a raw HTML string (built with `paste0()`). It must be wrapped in `HTML()` when passed to a Shiny tag — e.g. `tags$p(HTML(egm_definition$app_acknowledgements))` — otherwise the markup is rendered as escaped text.
 
 ## Dependencies
 
