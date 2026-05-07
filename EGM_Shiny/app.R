@@ -176,6 +176,17 @@ server <- function(input, output, session) {
 
     toggle_states <- mod_toggles_server("egm", egm_data = egm_data)
 
+    # When all dot layers are hidden, clear any active selection so the paper
+    # table doesn't show stale results with no visible dots to explain them.
+    # notifyR = TRUE tells plot_interactions.js to also fire plotly_deselect_trigger
+    # so mod_click_server clears clicked_info on the R side.
+    observeEvent(toggle_states()$any_dots_visible, {
+        if (!isTRUE(toggle_states()$any_dots_visible)) {
+            session$sendCustomMessage("clearPlotlySelection",
+                list(plotId = NS("egm")("egm_plot"), notifyR = TRUE))
+        }
+    }, ignoreInit = TRUE)
+
     mod_plot_server(
         "egm",
         egm_data         = egm_data,
@@ -192,7 +203,8 @@ server <- function(input, output, session) {
         reset_egm_trigger = reset_egm_trigger,
         plot_source_name  = "egm_scatter_plot",
         x_col             = egm_definition$x_column,
-        y_col             = egm_definition$y_column
+        y_col             = egm_definition$y_column,
+        any_dots_visible  = reactive(toggle_states()$any_dots_visible)
     )
 
     mod_filter_server(

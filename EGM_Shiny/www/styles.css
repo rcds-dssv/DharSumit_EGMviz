@@ -467,6 +467,16 @@ body {
     min-width: 170px;
 }
 
+.dots-notice {
+    margin: 8px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-container-border);
+    font-size: 11px;
+    font-style: italic;
+    color: var(--color-container-text);
+    line-height: 1.4;
+}
+
 /* ── Drag-resize handle ──────────────────────────────────────────────────────── */
 
 .resize-handle {
