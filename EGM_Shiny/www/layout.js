@@ -270,14 +270,49 @@ document.addEventListener("keydown", function(e) {
 });
 
 
-// ── EGM plot: tag Total N annotation for theme-aware CSS colouring ────────────
+// ── Sticky x-axis bar ─────────────────────────────────────────────────────────
 //
-// plotly's R package strips unknown annotation properties (including cssclass)
-// before serialisation, so the 'total-n-label' class cannot be set from R.
-// Instead, a MutationObserver watches for the plotly widget to appear inside
-// #plot_wrapper; once found, tagTotalN() is called immediately and again after
-// every plotly_afterplot event (which fires after every responsive re-draw,
-// preventing the class from being lost when plotly recreates the SVG elements).
+// When the user scrolls down inside .plot-wrapper far enough that the plotly
+// x-axis colored rectangle is no longer visible, show an HTML overlay at the
+// top of the visible plot area.
+//
+// left is fixed at the wrapper's paddingLeft so the clone stays aligned with
+// the SVG at all horizontal scroll positions.  Only top tracks scrollTop.
+
+(function () {
+    document.addEventListener("DOMContentLoaded", function () {
+        var w = document.getElementById("plot_wrapper");
+        var b = document.getElementById("egm_sticky_xaxis");
+        if (!w || !b) return;
+        var thr  = parseInt(b.dataset.threshold) || 65;
+        var padL = parseInt(getComputedStyle(w).paddingLeft) || 20;
+        w.addEventListener("scroll", function () {
+            var show = w.scrollTop > thr;
+            b.style.display = show ? "block" : "none";
+            if (show) {
+                b.style.top  = w.scrollTop + "px";
+                b.style.left = padL        + "px";
+            }
+        });
+    });
+}());
+
+
+// ── EGM plot: post-render hooks (Total N tagging + sticky x-axis sync) ────────
+//
+// A MutationObserver waits for the plotly widget to appear in #plot_wrapper,
+// then calls both hooks immediately and re-calls them after every
+// plotly_afterplot event (fires after every responsive re-draw).
+//
+// tagTotalN: adds a CSS class to the Total N annotation so it can be coloured
+//   theme-aware.  R's plotly schema strips unknown annotation properties
+//   (including cssclass) before serialisation, so the class must be injected
+//   here instead.
+//
+// syncStickyBar: clones the rendered <svg.main-svg> into #egm_sticky_xaxis and
+//   crops the container to margin_t (120 logical px) so the bar shows only the
+//   x-axis header.  Cloning the live SVG guarantees pixel-identical appearance
+//   regardless of responsive scaling — no geometry needs to be recomputed in R.
 (function () {
     function tagTotalN(el) {
         el.querySelectorAll(".annotation text").forEach(function (t) {
@@ -286,6 +321,28 @@ document.addEventListener("keydown", function(e) {
                 if (ann) ann.classList.add("total-n-label");
             }
         });
+    }
+
+    function syncStickyBar(el) {
+        var bar = document.getElementById("egm_sticky_xaxis");
+        if (!bar || !el) return;
+        var svg = el.querySelector("svg.main-svg");
+        if (!svg) return;
+        var rect     = svg.getBoundingClientRect();
+        var scale    = rect.height / (parseFloat(svg.getAttribute("height")) || rect.height);
+        // The colored x-axis rectangle is 75 logical px tall and starts 45 logical px
+        // into the top margin (margin_t=120, empty_space=45, colored_rect=75).
+        // Crop the bar to just the colored rect and shift the clone up to remove
+        // the empty space above it.
+        var barH   = Math.round(75 * scale);
+        var offset = Math.round(45 * scale);
+        var clone  = svg.cloneNode(true);
+        clone.style.position = "relative";
+        clone.style.top      = -offset + "px";
+        bar.style.width  = rect.width + "px";
+        bar.style.height = barH       + "px";
+        bar.innerHTML    = "";
+        bar.appendChild(clone);
     }
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -297,7 +354,11 @@ document.addEventListener("keydown", function(e) {
             if (!el) return;
             observer.disconnect();
             tagTotalN(el);
-            el.on("plotly_afterplot", function () { tagTotalN(el); });
+            syncStickyBar(el);
+            el.on("plotly_afterplot", function () {
+                tagTotalN(el);
+                syncStickyBar(el);
+            });
         });
         observer.observe(wrapper, { childList: true, subtree: true });
     });

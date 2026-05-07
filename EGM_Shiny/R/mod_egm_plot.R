@@ -200,6 +200,14 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
 
     n_total <- sum(egm_data$all$counts$n)
 
+    # "select" when any dot trace is visible; "pan" when all are hidden (heatmap
+    # only — selection is meaningless without dots carrying customdata).
+    any_dots_visible <- if (!is.null(toggle_states)) {
+        isTRUE(toggle_states$summary) ||
+        isTRUE(toggle_states$confidence) ||
+        isTRUE(toggle_states$in_progress)
+    } else TRUE
+
     # Base figure + toolbar config
     egm_spec <- plot_ly(source = plot_source_name, width = plot_width, height = plot_height) %>%
         plotly::config(
@@ -287,7 +295,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     egm_spec <- egm_spec %>% layout(
         margin     = list(t = margin_t, b = 10, l = 0, r = 0, pad = 10),
         autosize   = FALSE,
-        dragmode   = "select",
+        dragmode   = if (any_dots_visible) "select" else "pan",
         showlegend = FALSE,
         font = list(color = "black"),
         xaxis = list(
@@ -376,9 +384,29 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
 }
 
 
+# ── Helper: sticky x-axis overlay bar ────────────────────────────────────────
+
+# Returns an empty shell div for the sticky x-axis overlay.  All content is
+# filled by syncStickyBar() in layout.js after each plotly render: it clones
+# the actual rendered SVG and crops it to the top margin_t pixels, guaranteeing
+# the bar is pixel-identical to the plot's own x-axis header regardless of
+# responsive scaling.
+build_sticky_xaxis_html <- function() {
+    # threshold: scrollTop (px) at which the top of the plotly colored x-axis
+    # rectangle reaches the visible edge of .plot-wrapper.
+    # = wrapper padding (20) + (margin_t (120) - colored-rect height (75)) = 65
+    HTML('<div id="egm_sticky_xaxis" data-threshold="65"
+              style="display:none;position:absolute;top:0;left:0;z-index:10;
+                     pointer-events:none;overflow:hidden;"></div>')
+}
+
+
 mod_plot_ui <- function(id) {
     ns <- NS(id)
-    plotlyOutput(ns("egm_plot"), height = "100%", width = "100%")
+    tagList(
+        build_sticky_xaxis_html(),
+        plotlyOutput(ns("egm_plot"), height = "100%", width = "100%")
+    )
 }
 
 mod_plot_server <- function(id, egm_data, toggle_states = NULL, plot_source_name, x_col, y_col, n_col) {

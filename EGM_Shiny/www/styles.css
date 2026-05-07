@@ -119,7 +119,7 @@ body {
 
 .section-collapse-btn {
     background: transparent;
-    border: 1px solid var(--color-container-text);
+    border: 1px solid var(--color-how-to-use-border);
     border-radius: 3px;
     color: inherit;
     font-size: 14px;
@@ -146,7 +146,7 @@ body {
 .theme-toggle-btn {
     margin-left: auto;           /* pushes the button to the right end of the strip */
     background: transparent;
-    border: 1px solid var(--color-container-text);
+    border: 1px solid var(--color-how-to-use-border);
     border-radius: 3px;
     color: inherit;
     font-size: 13px;
@@ -467,6 +467,16 @@ body {
     min-width: 170px;
 }
 
+.dots-notice {
+    margin: 8px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-container-border);
+    font-size: 11px;
+    font-style: italic;
+    color: var(--color-container-text);
+    line-height: 1.4;
+}
+
 /* ── Drag-resize handle ──────────────────────────────────────────────────────── */
 
 .resize-handle {
@@ -723,6 +733,13 @@ body {
 .trace.heatmap {
     pointer-events: none !important;
 }
+
+/* Sticky x-axis overlay: fix appearance of the cloned SVG.
+   The clone sits outside .plot-container.plotly so the main plot's CSS rules
+   do not reach it; these rules restore the correct rendering. */
+#egm_sticky_xaxis svg  { background: transparent !important; }
+#egm_sticky_xaxis .bg  { fill: transparent !important; }
+#egm_sticky_xaxis text { fill: var(--color-egm-plot-text) !important; }
 
 /* Highlight the active modebar tool button */
 .modebar-btn.active {

@@ -213,13 +213,27 @@ Shiny.addCustomMessageHandler("triggerAttachPlotlyClickHandler", function(msg) {
     attachPlotlyClickHandler();
 });
 
-// Clear selectedpoints visual and reset JS selection state.
-// Called by R on "Deselect all", filter reset, and reset trigger.
+// Clear selectedpoints visual, remove the selection shape, and reset JS state.
+// Called by R on "Deselect all", filter reset, and when all dot layers go hidden.
+// msg.notifyR: if true, also fire plotly_deselect_trigger so mod_click_server
+//   clears clicked_info (paper table) on the R side.
 Shiny.addCustomMessageHandler("clearPlotlySelection", function(msg) {
     currentSelection = [];
     var plot = document.getElementById(msg.plotId);
     if (!plot) return;
+    // Guard against the plotly_deselect event that Plotly.relayout may fire
+    // when clearing the selection shape.
+    applyingVisual = true;
+    setTimeout(function() { applyingVisual = false; }, 100);
     Plotly.restyle(plot, { selectedpoints: null });
+    Plotly.relayout(plot, { selections: [] });
+    if (msg.notifyR && plotlyNs) {
+        Shiny.setInputValue(
+            plotlyNs + "plotly_deselect_trigger",
+            Math.random(),
+            { priority: "event" }
+        );
+    }
 });
 
 // Remembered plot-panel width from the last resize, restored when the table

@@ -253,7 +253,8 @@ mod_click_reset_ui <- function(id) {
                  title = "Clear the current paper selection")
 }
 
-mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col) {
+mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col,
+                             any_dots_visible = NULL) {
     moduleServer(id, function(input, output, session) {
 
         # Current selection: list of point-info lists, or NULL when nothing is selected
@@ -326,17 +327,13 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         })
 
         # Filter changes and the Reset button both increment reset_egm_trigger.
-        # A filter change also triggers a full plot re-render, so the proxy
-        # relayout is harmless overlap; dragmode = "select" is set explicitly
-        # to recover from any drag-state confusion caused by the re-render racing
-        # with prior proxy calls.
+        # dragmode is intentionally NOT forced here: create_egm_figure() sets it
+        # correctly from toggle_states on every re-render, so forcing "select"
+        # would undo the pan mode that mod_toggles_server set when all dots are hidden.
         observeEvent(reset_egm_trigger(), {
             clicked_info(NULL)
             plotlyProxy("egm_plot", session) %>%
-                plotlyProxyInvoke("relayout", list(
-                    selections = list(),
-                    dragmode   = "select"
-                ))
+                plotlyProxyInvoke("relayout", list(selections = list()))
         }, ignoreInit = TRUE)
 
         # Show/hide the table section and resize handle based on selection state.
@@ -346,10 +343,16 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         })
 
         output$plot_info <- renderUI({
-            if (is.null(clicked_info())) {
-                tags$p(class = "info", "Click on a point or click+drag with the box-select or lasso tool to display papers.")
+            dots_on <- is.null(any_dots_visible) || isTRUE(any_dots_visible())
+            if (!dots_on) {
+                tags$p(class = "info",
+                    'Enable dot layers in "Plot configuration" to select papers.')
+            } else if (is.null(clicked_info())) {
+                tags$p(class = "info",
+                    "Click on a point or click+drag with the box-select or lasso tool to display papers.")
             } else {
-                tags$p(class = "info", 'Use the "Deselect all" button or double click within the plot to deselect.')
+                tags$p(class = "info",
+                    'Use the "Deselect all" button or double click within the plot to deselect.')
             }
         })
 
