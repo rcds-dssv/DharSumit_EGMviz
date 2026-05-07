@@ -146,7 +146,7 @@ egm_definition <- list(
         plot_text            = "#cfdbf6",
         muted_text           = "#888888",
         modal_overlay        = "rgba(0, 0, 0, 0.65)",
-        how_to_use_border    = "rgba(255, 255, 255, 0.5)",
+        how_to_use_border    = "rgba(255, 255, 255, 1.0)",
         how_to_use_hover_bg  = "rgba(255, 255, 255, 0.15)"
     ),
 
@@ -172,8 +172,8 @@ egm_definition <- list(
         plot_text            = "#1a1a2e",
         muted_text           = "#8a90aa",
         modal_overlay        = "rgba(0, 0, 0, 0.45)",
-        how_to_use_border    = "rgba(255, 255, 255, 0.5)",
-        how_to_use_hover_bg  = "rgba(255, 255, 255, 0.2)"
+        how_to_use_border    = "rgba(89, 91, 122, 1.0)",
+        how_to_use_hover_bg  = "rgba(89, 91, 122, 0.2)"
     ),
 
     # Default theme on app load ("dark" or "light").

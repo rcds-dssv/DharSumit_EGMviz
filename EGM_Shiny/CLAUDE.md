@@ -23,7 +23,7 @@ EGM_Shiny/
 │                          #   builds egm_metadata, helper functions, writes runtime CSS/JS
 ├── user_config.R          # ALL user-facing configuration lives here (see below)
 ├── data/
-│   ├── AAHHC_Scoping_2026_AMGclean.csv   # active dataset (referenced in user_config.R)
+│   ├── AAHHC_Scoping_2026_AMGclean_JS.csv  # active dataset (referenced in user_config.R)
 │   └── README.md          # data cleaning notes and papers with broken DOIs
 ├── R/
 │   ├── mod_egm_plot.R     # plotly EGM figure builder + mod_plot_ui/server;
@@ -100,6 +100,8 @@ server():
 
 - **`customdata` on plotly markers**: each dot carries a `list(x_label, y_label, trace_id)` triplet, set in `add_to_counts_df_for_plotly()`. `plot_interactions.js` reads this on click/lasso and passes it to R via `input$plotly_accumulated_selection`.
 
+- **Group chart icons in paper cards**: `create_table_cards_html()` in `mod_papers.R` adds a colored `insert_chart` icon (Material Symbols) to each card for every comparison group that card belongs to. The colors come from `make_group_info()` (viridis palette), so the icons visually link each paper back to its bubble in the comparison plots. This requires the Google Material Symbols stylesheet loaded in `app.R`.
+
 - **Runtime-generated file**: `www/styles_runtime.css` is written fresh each time `app_config.R` runs. Do not edit it manually; its content comes from `user_config.R`. The default theme is injected as an inline `<script>` in `app.R` (rather than a separate file) so `layout.js` can read it before CSS is parsed.
 
 - **`bib_col_name()`**: defined once in `app_config.R`. It maps a BibTeX field key (e.g. `"author"`) to the CSV column name via `egm_definition$paper_citation_bibtex_field_map`.
@@ -111,6 +113,11 @@ server():
 - **Heatmap 3-stop colorscale**: the heatmap trace uses stops at 0 (fully transparent), 0.0001 (`heatmap_min`), and 1.0 (`heatmap_max`). This keeps cells with 0 papers invisible while giving 1-paper cells the `heatmap_min` color. As a consequence, `heatmap_min` in `user_config.R` must **not** be fully transparent — use a low-opacity color (e.g. `rgba(31,118,180,0.2)`) so the visual ramp from 1 paper to max is meaningful.
 
 - **`app_acknowledgements` is HTML**: the value in `user_config.R` is a raw HTML string (built with `paste0()`). It must be wrapped in `HTML()` when passed to a Shiny tag — e.g. `tags$p(HTML(egm_definition$app_acknowledgements))` — otherwise the markup is rendered as escaped text.
+
+- **Sticky x-axis bar** (`#egm_sticky_xaxis`): when the user scrolls the EGM plot downward so the plotly x-axis header goes out of view, an overlay bar appears at the top of `.plot-wrapper` showing the same colored rectangle and column labels. The bar is a shell `<div>` emitted by `build_sticky_xaxis_html()` in `mod_egm_plot.R` (placed first inside `mod_plot_ui`'s `tagList`). All content is managed by JS:
+  - **`syncStickyBar(el)`** in `layout.js` (inside the `plotly_afterplot` hook IIFE): after each plotly render, clones `svg.main-svg`, shifts it up by `45 * scale` px (skipping the empty space above the colored rectangle), and crops the bar container to `75 * scale` px tall (the colored-rect height). Constants: `margin_t = 120`, colored rect = 75 px tall starting at 45 px into the margin.
+  - **Scroll handler** (separate IIFE in `layout.js`): shows/hides the bar when `scrollTop > 65` (threshold = wrapper padding 20 + empty space above colored rect 45). `left` is fixed at `paddingLeft` of `.plot-wrapper` (not tracking `scrollLeft`) so the clone stays horizontally aligned with the SVG at all scroll positions.
+  - **CSS** (`styles.css`): three rules scoped to `#egm_sticky_xaxis` restore rendering of the clone (which sits outside `.plot-container.plotly` so main-plot rules don't apply): `svg { background: transparent }`, `.bg { fill: transparent }` (plotly's white fill rect), `text { fill: var(--color-egm-plot-text) }`.
 
 ## Dependencies
 
