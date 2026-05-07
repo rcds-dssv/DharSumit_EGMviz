@@ -129,8 +129,8 @@ cp_config <- function(p) {
     plotly::config(p,
         displaylogo = FALSE,
         modeBarButtonsToRemove = list(
-            "zoom2d", "pan2d", "select2d", "lasso2d",
-            "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
+            "select2d", "lasso2d",
+            "zoomIn2d", "zoomOut2d", "autoScale2d",
             "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
         )
     )
@@ -212,6 +212,7 @@ make_year_plot <- function(labeled_df) {
             data          = gdf,
             x             = ~.year, y = ~n,
             type          = "bar",
+            width         = 0.8,
             name          = groups$.group_label[i],
             marker        = list(color   = groups$.group_color[i],
                                  line    = list(width = 0)),
@@ -240,6 +241,94 @@ make_year_plot <- function(labeled_df) {
 
     p %>%
         layout(barmode = "stack") %>%
+        cp_layout(xlab = "Year", ylab = "Number of Papers",
+                  show_legend = nrow(groups) > 1) %>%
+        plotly::layout(xaxis = x_axis_opts, yaxis = y_axis_opts) %>%
+        cp_config()
+}
+
+
+# ── Year line plot: one line per group, actual counts (not stacked) ──────────
+
+make_year_line_plot <- function(labeled_df) {
+    year_col <- bib_col_name("year")
+
+    if (is.na(year_col) || !(year_col %in% names(labeled_df))) {
+        return(cp_placeholder(
+            "Year column not configured in paper_citation_bibtex_field_map."))
+    }
+
+    df <- labeled_df %>%
+        dplyr::mutate(.year        = suppressWarnings(as.integer(.data[[year_col]])),
+                      .group_label = wrap_for_plotly(.group_label, width = 25)) %>%
+        dplyr::filter(!is.na(.year))
+
+    if (nrow(df) == 0)
+        return(cp_placeholder("No valid year data for the current selection."))
+
+    groups <- df %>%
+        dplyr::select(.group_label, .group_color, .group_idx) %>%
+        dplyr::distinct() %>%
+        dplyr::arrange(.group_idx)
+
+    # Total papers per year summed across all groups (used for the total trace
+    # and for setting the y-axis ceiling when multiple groups are shown).
+    total_df <- df %>%
+        dplyr::count(.group_label, .year) %>%
+        dplyr::group_by(.year) %>%
+        dplyr::summarise(n = sum(n), .groups = "drop") %>%
+        dplyr::arrange(.year)
+
+    p <- plot_ly()
+    for (i in seq_len(nrow(groups))) {
+        gdf <- df[df$.group_label == groups$.group_label[i], ] %>%
+            dplyr::count(.year) %>%
+            dplyr::arrange(.year)
+        p <- p %>% add_trace(
+            data          = gdf,
+            x             = ~.year, y = ~n,
+            type          = "scatter",
+            mode          = "lines+markers",
+            name          = groups$.group_label[i],
+            line          = list(color = groups$.group_color[i], width = 2),
+            marker        = list(color = groups$.group_color[i], size = 12),
+            hovertemplate = paste0(groups$.group_label[i],
+                                   "<br>Year: %{x}<br>N Papers: %{y}<extra></extra>")
+        )
+    }
+
+    # Total line: dashed, uses the "all" trace color; only added when multiple
+    # groups are selected (with one group it would duplicate that group's line).
+    if (nrow(groups) > 1) {
+        p <- p %>% add_trace(
+            data          = total_df,
+            x             = ~.year, y = ~n,
+            type          = "scatter",
+            mode          = "lines+markers",
+            name          = "Total",
+            line          = list(color = egm_metadata$all$color, width = 2, dash = "dash"),
+            marker        = list(color = egm_metadata$all$color, size = 12),
+            hovertemplate = "Total<br>Year: %{x}<br>N Papers: %{y}<extra></extra>"
+        )
+    }
+
+    n_years <- dplyr::n_distinct(df$.year)
+    x_axis_opts <- if (n_years <= 10) {
+        list(dtick = 1, tickformat = "d")
+    } else {
+        list(tickformat = "d", nticks = 10)
+    }
+
+    # When multiple groups are present the total line reaches the highest value;
+    # use total_df$n as the ceiling so the y-axis always fits all traces.
+    max_y <- max(total_df$n)
+    y_axis_opts <- if (max_y <= 10) {
+        list(dtick = 1, tickformat = "d")
+    } else {
+        list(tickformat = "d", nticks = 10)
+    }
+
+    p %>%
         cp_layout(xlab = "Year", ylab = "Number of Papers",
                   show_legend = nrow(groups) > 1) %>%
         plotly::layout(xaxis = x_axis_opts, yaxis = y_axis_opts) %>%
@@ -352,11 +441,15 @@ mod_comparison_plots_server <- function(id, clicked_info, egm_data) {
                 egm_definition$paper_meta_columns[[1]]
             else NULL
         )
+        # Persists the year chart style ("bar" = stacked bar, "line" = line plot)
+        # across type switches so the user's choice is restored on re-render.
+        active_year_view <- reactiveVal("bar")
 
-        observeEvent(input$type_bar,  active_type("bar"),  ignoreInit = TRUE)
-        observeEvent(input$type_year, active_type("year"), ignoreInit = TRUE)
-        observeEvent(input$type_meta, active_type("meta"), ignoreInit = TRUE)
-        observeEvent(input$meta_col,  active_meta(input$meta_col), ignoreInit = TRUE)
+        observeEvent(input$type_bar,   active_type("bar"),  ignoreInit = TRUE)
+        observeEvent(input$type_year,  active_type("year"), ignoreInit = TRUE)
+        observeEvent(input$type_meta,  active_type("meta"), ignoreInit = TRUE)
+        observeEvent(input$meta_col,   active_meta(input$meta_col),       ignoreInit = TRUE)
+        observeEvent(input$year_view,  active_year_view(input$year_view), ignoreInit = TRUE)
 
         # Labeled per-group dataframe for all three plots.
         labeled_data <- reactive({
@@ -392,6 +485,11 @@ mod_comparison_plots_server <- function(id, clicked_info, egm_data) {
                 mk_link("type_year", "Year", "year"),
                 tags$span(class = "cp-type-sep", "|"),
                 mk_link("type_meta", "Meta", "meta"),
+                if (active == "year")
+                    selectInput(ns("year_view"), NULL,
+                                choices  = c("Stacked Bar" = "bar", "Line" = "line"),
+                                selected = isolate(active_year_view()),
+                                width    = "120px"),
                 if (active == "meta" && length(meta_choices) > 0)
                     selectInput(ns("meta_col"), NULL,
                                 choices  = meta_choices,
@@ -408,8 +506,11 @@ mod_comparison_plots_server <- function(id, clicked_info, egm_data) {
                 return(cp_placeholder())
             }
 
-            type <- active_type()
-            mc   <- if (type == "meta") {
+            type      <- active_type()
+            year_view <- if (type == "year") {
+                if (!is.null(input$year_view)) input$year_view else isolate(active_year_view())
+            } else NULL
+            mc        <- if (type == "meta") {
                 if (!is.null(input$meta_col)) input$meta_col else isolate(active_meta())
             } else NULL
 
@@ -419,7 +520,10 @@ mod_comparison_plots_server <- function(id, clicked_info, egm_data) {
 
             switch(type,
                 bar  = make_bar_plot(ld),
-                year = make_year_plot(ld),
+                year = if (isTRUE(year_view == "line"))
+                           make_year_line_plot(ld)
+                       else
+                           make_year_plot(ld),
                 meta = {
                     if (is.null(mc))
                         return(cp_placeholder("No meta columns configured."))
