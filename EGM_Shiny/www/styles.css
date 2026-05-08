@@ -57,6 +57,9 @@ body {
 /* Header bar: gradient background, instructions text only */
 .header-instructions {
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
     background: linear-gradient(135deg, var(--color-top-gradient1) 0%, var(--color-top-gradient2) 100%);
     color: var(--color-body-text);
 }
@@ -203,6 +206,57 @@ body {
     display: inline;
 }
 
+
+/* ── Expanded row layout: collapse button becomes a narrow left column ─────── */
+/* Applies only when NOT collapsed; collapsed state retains the strip-as-row.   */
+
+.header-instructions:not(.section-collapsed),
+.controls-toolbar:not(.section-collapsed),
+.search-toolbar:not(.section-collapsed) {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.header-instructions:not(.section-collapsed) .section-strip,
+.controls-toolbar:not(.section-collapsed) .section-strip,
+.search-toolbar:not(.section-collapsed) .section-strip {
+    flex-direction: column;
+    height: auto;
+    width: 28px;
+    flex-shrink: 0;
+    padding: 8px 0;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+}
+
+/* Theme toggle: escape the left column and sit at upper-right of the header */
+.header-instructions:not(.section-collapsed) .theme-toggle-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    margin-left: 0;
+}
+
+.header-instructions:not(.section-collapsed) .section-main,
+.controls-toolbar:not(.section-collapsed) .section-main,
+.search-toolbar:not(.section-collapsed) .section-main {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Fine-tune section-main padding in the new layout (less left, less top) */
+.header-instructions:not(.section-collapsed) .section-main {
+    padding: 10px 20px 20px 14px;
+}
+
+.controls-toolbar:not(.section-collapsed) .section-main {
+    padding: 8px 20px 8px 14px;
+}
+
+.search-toolbar:not(.section-collapsed) .section-main {
+    padding: 6px 20px 8px 14px;
+}
 
 /* ── Search toolbar ─────────────────────────────────────────────────────────── */
 
