@@ -928,13 +928,16 @@ body {
     font-weight: bold !important;
 }
 
-/* Tooltips */
-.plot-container.plotly .hoverlayer text {
-    fill: var(--color-body-text) !important;
+/* Tooltips — needs .plot-wrapper prefix to beat the higher-specificity
+   .plot-wrapper .plot-container.plotly .main-svg text rule above */
+.plot-container.plotly .hoverlayer text,
+.plot-wrapper .plot-container.plotly .hoverlayer text {
+    fill: white !important;
 }
 
-.plot-container.plotly .hoverlayer path {
-    stroke: var(--color-body-text) !important;
+.plot-container.plotly .hoverlayer path,
+.plot-wrapper .plot-container.plotly .hoverlayer path {
+    stroke: white !important;
 }
 
 .plot-container.plotly .hoverlayer .hovertext {
