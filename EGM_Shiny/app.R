@@ -11,7 +11,7 @@ ui <- fluidPage(
 
     tags$head(
         # Google material icons for bar chart icon
-        tags$link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=insert_chart"),
+        tags$link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=insert_chart,search"),
         # Inline script exposes EGM_DEFAULT_THEME before layout.js runs, so the
         # top-level theme IIFE in layout.js can read it before CSS is parsed,
         # preventing a flash of the wrong theme.
@@ -81,6 +81,25 @@ ui <- fluidPage(
             div(
                 class = "section-main",
                 mod_filter_ui("egm")
+            )
+        ),
+
+        # Search toolbar: collapsed by default; populated by mod_search_ui
+        div(
+            class = "search-toolbar section-collapsed",
+            div(
+                class = "section-strip",
+                tags$button(
+                    class   = "section-collapse-btn",
+                    onclick = "toggleSectionCollapse(this)",
+                    title   = "Collapse / expand this section",
+                    HTML("&#9662;")
+                ),
+                tags$span(class = "section-collapsed-title", "Search")
+            ),
+            div(
+                class = "section-main",
+                mod_search_ui("egm")
             )
         ),
 
@@ -176,6 +195,16 @@ server <- function(input, output, session) {
 
     toggle_states <- mod_toggles_server("egm", egm_data = egm_data)
 
+    # Incremented by mod_click_server when a real plot selection is made while
+    # search is active; mod_search_server observes it to clear the query.
+    clear_search_trigger <- reactiveVal(0L)
+
+    search_results <- mod_search_server(
+        "egm",
+        egm_data             = egm_data,
+        clear_search_trigger = clear_search_trigger
+    )
+
     # When all dot layers are hidden, clear any active selection so the paper
     # table doesn't show stale results with no visible dots to explain them.
     # notifyR = TRUE tells plot_interactions.js to also fire plotly_deselect_trigger
@@ -199,13 +228,27 @@ server <- function(input, output, session) {
 
     egm_selection <- mod_click_server(
         "egm",
-        egm_data          = egm_data,
-        reset_egm_trigger = reset_egm_trigger,
-        plot_source_name  = "egm_scatter_plot",
-        x_col             = egm_definition$x_column,
-        y_col             = egm_definition$y_column,
-        any_dots_visible  = reactive(toggle_states()$any_dots_visible)
+        egm_data             = egm_data,
+        reset_egm_trigger    = reset_egm_trigger,
+        plot_source_name     = "egm_scatter_plot",
+        x_col                = egm_definition$x_column,
+        y_col                = egm_definition$y_column,
+        any_dots_visible     = reactive(toggle_states()$any_dots_visible),
+        search_results       = search_results,
+        clear_search_trigger = clear_search_trigger
     )
+
+    # When search is active, replace egm_data$all$df with search results so
+    # build_labeled_data() in mod_comparison_plots.R fetches only matched papers.
+    comparison_egm_data <- reactive({
+        if (isTRUE(search_results$active()) && !is.null(search_results$df())) {
+            modified     <- egm_data()
+            modified$all <- list(df = search_results$df(), counts = egm_data()$all$counts)
+            modified
+        } else {
+            egm_data()
+        }
+    })
 
     mod_filter_server(
         "egm",
@@ -222,7 +265,7 @@ server <- function(input, output, session) {
     mod_comparison_plots_server(
         "egm",
         clicked_info = egm_selection$clicked_info,
-        egm_data     = egm_data
+        egm_data     = comparison_egm_data
     )
 }
 

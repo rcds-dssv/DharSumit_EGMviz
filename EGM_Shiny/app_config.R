@@ -61,7 +61,15 @@ local({
         meta$in_progress <- list(display_text = "In Progress",
                                  color = egm_definition$plot_colors$in_progress,
                                  index = next_idx, offset_x = -0.17, offset_y = -0.35)
+        next_idx <- next_idx + 1L
     }
+    # Search trace: always the last trace; initialized invisible and updated via
+    # plotlyProxy by mod_search_server when a search query is active.
+    # Offset places it in the lower-right corner of each cell, away from all other dots.
+    meta$search <- list(display_text = NULL,
+                        color  = egm_definition$plot_colors$search_points,
+                        index  = next_idx,
+                        offset_x =  0.35, offset_y = -0.35)
     egm_metadata <<- meta
 })
 

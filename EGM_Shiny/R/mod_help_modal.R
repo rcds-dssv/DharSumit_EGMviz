@@ -33,6 +33,13 @@ help_modal_ui <- function() {
             tags$div(HTML("<span class='dot-swatch' style='background:var(--color-in-progress)'></span><strong>Pink \u2014 In Progress:</strong> ongoing studies"))
         ))
     }
+    # Search dot is always present (appears only when a search is active)
+    dot_items <- c(dot_items, list(
+        tags$div(HTML(paste0(
+            "<span class='dot-swatch' style='background:", egm_definition$plot_colors$search_points, "'></span>",
+            "<strong>Orange \u2014 Search Results:</strong> cells that contain at least one paper matching the current search query (visible only when a search is active)"
+        )))
+    ))
 
     # ── Filters list ───────────────────────────────────────────────────────────
     # Built from egm_definition so the descriptions always match the loaded data.
@@ -130,7 +137,19 @@ help_modal_ui <- function() {
                 div(class = "modal-section",
                     tags$h3("Selecting Papers"),
                     tags$p("There are multiple ways to select papers from the map.  You can click on a single point and use 'Ctrl/Cmd' + click to add (or remove) points from your selection.  Alternatively, you can use the box-select or lasso tool in the plotly toolbar (top-right corner of the chart). For either tool, click and drag to draw a selection around one or more bubbles.  After selecting papers, the  panel on the right will populate with matching records."),
-                    tags$p("To clear your selection, double-click anywhere on the chart. or use the <em>Deselect all</em> button in the top-right corner of the map section.")
+                    tags$p(HTML("To clear your selection, double-click anywhere on the chart. or use the <em>Deselect all</em> button in the top-right corner of the map section."))
+                ),
+
+                div(class = "modal-section",
+                    tags$h3("Searching Papers"),
+                    tags$p("Use the Search panel (below the Filters panel) to find papers by keyword. Expand it with the arrow button, then type a query into the text box. The search checks the title, authors, journal, and several other fields simultaneously — a paper matches if any of those fields contain the query text (case-insensitive)."),
+                    tags$p("While a search is active:"),
+                    tags$ul(
+                        tags$li("Orange dots appear on the map showing which cells contain matching papers."),
+                        tags$li("The papers panel and comparison plots update to reflect the matched papers only."),
+                        tags$li("A status line shows how many papers were matched.")
+                    ),
+                    tags$p(HTML("Click <em>✕ Clear</em> to exit search mode, or click any bubble on the map to switch back to a cell selection (this also clears the search). Making a map selection while a search is active will exit the search and show the papers for the selected bubble(s) instead."))
                 ),
 
                 div(class = "modal-section",

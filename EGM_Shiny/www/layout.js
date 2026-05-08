@@ -219,10 +219,10 @@ Shiny.addCustomMessageHandler("setCompPlotHeight", function(msg) {
 });
 
 
-// ── Section collapse (header-instructions / controls-toolbar) ────────────────
+// ── Section collapse (header-instructions / controls-toolbar / search-toolbar) ─
 
 function toggleSectionCollapse(btn) {
-    var section = btn.closest(".header-instructions, .controls-toolbar");
+    var section = btn.closest(".header-instructions, .controls-toolbar, .search-toolbar");
     if (!section) return;
     var collapsed = section.classList.toggle("section-collapsed");
     btn.innerHTML = collapsed ? "&#9662;" : "&#9652;";  // ▾ collapsed, ▴ expanded

@@ -192,13 +192,86 @@ body {
 
 /* Collapsed: hide main content, show label; strip alone defines the height */
 .header-instructions.section-collapsed .section-main,
-.controls-toolbar.section-collapsed .section-main {
+.controls-toolbar.section-collapsed .section-main,
+.search-toolbar.section-collapsed .section-main {
     display: none;
 }
 
 .header-instructions.section-collapsed .section-collapsed-title,
-.controls-toolbar.section-collapsed .section-collapsed-title {
+.controls-toolbar.section-collapsed .section-collapsed-title,
+.search-toolbar.section-collapsed .section-collapsed-title {
     display: inline;
+}
+
+
+/* ── Search toolbar ─────────────────────────────────────────────────────────── */
+
+.search-toolbar {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-container-bg);
+    border-bottom: 1px solid var(--color-container-border);
+}
+
+.search-toolbar .section-main {
+    padding: 8px 20px 10px;
+}
+
+/* Horizontal row: icon | input | clear button | status */
+.search-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-icon {
+    font-size: 18px;
+    color: var(--color-container-text);
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.search-input-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-input-wrap .shiny-input-container {
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+.search-input-wrap input[type="text"] {
+    width: 100%;
+    background: var(--color-table-bg);
+    border: 1px solid var(--color-container-border);
+    border-radius: 4px;
+    color: var(--color-body-text);
+    font-size: 12px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.search-input-wrap input[type="text"]:focus {
+    border-color: var(--color-toggle-active-bg);
+    box-shadow: none;
+}
+
+/* Layout-only overrides; visuals come from reset-btn + filters-reset-btn */
+.search-clear-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.search-status {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--color-container-text);
+    white-space: nowrap;
 }
 
 

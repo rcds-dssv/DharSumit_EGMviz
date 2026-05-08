@@ -112,12 +112,20 @@ egm_definition <- list(
     # plot_path (in web_dark/light_colors): theme-aware color used for EGM grid
     #   lines, comparison plot grid lines, mode-bar icons, and scrollbar thumbs.
     #   It cannot be moved to plot_colors because it is used outside the EGM plot.
+    # Columns searched when the user types in the search bar.
+    # Case-insensitive substring match; a paper matches if ANY column contains the query.
+    search_columns = c("title", "authors", "journal",
+                       "WorkType", "Theme",
+                       "USOrigin", "OriginalResearchType", "StudySetting",
+                       "ObservationalStudy", "ReviewType"),
+
     plot_colors = list(
         all_points        = "#30a9ff",
         high_confidence   = "#46A040",
         medium_confidence = "#FDB915",
         low_confidence    = "#CC3D3D",
         in_progress       = "#FFC0CB",
+        search_points     = "#FF8C00",  # warm orange — search result dots on the EGM plot
         heatmap_min       = "rgba(31, 118, 180, 0.2)", # color at 1 paper
         heatmap_max       = "rgba(31, 118, 180, 0.95)", # color at max count
         x_axis_bg         = "#32417B", # x axis background color, and used for tags in paper panel
