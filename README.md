@@ -9,9 +9,10 @@ An interactive R Shiny dashboard for exploring hearing-related research literatu
 ## Features
 
 - **Interactive EGM plot** — click or lasso-select bubbles to surface matching papers
+- **Full-text search** — keyword search across title, authors, journal, and configurable metadata fields; results appear as orange dots on the map and drive the paper panel and comparison plots
 - **Filters** — narrow the map by study origin, research type, setting, and more
 - **Paper cards** — scrollable list of selected papers with full citation and metadata; DOI links open in a new tab
-- **Comparison plots** — Count, Year, and Meta breakdown charts for the current selection
+- **Comparison plots** — Count, Year, and Meta breakdown charts for the current selection (Year chart supports Stacked Bar and Line views)
 - **Export** — download selected papers as CSV, Excel, JSON, APA, AMA, Chicago, BibTeX, or RIS
 - **Light / dark theme** — toggled in the UI; preference saved in `localStorage`
 - **Collapsible / resizable panels** — drag handles between the plot and paper panels; header sections collapse with arrow buttons
@@ -33,6 +34,7 @@ DharSumit_EGMviz/
 │   │   ├── mod_filter.R            # filter dropdowns
 │   │   ├── mod_toggles.R           # heatmap / dot layer toggles
 │   │   ├── mod_papers.R            # selection state + paper cards table
+│   │   ├── mod_search.R            # full-text search; orange dot layer on EGM plot
 │   │   ├── mod_comparison_plots.R  # Count / Year / Meta comparison charts
 │   │   ├── mod_export.R            # citation and data export
 │   │   └── mod_help_modal.R        # help / instructions modal
@@ -96,7 +98,8 @@ Nearly everything a developer would need to change when adapting this app to a n
 | `paper_meta_columns` / `_display` | Badge pill metadata fields |
 | `paper_sort_columns` / `_display` | Sort dropdown options |
 | `paper_citation_bibtex_field_map` | Maps CSV column names → BibTeX field names (used by export) |
-| `plot_colors` | Data visualization colors (same for both themes) |
+| `search_columns` | Column names searched by the Search panel (case-insensitive substring match, OR across columns) |
+| `plot_colors` | Data visualization colors (same for both themes); includes `search_points` for the orange search-result dot layer |
 | `web_dark_colors` / `web_light_colors` | UI colors for dark and light mode |
 | `default_theme` | `"dark"` or `"light"` |
 
@@ -115,6 +118,7 @@ The default theme is injected as an inline `<script>` tag by `app.R` so `layout.
 - **Module structure** — each `R/mod_*.R` file is a self-contained Shiny module with a `_ui()` and `_server()` function. `app.R` wires them together and owns the two shared reactive values: `egm_data` (the filtered dataset) and `reset_egm_trigger` (incremented on every filter change to clear selection state).
 - **Toggle vs. re-render** — filter changes trigger a full `renderPlotly` re-render of the EGM; toggle (layer visibility) changes use `plotlyProxy` / `restyle` so the figure is updated in place without a round-trip to R.
 - **Selection flow** — `plot_interactions.js` handles Ctrl/Cmd+click accumulation and applies `selectedpoints` visual dimming synchronously in the browser, then sends the accumulated selection to R via a custom Shiny input (`plotly_accumulated_selection`). `mod_papers.R` consumes this to render the paper cards table.
+- **Search flow** — `mod_search_server` filters `egm_data()$all$df` on every keystroke and updates an orange dot layer on the EGM via `plotlyProxy` (no re-render). `app.R` creates a `comparison_egm_data` reactive that substitutes search results into `egm_data$all$df` so the paper panel and comparison plots reflect only matched papers. Search and plot selection are mutually exclusive: activating one clears the other.
 - **Stable axis / sizing** — marker sizes and axis levels always reference `initial_egm_data` (the unfiltered dataset loaded at startup) so the grid and dot proportions stay consistent as filters are applied.
 
 ---

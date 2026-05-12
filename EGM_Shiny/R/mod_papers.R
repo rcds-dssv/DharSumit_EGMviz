@@ -254,11 +254,35 @@ mod_click_reset_ui <- function(id) {
 }
 
 mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, x_col, y_col,
-                             any_dots_visible = NULL) {
+                             any_dots_visible = NULL,
+                             search_results = NULL,
+                             clear_search_trigger = NULL) {
     moduleServer(id, function(input, output, session) {
 
-        # Current selection: list of point-info lists, or NULL when nothing is selected
+        # Current plotly selection: list of point-info lists, or NULL.
         clicked_info <- reactiveVal(NULL)
+
+        # TRUE when a search query is active and results are available.
+        is_search_active <- reactive({
+            !is.null(search_results) && isTRUE(search_results$active())
+        })
+
+        # Active display source: search takes priority over plotly selection.
+        # Downstream outputs (table, comparison plots, export) read these.
+        display_info <- reactive({
+            if (is_search_active()) search_results$clicked_info() else clicked_info()
+        })
+
+        # Sorted papers for the active source.
+        search_sorted_df <- reactive({
+            df <- if (!is.null(search_results)) search_results$df() else NULL
+            if (is.null(df) || nrow(df) == 0) return(df)
+            sort_col <- input$sort_by
+            if (!is.null(sort_col) && sort_col %in% names(df))
+                df <- df[order(df[[sort_col]], decreasing = sort_dir() == "desc",
+                               na.last = TRUE), ]
+            df
+        })
 
         # Sort direction: "asc" or "desc"; toggled by the ↑/↓ button.
         sort_dir <- reactiveVal("asc")
@@ -292,16 +316,26 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
                 list(clicked_x = cd[[1]], clicked_y = cd[[2]], trace_id = cd[[3]])
             }))
             clicked_info(if (length(info) > 0) info else NULL)
+
+            # A real plot selection clears any active search query.
+            if (length(info) > 0 && !is.null(clear_search_trigger))
+                clear_search_trigger(clear_search_trigger() + 1L)
         }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
-        # Dataframe of papers matching the current selection, sorted by the chosen column.
-        clicked_df <- reactive({
+        # Papers from the plotly selection, sorted by the chosen column.
+        plotly_clicked_df <- reactive({
             df <- create_plotly_click_df(egm_data(), clicked_info(), x_col, y_col)
             if (is.null(df) || nrow(df) == 0) return(df)
             sort_col <- input$sort_by
             if (!is.null(sort_col) && sort_col %in% names(df))
-                df <- df[order(df[[sort_col]], decreasing = sort_dir() == "desc", na.last = TRUE), ]
+                df <- df[order(df[[sort_col]], decreasing = sort_dir() == "desc",
+                               na.last = TRUE), ]
             df
+        })
+
+        # Active paper dataframe: search results (sorted) or plotly selection.
+        clicked_df <- reactive({
+            if (is_search_active()) search_sorted_df() else plotly_clicked_df()
         })
 
         # Double-click fires plotly_deselect (handled in plot_interactions.js),
@@ -339,15 +373,18 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         # Show/hide the table section and resize handle based on selection state.
         observe({
             session$sendCustomMessage("toggleTableSection",
-                                      list(visible = !is.null(clicked_info())))
+                                      list(visible = !is.null(display_info())))
         })
 
         output$plot_info <- renderUI({
             dots_on <- is.null(any_dots_visible) || isTRUE(any_dots_visible())
-            if (!dots_on) {
+            if (is_search_active()) {
+                tags$p(class = "info",
+                    'Use "✕ Clear" in the Search panel to exit search mode.')
+            } else if (!dots_on) {
                 tags$p(class = "info",
                     'Enable dot layers in "Plot configuration" to select papers.')
-            } else if (is.null(clicked_info())) {
+            } else if (is.null(display_info())) {
                 tags$p(class = "info",
                     "Click on a point or click+drag with the box-select or lasso tool to display papers.")
             } else {
@@ -357,11 +394,11 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         })
 
         output$table_header <- renderUI({
-            create_table_header_html(clicked_info(), clicked_df())
+            create_table_header_html(display_info(), clicked_df())
         })
 
         output$table_content <- renderUI({
-            create_table_cards_html(clicked_df(), groups = make_group_info(clicked_info()))
+            create_table_cards_html(clicked_df(), groups = make_group_info(display_info()))
         })
 
         # Keep outputs live even when their panel is collapsed (display:none).
@@ -369,11 +406,12 @@ mod_click_server <- function(id, egm_data, reset_egm_trigger, plot_source_name, 
         outputOptions(output, "table_header",  suspendWhenHidden = FALSE)
         outputOptions(output, "table_content", suspendWhenHidden = FALSE)
 
-        # Return the selection state so other modules (e.g. mod_export) can
-        # react to it without duplicating the observer logic.
+        # Return the active display state.  clicked_df and clicked_info already
+        # reflect whichever source is active (search or plotly selection), so
+        # mod_export and mod_comparison_plots automatically use the right data.
         list(
             clicked_df   = clicked_df,
-            clicked_info = clicked_info
+            clicked_info = display_info
         )
     })
 }

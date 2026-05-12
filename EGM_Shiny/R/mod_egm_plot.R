@@ -271,6 +271,29 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
         )
     }
 
+    # Search result trace — always the last trace; initialized invisible with
+    # empty arrays.  mod_search_server updates x/y/marker.size/text and
+    # toggles visibility via plotlyProxy without triggering a full re-render.
+    # No customdata → JS click/lasso handlers ignore it (non-selectable).
+    egm_spec <- egm_spec %>% add_trace(
+        x          = list(),
+        y          = list(),
+        type       = "scatter",
+        mode       = "markers",
+        marker     = list(
+            size     = list(),
+            sizemode = "diameter",
+            sizemin  = 1,
+            color    = egm_definition$plot_colors$search_points,
+            opacity  = 0.9,
+            line     = list(color = egm_definition$plot_colors$search_points, width = 1)
+        ),
+        text       = list(),
+        hoverinfo  = "text",
+        visible    = FALSE,
+        showlegend = FALSE
+    )
+
     # Rectangle shapes framing the axis label areas.
     axis_box_line  <- list(color = "rgba(160,170,200,0.35)", width = 1)
     axis_box_fill_x  <- egm_definition$plot_colors$x_axis_bg

@@ -225,8 +225,10 @@ Shiny.addCustomMessageHandler("clearPlotlySelection", function(msg) {
     // when clearing the selection shape.
     applyingVisual = true;
     setTimeout(function() { applyingVisual = false; }, 100);
-    Plotly.restyle(plot, { selectedpoints: null });
+    // Clear the selection box first so Plotly's internal deselect logic (if any)
+    // fires before we explicitly restore opacity via applySelectionVisual.
     Plotly.relayout(plot, { selections: [] });
+    applySelectionVisual(plot);  // currentSelection=[] → restyle(selectedpoints: null)
     if (msg.notifyR && plotlyNs) {
         Shiny.setInputValue(
             plotlyNs + "plotly_deselect_trigger",

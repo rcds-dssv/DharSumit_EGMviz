@@ -32,6 +32,7 @@ EGM_Shiny/
 │   ├── mod_filter.R       # filter dropdowns + reset; updates egm_data reactive
 │   ├── mod_toggles.R      # heatmap / dot layer toggle switches; uses plotlyProxy
 │   ├── mod_papers.R       # plot click/lasso selection → paper cards table
+│   ├── mod_search.R       # full-text search; drives orange dot layer via plotlyProxy
 │   ├── mod_comparison_plots.R  # Count / Year / Meta comparison charts;
 │   │                      #   defines compute_cp_min_height() for dynamic plot sizing
 │   ├── mod_export.R       # CSV / Excel / JSON / APA / AMA / Chicago / BibTeX / RIS export
@@ -83,16 +84,21 @@ server():
          │
          ├── mod_plot_server      → renderPlotly (full re-render on data change)
          ├── mod_toggles_server   → plotlyProxy restyle (layer visibility, no re-render)
+         ├── mod_search_server    → plotlyProxy restyle (orange search dot layer);
+         │       returns: active, df, clicked_info
          ├── mod_click_server     → paper cards table; returns clicked_df, clicked_info
+         │       (search_results and clear_search_trigger wired for mutual exclusivity)
          ├── mod_export_server    ← clicked_df, clicked_info
-         └── mod_comparison_plots_server ← clicked_info, egm_data
+         └── mod_comparison_plots_server ← clicked_info, comparison_egm_data
+                 (comparison_egm_data replaces egm_data$all$df with search_results$df()
+                  when search is active, scoping comparison plots to matched papers)
 ```
 
 `reset_egm_trigger` is an integer `reactiveVal` incremented on every filter change; modules that need to clear state observe it.
 
 ## Key design patterns
 
-- **`egm_metadata`** (built in `app_config.R`): a named list keyed by `"all"`, `"high"`, `"medium"`, `"low"`, `"in_progress"`. Each entry has `color`, `index` (0-based plotly trace index), `offset_x/y`, and `display_text`. Trace index order is: 0 = heatmap, 1 = all, then confidence (if enabled), then in_progress (if enabled). Any code that touches specific traces must use these indices.
+- **`egm_metadata`** (built in `app_config.R`): a named list keyed by `"all"`, `"high"`, `"medium"`, `"low"`, `"in_progress"`, and `"search"`. Each entry has `color`, `index` (0-based plotly trace index), `offset_x/y`, and `display_text` (search entry has `display_text = NULL`). Trace index order is: 0 = heatmap, 1 = all, then confidence (if enabled), then in_progress (if enabled), then search (always last). Any code that touches specific traces must use these indices — never hardcode them.
 
 - **`initial_egm_data`** (global): the unfiltered dataset. Marker sizes and axis levels always reference this so the plot grid stays stable when filters are applied.
 
@@ -113,6 +119,8 @@ server():
 - **Heatmap 3-stop colorscale**: the heatmap trace uses stops at 0 (fully transparent), 0.0001 (`heatmap_min`), and 1.0 (`heatmap_max`). This keeps cells with 0 papers invisible while giving 1-paper cells the `heatmap_min` color. As a consequence, `heatmap_min` in `user_config.R` must **not** be fully transparent — use a low-opacity color (e.g. `rgba(31,118,180,0.2)`) so the visual ramp from 1 paper to max is meaningful.
 
 - **`app_acknowledgements` is HTML**: the value in `user_config.R` is a raw HTML string (built with `paste0()`). It must be wrapped in `HTML()` when passed to a Shiny tag — e.g. `tags$p(HTML(egm_definition$app_acknowledgements))` — otherwise the markup is rendered as escaped text.
+
+- **Programmatic plotly selection clearing** (`clearPlotlySelection` in `plot_interactions.js`): whenever code needs to clear the EGM plot's selection state (remove dimmed-dot opacity, remove the selection-box shape, and optionally notify R), it must send the `clearPlotlySelection` custom message — **never** call `Plotly.restyle` or `Plotly.relayout` directly for this purpose from R or other JS handlers. The correct internal order is: (1) `Plotly.relayout(plot, { selections: [] })` to clear the selection-box shape first, then (2) `applySelectionVisual(plot)` (with `currentSelection` already set to `[]`) to restore full marker opacity via `selectedpoints: null`. Doing the restyle before the relayout leaves residual opacity because Plotly's internal deselect logic (fired by the relayout) can interfere with a preceding restyle. The `applyingVisual` flag must be set to `true` around both calls to suppress the spurious `plotly_deselect` event that `Plotly.relayout` emits.
 
 - **Sticky x-axis bar** (`#egm_sticky_xaxis`): when the user scrolls the EGM plot downward so the plotly x-axis header goes out of view, an overlay bar appears at the top of `.plot-wrapper` showing the same colored rectangle and column labels. The bar is a shell `<div>` emitted by `build_sticky_xaxis_html()` in `mod_egm_plot.R` (placed first inside `mod_plot_ui`'s `tagList`). All content is managed by JS:
   - **`syncStickyBar(el)`** in `layout.js` (inside the `plotly_afterplot` hook IIFE): after each plotly render, clones `svg.main-svg`, shifts it up by `45 * scale` px (skipping the empty space above the colored rectangle), and crops the bar container to `75 * scale` px tall (the colored-rect height). Constants: `margin_t = 120`, colored rect = 75 px tall starting at 45 px into the margin.
