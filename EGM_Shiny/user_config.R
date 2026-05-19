@@ -35,9 +35,31 @@ egm_definition <- list(
     x_column = "WorkType",
     x_column_display = "Work Type",
 
-    # The column name to use for the y axis of the EGM figure and the display name 
+    # Optional named character vector mapping x-axis category values to descriptions.
+    # Shown as a bulleted list under "Reading the Map" in the help modal. NULL to omit.
+    x_column_descriptions = NULL,
+
+    # The column name to use for the y axis of the EGM figure and the display name
     y_column = "Theme",
     y_column_display = "Theme",
+
+    # Optional named character vector mapping y-axis category values to plain-text
+    # descriptions.  When non-NULL these are shown as a bulleted list under
+    # "Reading the Map" in the help modal, sorted alphabetically to match the figure.
+    # Set to NULL to omit entirely.
+    y_column_descriptions = c(
+        "Care seeking"                                       = "Examines how perceptions, knowledge, and social influences shape the recognition of hearing needs and the decision to seek hearing health care.",
+        "Care systems navigation, and innovation"            = "Examines how care pathways, delivery models, and system design affect access, navigation, and hearing healthcare outcomes.",
+        "Consequences of unaddressed hearing loss"           = "Examines the physiological, cognitive, social, and societal consequences of unaddressed hearing loss, and the extent to which hearing health care can mitigate these outcomes across diverse populations.",
+        "Diversity and equity"                               = "Examines how social, cultural, geographic, and structural factors shape hearing health needs, perceptions, measurement, access, and outcomes among historically underrepresented and marginalized populations.",
+        "Economics and policy implications of hearing health care" = "Examines the economic value, cost effectiveness, pricing, and policy drivers of hearing health care, and how these factors influence access, adoption, and outcomes.",
+        "OTC hearing aids"                                   = "Examines the uptake, use, and outcomes of over the counter hearing aids, including what supports are needed for their success.",
+        "Outcomes"                                           = "Examines the individual, technological, and contextual factors that influence hearing aid outcomes, including how outcomes may be defined, measured, and experienced by hearing aid users.",
+        "Screening and assessment"                           = "Examines how hearing screening and assessment can be designed, communicated, and integrated across various settings to improve usability of hearing healthcare, early action, and equitable outcomes across diverse populations.",
+        "Stigma"                                             = "Examines how stigma influences the perception, access, and utilization of hearing health care.",
+        "Technology"                                         = "Examines emerging technologies (i.e., artificial intelligence, machine learning, and mobile platforms) that are being leveraged to improve hearing health access, engagement, and real world outcomes.",
+        "Workforce"                                          = "Examines how workforce composition, training, support, and diversity influence the delivery, acceptability, and effectiveness of hearing health care."
+    ),
 
     # Desired max and min pixel size for the points in the figure
     plot_points_desired_max_px = 40,

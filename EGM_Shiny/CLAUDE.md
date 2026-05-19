@@ -56,7 +56,9 @@ This is the **only file that normally needs editing** to adapt the app to a new 
 | `app_acknowledgements` | Credits text shown in the help modal |
 | `comparison_panel_default_height_px` | Initial height (px) of the comparison plots panel |
 | `x_column` / `x_column_display` | Grid x-axis column name + display label |
+| `x_column_descriptions` | Optional named character vector mapping x-axis category values → descriptions; shown in help modal under "Reading the Map". `NULL` to omit. |
 | `y_column` / `y_column_display` | Grid y-axis column name + display label |
+| `y_column_descriptions` | Optional named character vector mapping y-axis category values → descriptions; shown in help modal under "Reading the Map" in the order defined here. `NULL` to omit. |
 | `filter_dropdown_list` / `_display` | Columns for filter dropdowns |
 | `confidence_column_name` | Optional: numeric column (1/2/3); set `NA` to disable |
 | `in_progress_column_name` | Optional: binary column; set `NA` to disable |
