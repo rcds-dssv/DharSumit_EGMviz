@@ -1,5 +1,9 @@
 # CLAUDE.md — EGM Shiny App
 
+## Maintenance reminder
+
+**Keep `../README.md` in sync.** Whenever a feature is added, a new `user_config.R` key is introduced, or a significant architectural change is made, update the top-level `README.md` (one directory above `EGM_Shiny/`) to reflect it — specifically the Features list, the repository layout, the Configuration table, and the Architecture notes as applicable.  Minor changes that are not important for understanding the code do not need to be included in the `README.md` file.  We want this file to be lean but useful.
+
 ## What this is
 
 An interactive R Shiny dashboard for exploring hearing-related research literature as an **Evidence Gap Map (EGM)**. Papers are displayed as bubbles on a 2D grid (Work Type × Theme). Users can filter, select, and export papers, and see comparison charts for selected cells.

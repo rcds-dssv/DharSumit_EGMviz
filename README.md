@@ -88,7 +88,9 @@ Nearly everything a developer would need to change when adapting this app to a n
 | `app_acknowledgements` | Credits text in the help modal |
 | `comparison_panel_default_height_px` | Initial height of the comparison plots panel |
 | `x_column` / `x_column_display` | Grid x-axis column name + display label |
+| `x_column_descriptions` | Optional named character vector mapping x-axis category values → plain-text descriptions; shown as a bulleted list under "Reading the Map" in the help modal in the order defined. `NULL` to omit. |
 | `y_column` / `y_column_display` | Grid y-axis column name + display label |
+| `y_column_descriptions` | Optional named character vector mapping y-axis category values → plain-text descriptions; shown as a bulleted list under "Reading the Map" in the help modal in the order defined. `NULL` to omit. |
 | `filter_dropdown_list` / `_display` | Columns used for filter dropdowns |
 | `confidence_column_name` | Optional: numeric column (1/2/3); `NA` to disable |
 | `in_progress_column_name` | Optional: binary column; `NA` to disable |
