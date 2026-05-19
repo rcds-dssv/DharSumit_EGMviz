@@ -1542,7 +1542,7 @@ a.paper-card-link {
     background: var(--color-container-bg);
     border: 1px solid var(--color-container-border);
     border-radius: 12px;
-    width: min(700px, 90vw);
+    width: 90vw;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
