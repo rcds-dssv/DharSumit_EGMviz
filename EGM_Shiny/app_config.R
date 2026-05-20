@@ -4,7 +4,6 @@
 
 library(shiny)
 library(dplyr)
-library(readr)
 library(tidyr)
 library(forcats)
 library(plotly)
@@ -154,7 +153,10 @@ make_group_info <- function(clicked_info) {
 
 # Read and lightly clean the papers dataset.
 # NA in the two axis columns would break the EGM grid, so replace with "Other".
-df_all <- read_csv(egm_definition$datafile_path) %>%
+df_all <- read.csv(egm_definition$datafile_path,
+                   stringsAsFactors = FALSE,
+                   na.strings        = c("", "NA"),
+                   check.names       = FALSE) %>%
     filter(!if_all(everything(), is.na)) %>%
     mutate(
         !!egm_definition$x_column := replace_na(.data[[egm_definition$x_column]], "Other"),

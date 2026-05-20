@@ -6,7 +6,7 @@
 
 egm_definition <- list(
     # The relative path to the data file.
-    datafile_path = "data/AAHHC_Scoping_2026_AMGclean_JS.csv",
+    datafile_path = "data/AAHHC_Scoping_2026_final.csv",
 
     # App title shown in the header bar and the help modal welcome section.
     app_title = "HEARING LITERATURE EVIDENCE GAP MAP",

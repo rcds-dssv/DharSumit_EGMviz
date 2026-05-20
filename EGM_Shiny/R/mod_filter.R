@@ -3,7 +3,7 @@
 #
 # Reads filter_dropdown_list and filter_dropdown_list_display from
 # egm_definition (user_config.R) to programmatically generate one dropdown per
-# filter column.  Choices are "Any" plus every unique value in that column
+# filter column.  Choices are "All" plus every unique value in that column
 # (NA values have already been replaced with "Other" in app_config.R).
 #
 # When any filter changes the module re-filters df_all, rebuilds egm_data,
@@ -20,7 +20,7 @@ mod_filter_ui <- function(id) {
     filter_items <- lapply(seq_along(filter_cols), function(i) {
         col     <- filter_cols[[i]]
         display <- filter_display[[i]]
-        choices <- c("Any", sort(unique(df_all[[col]])))
+        choices <- c("All", sort(unique(df_all[[col]])))
         div(class = "filters-item",
             tags$label(display),
             selectInput(ns(col), label = NULL, choices = choices)
@@ -53,7 +53,7 @@ mod_filter_server <- function(id, egm_data, reset_egm_trigger) {
         # ignoreInit = TRUE prevents a spurious reset when the app first loads.
         observeEvent(input$reset_filters, {
             for (col in filter_cols) {
-                updateSelectInput(session, col, selected = "Any")
+                updateSelectInput(session, col, selected = "All")
             }
         })
 
@@ -62,7 +62,7 @@ mod_filter_server <- function(id, egm_data, reset_egm_trigger) {
 
             for (col in filter_cols) {
                 val <- input[[col]]
-                if (!is.null(val) && val != "Any") {
+                if (!is.null(val) && val != "All") {
                     df_filter <- df_filter %>% filter(.data[[col]] == val)
                 }
             }

@@ -135,7 +135,7 @@ server():
 
 ## Dependencies
 
-R packages: `shiny`, `dplyr`, `readr`, `tidyr`, `forcats`, `plotly`, `stringr`, `shinyWidgets`, `writexl`, `jsonlite`, `scales`, `viridisLite`
+R packages: `shiny`, `dplyr`, `tidyr`, `forcats`, `plotly`, `stringr`, `shinyWidgets`, `writexl`, `jsonlite`, `scales`, `viridisLite`
 
 ## Data notes
 

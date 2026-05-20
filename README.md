@@ -54,7 +54,7 @@ DharSumit_EGMviz/
 
 ```r
 install.packages(c(
-    "shiny", "dplyr", "readr", "tidyr", "forcats",
+    "shiny", "dplyr", "tidyr", "forcats",
     "plotly", "stringr", "shinyWidgets", "writexl",
     "jsonlite", "scales", "viridisLite"
 ))
