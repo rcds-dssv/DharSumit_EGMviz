@@ -6,9 +6,27 @@
 # filter column.  Choices are "All" plus every unique value in that column
 # (NA values have already been replaced with "Other" in app_config.R).
 #
+# Choice ordering rules (applied by order_filter_choices):
+#   - Yes/No columns (case-insensitive): Yes, No, <other values alpha>, Other
+#   - All other columns: <values alpha>, Other
+#
 # When any filter changes the module re-filters df_all, rebuilds egm_data,
 # and increments reset_egm_trigger to clear the table.
 # =============================================================================
+
+# Returns vals sorted per the ordering rules described above.
+order_filter_choices <- function(vals) {
+    vals_lower <- tolower(vals)
+    other_vals <- vals[vals_lower == "other"]
+    if ("yes" %in% vals_lower && "no" %in% vals_lower) {
+        yes_vals <- vals[vals_lower == "yes"]
+        no_vals  <- vals[vals_lower == "no"]
+        rest     <- sort(vals[!vals_lower %in% c("yes", "no", "other")])
+        c(yes_vals, no_vals, rest, other_vals)
+    } else {
+        c(sort(vals[vals_lower != "other"]), other_vals)
+    }
+}
 
 
 mod_filter_ui <- function(id) {
@@ -20,7 +38,7 @@ mod_filter_ui <- function(id) {
     filter_items <- lapply(seq_along(filter_cols), function(i) {
         col     <- filter_cols[[i]]
         display <- filter_display[[i]]
-        choices <- c("All", sort(unique(df_all[[col]])))
+        choices <- c("All", order_filter_choices(unique(df_all[[col]])))
         div(class = "filters-item",
             tags$label(display),
             selectInput(ns(col), label = NULL, choices = choices)

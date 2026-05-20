@@ -33,7 +33,7 @@ egm_definition <- list(
 
     # The column name to use for the x axis of the EGM figure and the display name
     x_column = "WorkType",
-    x_column_display = "Work Type",
+    x_column_display = "Article Type",
 
     # Optional named character vector mapping x-axis category values to descriptions.
     # Shown as a bulleted list under "Reading the Map" in the help modal. NULL to omit.
@@ -74,7 +74,7 @@ egm_definition <- list(
     # The first vector contains the column names.
     # The second vector contains the desired display name.
     filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType"),
-    filter_dropdown_list_display = c("US Origin", "Research Type", "Study Setting", "Observational Study", "Review Type"),
+    filter_dropdown_list_display = c("US Origin", "Research Type", "Study Setting", "Observational Study Design", "Review Type"),
 
     # The column name to use for the confidence level indicator.
     # If this column does not exist in the data, this functionality will be ignored.
