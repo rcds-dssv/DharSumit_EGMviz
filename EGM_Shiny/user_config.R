@@ -73,8 +73,24 @@ egm_definition <- list(
     # Dropdowns will be created programmatically for each of these items.
     # The first vector contains the column names.
     # The second vector contains the desired display name.
-    filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType"),
-    filter_dropdown_list_display = c("US Origin", "Research Type", "Study Setting", "Observational Study Design", "Review Type"),
+    filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ReviewType", "ObservationalStudy"),
+    filter_dropdown_list_display = c("US Origin", "Research Type", "Study Setting", "Review Type", "Observational Study Design"),
+
+    # Optional conditional filter dependencies.
+    # Each entry hides a dependent filter until a specific parent filter value is chosen.
+    #   filter    — column name of the dependent (child) filter
+    #   parent    — column name of the filter it depends on
+    #   show_when — parent values that make the child filter visible
+    # The child filter is hidden and reset to "All" whenever the parent value is
+    # not in show_when.  Its choices are drawn only from rows where the parent
+    # column is in show_when.  Set to NULL to disable.
+    filter_conditional = list(
+        list(
+            filter    = "ObservationalStudy",
+            parent    = "OriginalResearchType",
+            show_when = c("Observational", "Retrospective Observational")
+        )
+    ),
 
     # The column name to use for the confidence level indicator.
     # If this column does not exist in the data, this functionality will be ignored.

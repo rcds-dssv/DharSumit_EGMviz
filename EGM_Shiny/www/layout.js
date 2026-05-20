@@ -218,6 +218,12 @@ Shiny.addCustomMessageHandler("setCompPlotHeight", function(msg) {
     el.style.minHeight = msg.height + "px";
 });
 
+Shiny.addCustomMessageHandler("setFilterVisibility", function(msg) {
+    var el = document.getElementById(msg.id);
+    if (!el) return;
+    el.style.display = msg.show ? "" : "none";
+});
+
 
 // ── Section collapse (header-instructions / controls-toolbar / search-toolbar) ─
 
