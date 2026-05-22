@@ -99,21 +99,29 @@ mod_filter_server <- function(id, egm_data, reset_egm_trigger) {
             lapply(setNames(filter_cols, filter_cols), function(col) input[[col]])
         })
 
-        # For each conditional spec: show/hide the child filter and reset it
-        # whenever its parent changes to a value outside show_when.
+        # For each conditional spec: show/hide the child filter whenever its
+        # parent changes.  When showing, rebuild choices from only the rows
+        # that match the specific parent value just selected.
         for (spec in egm_definition$filter_conditional) {
             local({
                 filter_col <- spec$filter
                 parent_col <- spec$parent
                 show_when  <- spec$show_when
                 observeEvent(input[[parent_col]], {
-                    show_filter <- !is.null(input[[parent_col]]) &&
-                                   input[[parent_col]] %in% show_when
+                    parent_val  <- input[[parent_col]]
+                    show_filter <- !is.null(parent_val) && parent_val %in% show_when
+                    if (show_filter) {
+                        df_cond     <- df_all[df_all[[parent_col]] == parent_val, ]
+                        new_choices <- c("All", order_filter_choices(unique(df_cond[[filter_col]])))
+                        updateSelectInput(session, filter_col,
+                                          choices = new_choices, selected = "All")
+                    } else {
+                        updateSelectInput(session, filter_col, selected = "All")
+                    }
                     session$sendCustomMessage("setFilterVisibility", list(
                         id   = session$ns(paste0(filter_col, "_wrapper")),
                         show = show_filter
                     ))
-                    if (!show_filter) updateSelectInput(session, filter_col, selected = "All")
                 }, ignoreInit = TRUE)
             })
         }
