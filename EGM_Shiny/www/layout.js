@@ -250,6 +250,21 @@ function toggleTheme() {
 }
 
 
+// ── Paper card clicks: open DOI link unless the user is selecting text ────────
+//
+// Cards with a DOI store the URL in data-href.  A delegated click listener
+// opens the link in a new tab, but only when no text is selected — so
+// click-dragging to highlight text does not trigger navigation.
+
+document.addEventListener("click", function (e) {
+    var card = e.target.closest(".paper-card-link");
+    if (!card) return;
+    if (window.getSelection && window.getSelection().toString().length > 0) return;
+    var url = card.dataset.href;
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
+});
+
+
 // ── Close <details> dropdowns on outside click ────────────────────────────────
 
 document.addEventListener("click", function(e) {
