@@ -155,8 +155,7 @@ make_group_info <- function(clicked_info) {
 # NA in the two axis columns would break the EGM grid, so replace with "Other".
 df_all <- read.csv(egm_definition$datafile_path,
                    stringsAsFactors = FALSE,
-                   na.strings        = c("", "NA"),
-                   check.names       = FALSE) %>%
+                   na.strings        = c("", "NA")) %>%
     filter(!if_all(everything(), is.na)) %>%
     mutate(
         !!egm_definition$x_column := replace_na(.data[[egm_definition$x_column]], "Other"),
