@@ -4,7 +4,6 @@
 
 library(shiny)
 library(dplyr)
-library(readr)
 library(tidyr)
 library(forcats)
 library(plotly)
@@ -90,7 +89,7 @@ create_counts <- function(df) {
             !!x_col := fct_relevel(factor(.data[[x_col]]),
                                    intersect(c("Other", "None Given"), unique(.data[[x_col]])),
                                    after = Inf),
-            !!y_col := fct_relevel(factor(.data[[y_col]]),
+            !!y_col := fct_relevel(fct_rev(factor(.data[[y_col]])),
                                    intersect(c("None Given", "Other"), unique(.data[[y_col]])))
         )
 }
@@ -154,7 +153,10 @@ make_group_info <- function(clicked_info) {
 
 # Read and lightly clean the papers dataset.
 # NA in the two axis columns would break the EGM grid, so replace with "Other".
-df_all <- read_csv(egm_definition$datafile_path) %>%
+df_all <- read.csv(egm_definition$datafile_path,
+                   stringsAsFactors = FALSE,
+                   na.strings        = c("", "NA")) %>%
+    filter(!if_all(everything(), is.na)) %>%
     mutate(
         !!egm_definition$x_column := replace_na(.data[[egm_definition$x_column]], "Other"),
         !!egm_definition$y_column := replace_na(.data[[egm_definition$y_column]], "Other")

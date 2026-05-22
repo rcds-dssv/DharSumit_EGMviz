@@ -121,7 +121,33 @@ help_modal_ui <- function() {
                         "The horizontal axis shows ", egm_definition$x_column_display,
                         " and the vertical axis shows ", egm_definition$y_column_display, "."
                     )),
-                    tags$p("Each bubble represents all papers at that combination. Larger bubbles mean more papers in that cell.")
+                    tags$p("Each bubble represents all papers at that combination. Larger bubbles mean more papers in that cell."),
+                    if (!is.null(egm_definition$x_column_descriptions) &&
+                            length(egm_definition$x_column_descriptions) > 0) {
+                        desc_names <- names(egm_definition$x_column_descriptions)
+                        tagList(
+                            tags$p(paste0(egm_definition$x_column_display, " categories:")),
+                            tags$ul(lapply(desc_names, function(nm) {
+                                tags$li(HTML(paste0(
+                                    "<strong>", nm, "</strong> — ",
+                                    egm_definition$x_column_descriptions[[nm]]
+                                )))
+                            }))
+                        )
+                    },
+                    if (!is.null(egm_definition$y_column_descriptions) &&
+                            length(egm_definition$y_column_descriptions) > 0) {
+                        desc_names <- names(egm_definition$y_column_descriptions)
+                        tagList(
+                            tags$p(paste0(egm_definition$y_column_display, " categories:")),
+                            tags$ul(lapply(desc_names, function(nm) {
+                                tags$li(HTML(paste0(
+                                    "<strong>", nm, "</strong> — ",
+                                    egm_definition$y_column_descriptions[[nm]]
+                                )))
+                            }))
+                        )
+                    }
                 ),
 
                 div(class = "modal-section",

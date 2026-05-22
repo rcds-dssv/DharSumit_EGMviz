@@ -6,7 +6,7 @@
 
 egm_definition <- list(
     # The relative path to the data file.
-    datafile_path = "data/AAHHC_Scoping_2026_AMGclean_JS.csv",
+    datafile_path = "data/AAHHC_Scoping_2026_final.csv",
 
     # App title shown in the header bar and the help modal welcome section.
     app_title = "HEARING LITERATURE EVIDENCE GAP MAP",
@@ -33,11 +33,33 @@ egm_definition <- list(
 
     # The column name to use for the x axis of the EGM figure and the display name
     x_column = "WorkType",
-    x_column_display = "Work Type",
+    x_column_display = "Article Type",
 
-    # The column name to use for the y axis of the EGM figure and the display name 
+    # Optional named character vector mapping x-axis category values to descriptions.
+    # Shown as a bulleted list under "Reading the Map" in the help modal. NULL to omit.
+    x_column_descriptions = NULL,
+
+    # The column name to use for the y axis of the EGM figure and the display name
     y_column = "Theme",
     y_column_display = "Theme",
+
+    # Optional named character vector mapping y-axis category values to plain-text
+    # descriptions.  When non-NULL these are shown as a bulleted list under
+    # "Reading the Map" in the help modal, sorted alphabetically to match the figure.
+    # Set to NULL to omit entirely.
+    y_column_descriptions = c(
+        "Care seeking"                                       = "Examines how perceptions, knowledge, and social influences shape the recognition of hearing needs and the decision to seek hearing health care.",
+        "Care systems navigation, and innovation"            = "Examines how care pathways, delivery models, and system design affect access, navigation, and hearing healthcare outcomes.",
+        "Consequences of unaddressed hearing loss"           = "Examines the physiological, cognitive, social, and societal consequences of unaddressed hearing loss, and the extent to which hearing health care can mitigate these outcomes across diverse populations.",
+        "Diversity and equity"                               = "Examines how social, cultural, geographic, and structural factors shape hearing health needs, perceptions, measurement, access, and outcomes among historically underrepresented and marginalized populations.",
+        "Economics and policy implications of hearing health care" = "Examines the economic value, cost effectiveness, pricing, and policy drivers of hearing health care, and how these factors influence access, adoption, and outcomes.",
+        "OTC hearing aids"                                   = "Examines the uptake, use, and outcomes of over the counter hearing aids, including what supports are needed for their success.",
+        "Outcomes"                                           = "Examines the individual, technological, and contextual factors that influence hearing aid outcomes, including how outcomes may be defined, measured, and experienced by hearing aid users.",
+        "Screening and assessment"                           = "Examines how hearing screening and assessment can be designed, communicated, and integrated across various settings to improve usability of hearing healthcare, early action, and equitable outcomes across diverse populations.",
+        "Stigma"                                             = "Examines how stigma influences the perception, access, and utilization of hearing health care.",
+        "Technology"                                         = "Examines emerging technologies (i.e., artificial intelligence, machine learning, and mobile platforms) that are being leveraged to improve hearing health access, engagement, and real world outcomes.",
+        "Workforce"                                          = "Examines how workforce composition, training, support, and diversity influence the delivery, acceptability, and effectiveness of hearing health care."
+    ),
 
     # Desired max and min pixel size for the points in the figure
     plot_points_desired_max_px = 40,
@@ -51,8 +73,24 @@ egm_definition <- list(
     # Dropdowns will be created programmatically for each of these items.
     # The first vector contains the column names.
     # The second vector contains the desired display name.
-    filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ObservationalStudy", "ReviewType"),
-    filter_dropdown_list_display = c("US Origin", "Research Type", "Study Setting", "Observational Study", "Review Type"),
+    filter_dropdown_list = c("USOrigin", "OriginalResearchType", "StudySetting", "ReviewType", "ObservationalStudy"),
+    filter_dropdown_list_display = c("US Origin", "Research Type", "Study Setting", "Review Type", "Observational Study Design"),
+
+    # Optional conditional filter dependencies.
+    # Each entry hides a dependent filter until a specific parent filter value is chosen.
+    #   filter    — column name of the dependent (child) filter
+    #   parent    — column name of the filter it depends on
+    #   show_when — parent values that make the child filter visible
+    # The child filter is hidden and reset to "All" whenever the parent value is
+    # not in show_when.  Its choices are drawn only from rows where the parent
+    # column is in show_when.  Set to NULL to disable.
+    filter_conditional = list(
+        list(
+            filter    = "ObservationalStudy",
+            parent    = "OriginalResearchType",
+            show_when = c("Observational", "Retrospective Observational")
+        )
+    ),
 
     # The column name to use for the confidence level indicator.
     # If this column does not exist in the data, this functionality will be ignored.

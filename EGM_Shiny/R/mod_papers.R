@@ -191,11 +191,9 @@ create_table_cards_html <- function(df, groups = NULL) {
             title, citation, meta_section, egm_tags)
 
         if (!is.null(doi_val)) {
-            tags$a(
-                href   = paste0("https://doi.org/", doi_val),
-                target = "_blank",
-                rel    = "noopener noreferrer",
-                class  = "paper-card paper-card-link",
+            div(
+                class      = "paper-card paper-card-link",
+                `data-href` = paste0("https://doi.org/", doi_val),
                 card_inner
             )
         } else {

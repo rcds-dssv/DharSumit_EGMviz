@@ -1,5 +1,9 @@
 # CLAUDE.md — EGM Shiny App
 
+## Maintenance reminder
+
+**Keep `../README.md` in sync.** Whenever a feature is added, a new `user_config.R` key is introduced, or a significant architectural change is made, update the top-level `README.md` (one directory above `EGM_Shiny/`) to reflect it — specifically the Features list, the repository layout, the Configuration table, and the Architecture notes as applicable.  Minor changes that are not important for understanding the code do not need to be included in the `README.md` file.  We want this file to be lean but useful.
+
 ## What this is
 
 An interactive R Shiny dashboard for exploring hearing-related research literature as an **Evidence Gap Map (EGM)**. Papers are displayed as bubbles on a 2D grid (Work Type × Theme). Users can filter, select, and export papers, and see comparison charts for selected cells.
@@ -56,7 +60,9 @@ This is the **only file that normally needs editing** to adapt the app to a new 
 | `app_acknowledgements` | Credits text shown in the help modal |
 | `comparison_panel_default_height_px` | Initial height (px) of the comparison plots panel |
 | `x_column` / `x_column_display` | Grid x-axis column name + display label |
+| `x_column_descriptions` | Optional named character vector mapping x-axis category values → descriptions; shown in help modal under "Reading the Map". `NULL` to omit. |
 | `y_column` / `y_column_display` | Grid y-axis column name + display label |
+| `y_column_descriptions` | Optional named character vector mapping y-axis category values → descriptions; shown in help modal under "Reading the Map" in the order defined here. `NULL` to omit. |
 | `filter_dropdown_list` / `_display` | Columns for filter dropdowns |
 | `confidence_column_name` | Optional: numeric column (1/2/3); set `NA` to disable |
 | `in_progress_column_name` | Optional: binary column; set `NA` to disable |
@@ -129,7 +135,7 @@ server():
 
 ## Dependencies
 
-R packages: `shiny`, `dplyr`, `readr`, `tidyr`, `forcats`, `plotly`, `stringr`, `shinyWidgets`, `writexl`, `jsonlite`, `scales`, `viridisLite`
+R packages: `shiny`, `dplyr`, `tidyr`, `forcats`, `plotly`, `stringr`, `shinyWidgets`, `writexl`, `jsonlite`, `scales`, `viridisLite`
 
 ## Data notes
 

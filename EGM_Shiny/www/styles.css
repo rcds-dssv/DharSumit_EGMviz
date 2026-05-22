@@ -1036,12 +1036,8 @@ body {
     transition: all 0.2s;
 }
 
-/* When a DOI is present the card is wrapped in an <a>; reset link styles
-   so it looks identical to the plain div version. */
-a.paper-card-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
+/* When a DOI is present the card has an onclick; show a pointer cursor. */
+.paper-card-link {
     cursor: pointer;
 }
 
@@ -1542,7 +1538,7 @@ a.paper-card-link {
     background: var(--color-container-bg);
     border: 1px solid var(--color-container-border);
     border-radius: 12px;
-    width: min(700px, 90vw);
+    width: 90vw;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
