@@ -51,8 +51,8 @@ rsconnect/
 ~/.rsconnect
 
 # data
-**data/*.csv
-**data/*.xlsx
+**/data/*.csv
+**/data/*.xlsx
 
 # produced by the code
 EGM_Shiny/www/styles_runtime.css
