@@ -27,8 +27,8 @@ EGM_Shiny/
 │                          #   builds egm_metadata, helper functions, writes runtime CSS/JS
 ├── user_config.R          # ALL user-facing configuration lives here (see below)
 ├── data/
-│   ├── AAHHC_Scoping_2026_AMGclean_JS.csv  # active dataset (referenced in user_config.R)
-│   └── README.md          # data cleaning notes and papers with broken DOIs
+│   ├── AAHHC_Scoping_2026_final.csv  # active dataset (referenced in user_config.R)
+│   └── README.md          # data cleaning notes
 ├── R/
 │   ├── mod_egm_plot.R     # plotly EGM figure builder + mod_plot_ui/server;
 │   │                      #   also defines wrap_for_plotly() (shared with
@@ -63,7 +63,10 @@ This is the **only file that normally needs editing** to adapt the app to a new 
 | `x_column_descriptions` | Optional named character vector mapping x-axis category values → descriptions; shown in help modal under "Reading the Map". `NULL` to omit. |
 | `y_column` / `y_column_display` | Grid y-axis column name + display label |
 | `y_column_descriptions` | Optional named character vector mapping y-axis category values → descriptions; shown in help modal under "Reading the Map" in the order defined here. `NULL` to omit. |
+| `plot_points_desired_max_px` / `plot_points_desired_min_px` | Desired max / min marker pixel size in the EGM figure |
+| `plot_cell_width_px` / `plot_cell_height_px` | Minimum pixel size (width / height) of each grid cell in the EGM figure |
 | `filter_dropdown_list` / `_display` | Columns for filter dropdowns |
+| `filter_conditional` | Optional list of parent/child filter dependencies (see below); `NULL` to disable |
 | `confidence_column_name` | Optional: numeric column (1/2/3); set `NA` to disable |
 | `in_progress_column_name` | Optional: binary column; set `NA` to disable |
 | `paper_title_column` | Column for the paper card heading |
@@ -72,6 +75,7 @@ This is the **only file that normally needs editing** to adapt the app to a new 
 | `paper_meta_columns` / `_display` | Badge pill metadata fields |
 | `paper_sort_columns` / `_display` | Sort dropdown options |
 | `paper_citation_bibtex_field_map` | Maps CSV column names → BibTeX field names |
+| `search_columns` | Column names searched by the Search panel (case-insensitive substring match, OR across columns) |
 | `plot_colors` | Data visualization colors (theme-invariant) |
 | `web_dark_colors` / `web_light_colors` | UI colors; written to `styles_runtime.css` |
 | `default_theme` | `"dark"` or `"light"` |
@@ -107,6 +111,8 @@ server():
 - **`egm_metadata`** (built in `app_config.R`): a named list keyed by `"all"`, `"high"`, `"medium"`, `"low"`, `"in_progress"`, and `"search"`. Each entry has `color`, `index` (0-based plotly trace index), `offset_x/y`, and `display_text` (search entry has `display_text = NULL`). Trace index order is: 0 = heatmap, 1 = all, then confidence (if enabled), then in_progress (if enabled), then search (always last). Any code that touches specific traces must use these indices — never hardcode them.
 
 - **`initial_egm_data`** (global): the unfiltered dataset. Marker sizes and axis levels always reference this so the plot grid stays stable when filters are applied.
+
+- **Conditional filters** (`filter_conditional` in `user_config.R`): each entry names a dependent (`filter`) and a `parent` column plus the `show_when` parent values that make the dependent visible. `mod_filter.R` hides the dependent dropdown and resets it to `"All"` whenever the parent's current value is not in `show_when`, and restricts the dependent's choices to rows where the parent column is in `show_when`. Used for filters that are only meaningful for a subset of the data (e.g. `ObservationalStudy` design only applies when `OriginalResearchType` is an observational type).
 
 - **Toggle vs. re-render**: filter changes trigger a full `renderPlotly` re-render; toggle changes use `plotlyProxy` / `restyle` to avoid re-rendering. `create_egm_figure()` reads toggle states via `isolate()` so a filter-triggered re-render restores the last toggle state.
 

@@ -8,9 +8,9 @@ An interactive R Shiny dashboard for exploring hearing-related research literatu
 
 ## Features
 
-- **Interactive EGM plot** — click or lasso-select bubbles to surface matching papers
+- **Interactive EGM plot** — click or box/lasso-select bubbles to surface matching papers
 - **Full-text search** — keyword search across title, authors, journal, and configurable metadata fields; results appear as orange dots on the map and drive the paper panel and comparison plots
-- **Filters** — narrow the map by study origin, research type, setting, and more
+- **Filters** — narrow the map by study origin, research type, setting, and more; conditional filters stay hidden until a related parent filter takes a specific value (e.g. study design options only appear for observational research types)
 - **Paper cards** — scrollable list of selected papers with full citation and metadata; DOI links open in a new tab
 - **Comparison plots** — Count, Year, and Meta breakdown charts for the current selection (Year chart supports Stacked Bar and Line views)
 - **Export** — download selected papers as CSV, Excel, JSON, APA, AMA, Chicago, BibTeX, or RIS
@@ -29,6 +29,7 @@ DharSumit_EGMviz/
 │   ├── user_config.R       # ← all user-facing configuration (see below)
 │   ├── data/
 │   │   ├── AAHHC_Scoping_2026_final.csv   # active dataset (not included on GitHub)
+│   │   └── README.md               # data cleaning notes
 │   ├── R/
 │   │   ├── mod_egm_plot.R          # plotly EGM figure builder
 │   │   ├── mod_filter.R            # filter dropdowns
@@ -99,7 +100,10 @@ Nearly everything a developer would need to change when adapting this app to a n
 | `x_column_descriptions` | Optional named character vector mapping x-axis category values → plain-text descriptions; shown as a bulleted list under "Reading the Map" in the help modal in the order defined. `NULL` to omit. |
 | `y_column` / `y_column_display` | Grid y-axis column name + display label |
 | `y_column_descriptions` | Optional named character vector mapping y-axis category values → plain-text descriptions; shown as a bulleted list under "Reading the Map" in the help modal in the order defined. `NULL` to omit. |
+| `plot_points_desired_max_px` / `plot_points_desired_min_px` | Desired max / min marker pixel size in the EGM figure |
+| `plot_cell_width_px` / `plot_cell_height_px` | Minimum pixel size (width / height) of each grid cell in the EGM figure |
 | `filter_dropdown_list` / `_display` | Columns used for filter dropdowns |
+| `filter_conditional` | Optional list of parent/child filter dependencies; hides a dependent filter dropdown (and resets it to "All") until a specific parent filter value is chosen. `NULL` to disable |
 | `confidence_column_name` | Optional: numeric column (1/2/3); `NA` to disable |
 | `in_progress_column_name` | Optional: binary column; `NA` to disable |
 | `paper_title_column` | Column for the paper card heading |
