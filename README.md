@@ -2,7 +2,7 @@
 
 An interactive R Shiny dashboard for exploring hearing-related research literature as an **Evidence Gap Map (EGM)**. Papers are plotted as bubbles on a 2D grid — Work Type × Theme — where bubble size reflects the number of papers at each intersection. Users can filter the dataset, select bubbles to inspect individual papers, and export citations in multiple formats.
 
-**Live app:** [shinyapps.io](https://ageller-rcds-northwestern.shinyapps.io/egm_shiny/)
+**Live app:** [shinyapps.io](http://j1c7eu-sumitdharnu.shinyapps.io/egm_shiny)
 
 ---
 
@@ -28,7 +28,7 @@ DharSumit_EGMviz/
 │   ├── app_config.R        # Startup: loads libraries, data, builds globals, writes runtime CSS/JS
 │   ├── user_config.R       # ← all user-facing configuration (see below)
 │   ├── data/
-│   │   ├── AAHHC_Scoping_2026_AMGclean.csv   # active dataset (not included on GitHub)
+│   │   ├── AAHHC_Scoping_2026_final.csv   # active dataset (not included on GitHub)
 │   ├── R/
 │   │   ├── mod_egm_plot.R          # plotly EGM figure builder
 │   │   ├── mod_filter.R            # filter dropdowns
@@ -49,6 +49,11 @@ DharSumit_EGMviz/
 ---
 
 ## Running the app
+
+**Include the data file:**
+
+The data file is not included on GitHub.  You will need to put the file
+in the `data` directory.  The current code expects a data file named : `AAHHC_Scoping_2026_final.csv`.  This can be changed in the `EGM_Shiny/user_config.R` file (see description below).
 
 **Prerequisites:** R ≥ 4.1 and the following packages:
 
@@ -72,9 +77,11 @@ The working directory must be `EGM_Shiny/` when calling `runApp()` because data 
 This app was deployed on shinyapps.io using the following command from the GitHub root directory:
 
 ```r
-rsconnect::deployApp(appDir = "EGM_shiny", account = "ageller-rcds-northwestern")
+rsconnect::deployApp(appDir = "EGM_shiny", account = "<account-name>")
 ```
 ---
+
+(and replace `<account-name>` with the actual name.)
 
 ## Configuration
 
