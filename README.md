@@ -79,9 +79,10 @@ This app was deployed on shinyapps.io using the following command from the GitHu
 ```r
 rsconnect::deployApp(appDir = "EGM_shiny", account = "<account-name>")
 ```
----
 
 (and replace `<account-name>` with the actual name.)
+
+---
 
 ## Configuration
 
