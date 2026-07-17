@@ -245,7 +245,7 @@ body {
 
 /* Fine-tune section-main padding in the new layout (less left, less top) */
 .header-instructions:not(.section-collapsed) .section-main {
-    padding: 10px 20px 20px 14px;
+    padding: 26px 20px 20px 14px;
 }
 
 .controls-toolbar:not(.section-collapsed) .section-main {
