@@ -105,7 +105,10 @@ compute_cp_min_height <- function(labeled_df, plot_type, meta_col = NULL) {
 cp_layout <- function(p, xlab = "", ylab = "", show_legend = FALSE) {
     plotly::layout(p,
         font          = list(color = "black", size = 11),
-        xaxis = list(title        = list(text = xlab, font = list(size = 12)),
+        # Small title standoff keeps the x-axis title tucked under the tick
+        # labels so it stays clear of the horizontal legend placed below.
+        xaxis = list(title        = list(text = xlab, font = list(size = 12),
+                                         standoff = 10),
                      gridcolor    = "#cccccc",
                      linecolor    = "#cccccc",
                      zerolinecolor = "#cccccc",
@@ -119,7 +122,8 @@ cp_layout <- function(p, xlab = "", ylab = "", show_legend = FALSE) {
         showlegend = show_legend,
         legend     = list(font        = list(color = "black", size = 10),
                           bgcolor     = "rgba(0,0,0,0)",
-                          orientation = "h", x = 0, y = -0.15)
+                          orientation = "h", x = 0,
+                          y = -0.30, yanchor = "top")
     )
 }
 
