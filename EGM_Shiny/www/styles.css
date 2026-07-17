@@ -1768,7 +1768,36 @@ body {
         overflow: visible;
     }
 
+    /* Section headers: stack the pieces so the control widgets sit below all
+       the text (title + explanatory text) instead of the desktop left/right
+       row.  `display: contents` promotes the nested title and widgets to flex
+       items of the header, so `order` can place the explanatory text (a
+       uiOutput = the `.shiny-html-output` child) between them. */
+    .plot-section-header,
+    .table-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
     .table-header { position: static; }
+
+    .plot-section-header-top,
+    .table-header-top { display: contents; }
+
+    .plot-section-header-top-left,
+    .table-header-top-left             { order: 1; }
+    .plot-section-header > .shiny-html-output,
+    .table-header > .shiny-html-output { order: 2; }
+    .plot-section-header-top-right,
+    .table-header-top-right            { order: 3; }
+
+    /* Comparison header has no explanatory text — stack title over widgets. */
+    .comparison-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
 
     /* Papers grow to their content up to a bounded height, then the list
        scrolls inside — so a large selection can't bury the comparison plots
