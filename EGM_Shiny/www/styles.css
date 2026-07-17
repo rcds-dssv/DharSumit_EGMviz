@@ -1690,3 +1690,87 @@ body {
     .modal-body::-webkit-scrollbar-button { display: none; }
 }
 
+
+/* ============================================================ */
+/* RESPONSIVE — stacked single-column layout (<= 900px)         */
+/* ============================================================ */
+/* Above 900px the app keeps its side-by-side panels, drag dividers, and
+   internal-only scrolling (no outer scrollbars).  At/below 900px the panels
+   stack in a single column, the dividers are removed, and the page scrolls
+   vertically.  Everything here is scoped to the media query so the desktop
+   layout is unchanged. */
+@media (max-width: 900px) {
+
+    /* Let the document grow with content so the page scrolls vertically. */
+    html, body        { height: auto; }
+    .container-fluid  { height: auto; }
+    .design-container { height: auto; min-height: 100vh; min-height: 100dvh; }
+
+    /* Stack the main area in DOM order (plot, then table section). */
+    .main-area,
+    .main-area.has-selection {
+        display: block;
+        grid-template-columns: none;
+        flex: none;
+        overflow: visible;
+    }
+
+    .resize-handle,
+    .v-resize-handle { display: none !important; }
+
+    /* Plot keeps a bounded height and scrolls inside its wrapper, so the
+       fixed-size figure never forces an outer horizontal scrollbar.
+       !important clears any inline width left by the desktop drag handle. */
+    .plot-section {
+        width: auto !important;
+        height: 70vh;
+        height: 70dvh;
+    }
+
+    /* Static section dividers (same color/thickness as the desktop drag
+       handles, but not resizable) so the stacked panels read as distinct. */
+    .table-section {
+        border-left: none;
+        border-top: 6px solid var(--color-container-border);
+        overflow: visible;
+    }
+
+    .table-header { position: static; }
+
+    /* Papers grow to their content up to a bounded height, then the list
+       scrolls inside — so a large selection can't bury the comparison plots
+       below it.  max-height + the base .paper-list (flex + overflow-y:auto +
+       min-height:0) gives grow-then-scroll.  !important clears the inline
+       flex-basis that layout.js / its ResizeObserver may have set. */
+    .papers-subpanel {
+        flex: none !important;
+        max-height: 70vh;
+        max-height: 70dvh;
+        min-height: 0;
+    }
+
+    /* Comparison plot needs a definite height for its height:100% chain to
+       resolve; the wrapper scrolls internally when the computed min-height is
+       taller than this. */
+    .comparison-subpanel {
+        flex: none !important;
+        border-top: 6px solid var(--color-container-border);
+        overflow: visible;
+    }
+    .comparison-plot-wrapper {
+        height: 60vh;
+        height: 60dvh;
+    }
+
+    /* Scroll-trap fix for the view-only comparison plot: hand one-finger pans
+       to the browser so a swipe scrolls the page instead of being captured by
+       plotly's touch handlers.  The EGM plot is intentionally left alone — its
+       one-finger drag is the current box-select gesture, so its mobile touch
+       behavior is handled with the EGM mobile-functionality work. */
+    .comparison-plot-wrapper,
+    .comparison-plot-wrapper .js-plotly-plot .draglayer,
+    .comparison-plot-wrapper .js-plotly-plot .nsewdrag {
+        touch-action: pan-y !important;
+    }
+}
+
