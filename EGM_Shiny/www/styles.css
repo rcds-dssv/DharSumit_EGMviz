@@ -1706,6 +1706,39 @@ body {
     .container-fluid  { height: auto; }
     .design-container { height: auto; min-height: 100vh; min-height: 100dvh; }
 
+    /* Bigger-than-desktop touch targets for the section collapse toggles and
+       the theme switch, sized to match the "Information and Instructions"
+       button height. */
+    .section-collapse-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    .header-instructions.section-collapsed .section-strip,
+    .controls-toolbar.section-collapsed .section-strip,
+    .search-toolbar.section-collapsed .section-strip {
+        height: 40px;
+    }
+    .header-instructions:not(.section-collapsed) .section-strip,
+    .controls-toolbar:not(.section-collapsed) .section-strip,
+    .search-toolbar:not(.section-collapsed) .section-strip {
+        width: 40px;
+    }
+    .theme-toggle-btn { height: 32px; font-size: 17px; }
+    .theme-icon        { width: 30px; }
+
+    /* Keep the header text clear of the top-corner controls. */
+    .header-instructions:not(.section-collapsed) .section-main {
+        padding-top: 44px;
+    }
+
+    /* Info/instructions button on its own line below the description. */
+    .how-to-use-btn {
+        display: block;
+        width: fit-content;
+        margin-top: 12px;
+    }
+
     /* Stack the main area in DOM order (plot, then table section). */
     .main-area,
     .main-area.has-selection {
