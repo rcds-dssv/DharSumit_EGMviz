@@ -151,6 +151,19 @@ make_group_info <- function(clicked_info) {
 # DATA LOADING
 # =============================================================================
 
+# Words kept fully upper-case when title-casing axis/filter values.
+title_case_acronyms <- c("US", "OTC")
+
+# Title-case helper: tools::toTitleCase lowers minor words (of, and, the, …);
+# then force the acronyms above back to upper case (whole-word, any input case).
+apply_title_case <- function(x) {
+    out <- tools::toTitleCase(tolower(as.character(x)))
+    for (acr in title_case_acronyms) {
+        out <- gsub(paste0("\\b", acr, "\\b"), acr, out, ignore.case = TRUE, perl = TRUE)
+    }
+    out
+}
+
 # Read and lightly clean the papers dataset.
 # NA in the two axis columns would break the EGM grid, so replace with "Other".
 df_all <- read.csv(egm_definition$datafile_path,
@@ -164,7 +177,23 @@ df_all <- read.csv(egm_definition$datafile_path,
     mutate(across(
         all_of(egm_definition$filter_dropdown_list),
         ~ ifelse(is.na(.), "Other", as.character(.))
+    )) %>%
+    # Title-case the axis and filter values so their display (and dropdown
+    # options) are consistent, and case-only duplicates (e.g. "Care seeking" vs
+    # "Care Seeking") collapse into one category.
+    mutate(across(
+        all_of(unique(c(egm_definition$x_column, egm_definition$y_column,
+                        egm_definition$filter_dropdown_list))),
+        ~ apply_title_case(.)
     ))
+
+# Keep the help-modal category-description keys in sync with the title-cased
+# axis values so they still match / display consistently.
+for (.dk in c("x_column_descriptions", "y_column_descriptions")) {
+    if (!is.null(egm_definition[[.dk]]) && !is.null(names(egm_definition[[.dk]]))) {
+        names(egm_definition[[.dk]]) <- apply_title_case(names(egm_definition[[.dk]]))
+    }
+}
 
 # Stored in the global env so mod_plot.R can reference it for consistent axis
 # sizing and marker scaling as the user applies filters.
