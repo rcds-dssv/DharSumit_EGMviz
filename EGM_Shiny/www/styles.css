@@ -1753,14 +1753,19 @@ body {
     .resize-handle,
     .v-resize-handle { display: none !important; }
 
-    /* Plot keeps a bounded height and scrolls inside its wrapper, so the
-       fixed-size figure never forces an outer horizontal scrollbar.
-       !important clears any inline width left by the desktop drag handle. */
+    /* Plot panel uses ~the full screen height (its header/widgets + the figure);
+       the figure is fitted to the width in R so it doesn't force horizontal
+       scroll, and the wrapper scrolls vertically only when the grid is taller
+       than this.  !important clears any inline width left by the desktop drag
+       handle. */
     .plot-section {
         width: auto !important;
-        height: 70vh;
-        height: 70dvh;
+        height: 100vh;
+        height: 100dvh;
     }
+
+    /* Trim the plot padding on small screens so the figure gets more width. */
+    .plot-wrapper { padding: 8px; }
 
     /* Static section dividers (same color/thickness as the desktop drag
        handles, but not resizable) so the stacked panels read as distinct. */

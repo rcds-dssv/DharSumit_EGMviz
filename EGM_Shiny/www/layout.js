@@ -227,6 +227,31 @@ function resizeComparisonPlot() {
 window.addEventListener("resize", resizeComparisonPlot);
 
 
+// ── Report viewport width to Shiny ────────────────────────────────────────────
+//
+// mod_egm_plot.R uses this to size the EGM figure responsively (only below the
+// 900px mobile breakpoint).  Sent on connect and on resize (debounced).
+(function () {
+    function sendViewportWidth() {
+        if (window.Shiny && Shiny.setInputValue) {
+            Shiny.setInputValue("egm_viewport_width", window.innerWidth,
+                                { priority: "event" });
+        }
+    }
+    var _vwTimer = null;
+    window.addEventListener("resize", function () {
+        clearTimeout(_vwTimer);
+        _vwTimer = setTimeout(sendViewportWidth, 200);
+    });
+    // Shiny fires shiny:connected via jQuery, so a native addEventListener can
+    // miss it — use the jQuery listener, plus timeout fallbacks in case the
+    // event already fired before this ran.
+    if (window.jQuery) jQuery(document).on("shiny:connected", sendViewportWidth);
+    setTimeout(sendViewportWidth, 500);
+    setTimeout(sendViewportWidth, 1500);
+}());
+
+
 // ── Comparison plot minimum height ───────────────────────────────────────────
 //
 // R computes how many px are needed to prevent label/legend overlap and sends

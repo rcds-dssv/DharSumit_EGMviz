@@ -223,7 +223,8 @@ server <- function(input, output, session) {
         plot_source_name = "egm_scatter_plot",
         x_col            = egm_definition$x_column,
         y_col            = egm_definition$y_column,
-        n_col            = "n"
+        n_col            = "n",
+        viewport_width   = reactive(input$egm_viewport_width)
     )
 
     egm_selection <- mod_click_server(

@@ -37,6 +37,71 @@ var ctrlKeyHeld = false;
 // Prevents the spurious plotly_deselect that restyle can fire from clearing R state.
 var applyingVisual = false;
 
+// Touch tap state: distinguishes a tap (single-select) from a drag (box/lasso).
+var _tapStartX = 0, _tapStartY = 0, _tapMoved = false;
+
+// True briefly after a single click/tap so the plotly_selected handler (which
+// may also fire) skips re-processing it.  Shared by mouse, touch, and plotly.
+var clickHandled = false;
+
+
+// ── Touch tap-to-select ───────────────────────────────────────────────────────
+//
+// plotly's own tap→click is unreliable on touch in "select" dragmode, so on a
+// tap we find the nearest selectable marker ourselves and feed it into the same
+// selection flow.  A drag is left to plotly (box/lasso multi-select).  There is
+// no Ctrl on touch, so a tap always replaces the selection (accumulate stays
+// desktop-only via Ctrl/Cmd+click).
+
+// Returns {traceIdx, pointIdx, customdata} for the selectable marker nearest to
+// client (cx, cy) within a finger-sized radius, or null.
+function nearestSelectableMarker(plot, cx, cy) {
+    if (!plot || !plot._fullData || !plot._fullLayout) return null;
+    var drag = plot.querySelector(".nsewdrag");
+    var xa = plot._fullLayout.xaxis, ya = plot._fullLayout.yaxis;
+    if (!drag || !xa || !ya || typeof xa.l2p !== "function") return null;
+    var r = drag.getBoundingClientRect();
+    var best = null, bestD = 34 * 34;   // ~34px tap radius (forgiving of small dots)
+    for (var i = 0; i < plot._fullData.length; i++) {
+        var tr = plot._fullData[i];
+        if (!tr || tr.type !== "scatter" || tr.visible !== true) continue;
+        var cd = tr.customdata, xs = tr.x, ys = tr.y;
+        if (!cd || !cd.length || !xs || !ys) continue;
+        for (var j = 0; j < xs.length; j++) {
+            if (!cd[j] || cd[j].length < 3) continue;
+            var dx = (r.left + xa.l2p(xs[j])) - cx;
+            var dy = (r.top  + ya.l2p(ys[j])) - cy;
+            var d  = dx * dx + dy * dy;
+            if (d < bestD) { bestD = d; best = { traceIdx: i, pointIdx: j, customdata: cd[j] }; }
+        }
+    }
+    return best;
+}
+
+function onEgmTouchStart(e) {
+    if (!e.touches || e.touches.length !== 1) { _tapMoved = true; return; }
+    _tapStartX = e.touches[0].clientX;
+    _tapStartY = e.touches[0].clientY;
+    _tapMoved  = false;
+}
+function onEgmTouchMove(e) {
+    if (_tapMoved) return;
+    if (!e.touches || e.touches.length !== 1) { _tapMoved = true; return; }
+    if (Math.abs(e.touches[0].clientX - _tapStartX) > 10 ||
+        Math.abs(e.touches[0].clientY - _tapStartY) > 10) _tapMoved = true;
+}
+function onEgmTouchEnd(e) {
+    if (_tapMoved || applyingVisual) return;         // a drag → plotly box/lasso handles it
+    var plot = e.currentTarget;
+    var hit  = nearestSelectableMarker(plot, _tapStartX, _tapStartY);
+    if (!hit) return;                                 // tapped empty space → ignore
+    clickHandled = true;                              // suppress a following plotly_selected
+    setTimeout(function() { clickHandled = false; }, 200);
+    currentSelection = [hit];
+    applySelectionVisual(plot);
+    sendSelectionToShiny();
+}
+
 
 // ── Selection visual helpers ──────────────────────────────────────────────────
 
@@ -108,10 +173,16 @@ function attachPlotlyClickHandler() {
             ctrlKeyHeld = e.ctrlKey || e.metaKey;
         });
 
+        // Touch tap-to-select (coexists with plotly's box/lasso drag).  Stable
+        // function refs so re-attaching after a re-render does not duplicate them.
+        plot.addEventListener("touchstart", onEgmTouchStart, { passive: true });
+        plot.addEventListener("touchmove",  onEgmTouchMove,  { passive: true });
+        plot.addEventListener("touchend",   onEgmTouchEnd);
+
         // With dragmode:"select", clicking a point fires BOTH plotly_click AND
         // plotly_selected.  We use plotly_click as the authoritative handler for
         // single-point clicks and guard plotly_selected against re-processing it.
-        var clickHandled = false;
+        // (clickHandled is declared at module scope so the touch handler shares it.)
 
         // ── Single-point click (and Ctrl/Cmd+click) ───────────────────────────
         // plotly_click fires reliably for any point click regardless of dragmode.
