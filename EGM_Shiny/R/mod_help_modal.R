@@ -121,7 +121,7 @@ help_modal_ui <- function() {
                         "The horizontal axis shows ", egm_definition$x_column_display,
                         " and the vertical axis shows ", egm_definition$y_column_display, "."
                     )),
-                    tags$p("Each bubble represents all papers at that combination. Larger bubbles mean more papers in that cell."),
+                    tags$p("Each dot represents all papers at that combination. Larger dots mean more papers in that cell."),
                     if (!is.null(egm_definition$x_column_descriptions) &&
                             length(egm_definition$x_column_descriptions) > 0) {
                         desc_names <- names(egm_definition$x_column_descriptions)
@@ -162,8 +162,8 @@ help_modal_ui <- function() {
 
                 div(class = "modal-section",
                     tags$h3("Selecting Papers"),
-                    tags$p("There are multiple ways to select papers from the map.  You can click on a single point and use 'Ctrl/Cmd' + click to add (or remove) points from your selection.  Alternatively, you can use the box-select or lasso tool in the plotly toolbar (top-right corner of the chart). For either tool, click and drag to draw a selection around one or more bubbles.  After selecting papers, the  panel on the right will populate with matching records."),
-                    tags$p(HTML("To clear your selection, double-click anywhere on the chart. or use the <em>Deselect all</em> button in the top-right corner of the map section."))
+                    tags$p("There are multiple ways to select papers from the map.  You can use the box-select or lasso tool in the plotly toolbar (top-right corner of the chart). For either tool, click/touch and drag to draw a selection around one or more dots.  Alternatively, you can click/tap on a single dot.  On desktop, you can also use 'Ctrl/Cmd' + click to add (or remove) dots from your selection.  After selecting papers, the  panel on the right will populate with matching records."),
+                    tags$p(HTML("To clear your selection, use the <em>Deselect all</em> button in the top-right corner of the map section.  On desktop, you can also double-click anywhere on the chart to clear your selection."))
                 ),
 
                 div(class = "modal-section",
@@ -175,7 +175,7 @@ help_modal_ui <- function() {
                         tags$li("The papers panel and comparison plots update to reflect the matched papers only."),
                         tags$li("A status line shows how many papers were matched.")
                     ),
-                    tags$p(HTML("Click <em>✕ Clear</em> to exit search mode, or click any bubble on the map to switch back to a cell selection (this also clears the search). Making a map selection while a search is active will exit the search and show the papers for the selected bubble(s) instead."))
+                    tags$p(HTML("Click the <em>✕ Clear</em> button to exit search mode.  Making a map selection while a search is active will also clear the search and show the papers for the selected dot(s) instead."))
                 ),
 
                 div(class = "modal-section",
@@ -194,9 +194,9 @@ help_modal_ui <- function() {
 
                 div(class = "modal-section",
                     tags$h3("Papers Comparison Panel"),
-                    tags$p("The panel on the right shows details for the papers in your current selection."),
+                    tags$p("After you select papers on the map, the paper comparison panels will populate with details for the papers in your current selection.  On desktop, this panel is located to the right of the map.  On mobile devices, this panel is below the map."),
                     tags$p("At the top you will see information about each paper, including a summary of the selection followed by a card for each paper with its citation and metadata fields.  Clicking a card opens the paper's DOI link in a new tab (when a DOI is available)."),
-                    tags$p("At the bottom you will see figures that compare various features of the papers in your selection.  Use the buttons in the top-right of this section to change the plot type.")
+                    tags$p("At the bottom you will see figures that compare various features of the papers in your selection.  Use the buttons in the top of this section to change the plot type.")
                 ),
 
                 div(class = "modal-section",
@@ -207,7 +207,7 @@ help_modal_ui <- function() {
 
                 div(class = "modal-section",
                     tags$h3("Configuring the Page Layout"),
-                    tags$p("Many of the panels can be manually resized to better fit your screen. The top two panels can be collapsed upwards with the arrow buttons in the upper-left corners.  The panels below have click+draggable dividers that can be used to expand or shrink the sections."),
+                    tags$p("Many of the panels can be manually resized to better fit your screen. The top three panels can be collapsed upwards with the arrow buttons in the upper-left corners.  On desktop devices, the panels below have click+draggable dividers that can be used to expand or shrink the sections."),
                 )
             )
         )
