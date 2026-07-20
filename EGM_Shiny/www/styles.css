@@ -608,6 +608,7 @@ body {
     background: var(--color-container-border);
     cursor: col-resize;
     user-select: none;
+    touch-action: none;         /* a touch on the handle drags it, never scrolls */
     z-index: 10;
     display: flex;
     align-items: center;
@@ -1273,6 +1274,7 @@ body {
     background: var(--color-container-border);
     cursor: row-resize;
     user-select: none;
+    touch-action: none;          /* a touch on the handle drags it, never scrolls */
     z-index: 10;
     display: flex;
     align-items: center;

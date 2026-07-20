@@ -51,6 +51,15 @@ var _vResizeDragging = false;
 var _vResizeStartY   = 0;
 var _vResizeStartH   = 0;
 
+// Pointer coordinate helpers: read from a mouse event or the first touch point
+// so the same drag logic serves both mouse and touch (e.g. tablets).
+function _dragClientX(e) {
+    return (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX;
+}
+function _dragClientY(e) {
+    return (e.touches && e.touches.length) ? e.touches[0].clientY : e.clientY;
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     // Read minimum panel sizes from CSS custom properties (styles.css :root).
     var _root   = getComputedStyle(document.documentElement);
@@ -59,35 +68,39 @@ document.addEventListener("DOMContentLoaded", function() {
     MIN_TABLE_W = MIN_PLOT_W       = _minW;
     MIN_PAPERS_H = MIN_COMPARISON_H = _minH;
 
-    // Horizontal handle
+    // Horizontal handle (mouse + touch)
     var handle = document.getElementById("resize_handle");
     if (!handle) return;
-    handle.addEventListener("mousedown", function(e) {
+    var _startHResize = function(e) {
         var plotSection = document.getElementById("plot_section");
         if (!plotSection) return;
         _resizeDragging = true;
-        _resizeStartX   = e.clientX;
+        _resizeStartX   = _dragClientX(e);
         _resizeStartW   = plotSection.offsetWidth;
         handle.classList.add("dragging");
         document.body.style.cursor     = "col-resize";
         document.body.style.userSelect = "none";
         e.preventDefault();
-    });
+    };
+    handle.addEventListener("mousedown",  _startHResize);
+    handle.addEventListener("touchstart", _startHResize, { passive: false });
 
-    // Vertical handle
+    // Vertical handle (mouse + touch)
     var vHandle = document.getElementById("v_resize_handle");
     if (vHandle) {
-        vHandle.addEventListener("mousedown", function(e) {
+        var _startVResize = function(e) {
             var compPanel = document.getElementById("comparison_subpanel");
             if (!compPanel) return;
             _vResizeDragging = true;
-            _vResizeStartY   = e.clientY;
+            _vResizeStartY   = _dragClientY(e);
             _vResizeStartH   = compPanel.offsetHeight;
             vHandle.classList.add("dragging");
             document.body.style.cursor     = "row-resize";
             document.body.style.userSelect = "none";
             e.preventDefault();
-        });
+        };
+        vHandle.addEventListener("mousedown",  _startVResize);
+        vHandle.addEventListener("touchstart", _startVResize, { passive: false });
     }
 
     // One-time initialisation of comparison-subpanel flex-basis.
@@ -120,7 +133,11 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-document.addEventListener("mousemove", function(e) {
+function _onDragMove(e) {
+    if (!_resizeDragging && !_vResizeDragging) return;
+    // Prevent the page from scrolling while a divider is being dragged by touch.
+    if (e.cancelable) e.preventDefault();
+
     // Vertical resize
     if (_vResizeDragging) {
         var compPanel    = document.getElementById("comparison_subpanel");
@@ -130,7 +147,7 @@ document.addEventListener("mousemove", function(e) {
             var maxH = tableSection.offsetHeight - 6 - MIN_PAPERS_H;
             var newH = Math.min(maxH,
                        Math.max(MIN_COMPARISON_H,
-                                _vResizeStartH - (e.clientY - _vResizeStartY)));
+                                _vResizeStartH - (_dragClientY(e) - _vResizeStartY)));
             compPanel.style.flex = "0 0 " + newH + "px";
 
             // Toggle collapsed strip when panels shrink below the threshold.
@@ -150,7 +167,7 @@ document.addEventListener("mousemove", function(e) {
 
     // set the panel min and max size based on the MIN_TABLE_W and MIN_PLOT_W above
     var maxPanelW = mainArea ? (mainArea.offsetWidth - 6 - MIN_TABLE_W) : Infinity;
-    var newW      = Math.min(maxPanelW, Math.max(MIN_PLOT_W, _resizeStartW + (e.clientX - _resizeStartX)));
+    var newW      = Math.min(maxPanelW, Math.max(MIN_PLOT_W, _resizeStartW + (_dragClientX(e) - _resizeStartX)));
 
     plotSection.style.width = newW + "px";
     // The plot figure size is fixed — the wrapper scrolls if the panel is narrower.
@@ -162,9 +179,11 @@ document.addEventListener("mousemove", function(e) {
         var tableW = mainArea.offsetWidth - 6 - newW;
         tableSection.classList.toggle("panel-collapsed", tableW < COLLAPSE_W);
     }
-});
+}
+document.addEventListener("mousemove", _onDragMove);
+document.addEventListener("touchmove", _onDragMove, { passive: false });
 
-document.addEventListener("mouseup", function() {
+function _onDragEnd() {
     if (_vResizeDragging) {
         _vResizeDragging = false;
         var vHandle = document.getElementById("v_resize_handle");
@@ -180,7 +199,10 @@ document.addEventListener("mouseup", function() {
     document.body.style.cursor     = "";
     document.body.style.userSelect = "";
     resizeComparisonPlot();
-});
+}
+document.addEventListener("mouseup",     _onDragEnd);
+document.addEventListener("touchend",    _onDragEnd);
+document.addEventListener("touchcancel", _onDragEnd);
 
 
 // ── Comparison plot resize ────────────────────────────────────────────────────
