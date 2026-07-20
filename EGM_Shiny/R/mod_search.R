@@ -158,13 +158,17 @@ mod_search_server <- function(id, egm_data, clear_search_trigger = NULL) {
             x_num    <- match(cell_counts[[x_col]], x_levels) - 1 + offset_x
             y_num    <- match(cell_counts[[y_col]], y_levels) - 1 + offset_y
 
-            size_cap <- quantile(initial_egm_data$all$counts$n, 0.99, na.rm = TRUE)
-            sizes    <- scales::rescale(
+            # unname(): quantile() returns a named value ("99%"); for a
+            # single-cell result that name propagates to `sizes`, which plotly
+            # then serialises as a JSON object instead of an array (breaking the
+            # marker size so no dot renders).
+            size_cap <- unname(quantile(initial_egm_data$all$counts$n, 0.99, na.rm = TRUE))
+            sizes    <- unname(scales::rescale(
                 sqrt(pmin(cell_counts$n, size_cap)),
                 to   = c(egm_definition$plot_points_desired_min_px,
                          egm_definition$plot_points_desired_max_px),
                 from = c(0, sqrt(size_cap))
-            )
+            ))
 
             hover <- paste0(
                 "<b>Search result</b><br>",
@@ -173,12 +177,15 @@ mod_search_server <- function(id, egm_data, clear_search_trigger = NULL) {
                 "N matched: ", cell_counts$n
             )
 
+            # as.list() forces each per-point attribute to serialise as a JSON
+            # array even when a single cell matched — otherwise a length-1 vector
+            # auto-unboxes to a scalar and the scatter trace renders no point.
             plotlyProxy("egm_plot", session) %>%
                 plotlyProxyInvoke("restyle",
-                    list(x             = list(x_num),
-                         y             = list(y_num),
-                         text          = list(hover),
-                         "marker.size" = list(sizes),
+                    list(x             = list(as.list(x_num)),
+                         y             = list(as.list(y_num)),
+                         text          = list(as.list(hover)),
+                         "marker.size" = list(as.list(sizes)),
                          visible       = TRUE),
                     list(search_idx)
                 )
