@@ -1768,8 +1768,6 @@ body {
     }
     .comparison-subpanel {
         flex: none !important;
-        border-top: 6px solid var(--color-container-border);
-        overflow: visible;
         width: auto !important;
         height: 100vh;
         height: 100dvh;
@@ -1781,9 +1779,9 @@ body {
 
     /* Static section dividers (same color/thickness as the desktop drag
        handles, but not resizable) so the stacked panels read as distinct. */
-    .table-section {
+    .table-section, .comparison-subpanel {
         border-left: none;
-        border-top: 6px solid var(--color-container-border);
+        border-top: 20px solid var(--color-container-border);
         overflow: visible;
     }
 
@@ -1822,7 +1820,7 @@ body {
         height: 60vh;
         height: 60dvh;
     }
-    
+
     .comparison-plot-wrapper,
     .comparison-plot-wrapper .js-plotly-plot .draglayer,
     .comparison-plot-wrapper .js-plotly-plot .nsewdrag {
