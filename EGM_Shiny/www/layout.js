@@ -297,6 +297,61 @@ window.addEventListener("resize", resizeComparisonPlot);
 }());
 
 
+// ── Scroll-down hint (mobile) ─────────────────────────────────────────────────
+//
+// On a narrow (mobile) viewport the papers and comparison plots sit below the
+// full-height plot panel, so a selection or search can produce results the user
+// never sees.  When papers first appear, briefly show a hint to scroll down.
+// A MutationObserver on the papers output covers both EGM selection and search
+// (both populate the same container).  Shown once per page load; auto-fades and
+// is dismissed early on tap or as soon as the user scrolls.  Skipped when the
+// user is already scrolled toward the papers, and on desktop (>=900px), where
+// the panels are already visible.
+(function () {
+    var hint = null, hideTimer = null, shownThisLoad = false;
+    var VISIBLE_MS = 5000;
+
+    function buildHint() {
+        hint = document.createElement("div");
+        hint.id = "egm-scroll-hint";
+        hint.innerHTML =
+            '<span class="egm-scroll-hint-arrow">&#8595;</span>' +
+            '<span>Scroll down to see the selected papers &amp; comparison plots</span>';
+        hint.addEventListener("click", hide);
+        document.body.appendChild(hint);
+    }
+
+    function hide() {
+        clearTimeout(hideTimer);
+        if (hint) hint.classList.remove("visible");
+    }
+
+    function show() {
+        if (shownThisLoad || !hint) return;
+        if (window.innerWidth >= 900) return;   // desktop: panels already visible
+        if (window.scrollY > 600) return;       // already heading toward the papers
+        shownThisLoad = true;
+        hint.classList.add("visible");
+        hideTimer = setTimeout(hide, VISIBLE_MS);
+        console.log("showing it")
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        buildHint();
+        var content = document.getElementById("egm-table_content");
+        if (content) {
+            var observer = new MutationObserver(function () {
+                if (content.querySelector(".paper-card")) show();
+            });
+            observer.observe(content, { childList: true, subtree: true });
+        }
+        window.addEventListener("scroll", function () {
+            if (hint && hint.classList.contains("visible")) hide();
+        }, { passive: true });
+    });
+}());
+
+
 // ── Comparison plot minimum height ───────────────────────────────────────────
 //
 // R computes how many px are needed to prevent label/legend overlap and sends
