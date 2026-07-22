@@ -391,6 +391,30 @@ document.addEventListener("keydown", function(e) {
         });
     }
 
+    // Pin the corner annotations (axis titles + Total N) just inside the SVG's
+    // left edge on mobile.  R positions them from an estimate of plotly's
+    // y-label gutter, but the gutter is driven by measured SVG text width, which
+    // differs between devices/browsers (a real phone vs. Chrome device mode), so
+    // the estimate can push them off-screen.  Reading the actual rendered margin
+    // (_fullLayout._size) here is device-independent.  Desktop (>=900px) keeps
+    // R's layout untouched, so it is unchanged.
+    function pinAnnotations(el) {
+        if (window.innerWidth >= 900) return;
+        var fl = el._fullLayout;
+        if (!fl || !fl._size || !fl.annotations || !fl._size.w) return;
+        var sz     = fl._size;                       // .l = actual left margin, .w = data width
+        var paperX = (6 - sz.l) / sz.w;              // paper-x whose left anchor sits 6px from the SVG edge
+        var anns   = fl.annotations;
+        var update = {}, changed = false;
+        for (var i = 0; i < anns.length; i++) {
+            if (Math.abs((anns[i].x || 0) - paperX) > 0.001) {
+                update["annotations[" + i + "].x"] = paperX;
+                changed = true;
+            }
+        }
+        if (changed) Plotly.relayout(el, update);
+    }
+
     function syncStickyBar(el) {
         var bar = document.getElementById("egm_sticky_xaxis");
         if (!bar || !el) return;
@@ -421,9 +445,11 @@ document.addEventListener("keydown", function(e) {
             var el = wrapper.querySelector(".js-plotly-plot");
             if (!el) return;
             observer.disconnect();
+            pinAnnotations(el);
             tagTotalN(el);
             syncStickyBar(el);
             el.on("plotly_afterplot", function () {
+                pinAnnotations(el);
                 tagTotalN(el);
                 syncStickyBar(el);
             });
