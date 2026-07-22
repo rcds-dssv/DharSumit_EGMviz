@@ -162,7 +162,7 @@ help_modal_ui <- function() {
 
                 div(class = "modal-section",
                     tags$h3("Selecting Papers"),
-                    tags$p("There are multiple ways to select papers from the map.  You can use the box-select or lasso tool in the plotly toolbar (top-right corner of the chart). For either tool, click/touch and drag to draw a selection around one or more dots.  Alternatively, you can click/tap on a single dot.  On desktop, you can also use 'Ctrl/Cmd' + click to add (or remove) dots from your selection.  After selecting papers, the  panel on the right will populate with matching records."),
+                    tags$p("There are multiple ways to select papers from the map.  You can use the box-select or lasso tool in the plotly toolbar (top-right corner of the chart). For either tool, click/touch and drag to draw a selection around one or more dots.  Alternatively, you can click/tap on a single dot.  On desktop, you can also use 'Ctrl/Cmd' + click to add (or remove) dots from your selection.  After making a selection, the papers panel and the comparison plots will populate with matching records."),
                     tags$p(HTML("To clear your selection, use the <em>Deselect all</em> button in the top-right corner of the map section.  On desktop, you can also double-click anywhere on the chart to clear your selection."))
                 ),
 
