@@ -252,6 +252,51 @@ window.addEventListener("resize", resizeComparisonPlot);
 }());
 
 
+// ── Busy overlay ──────────────────────────────────────────────────────────────
+//
+// A centered "Updating…" spinner shown whenever the R server is computing, so a
+// slow recompute (e.g. a large EGM selection) never looks like a frozen app.
+// It is revealed only after a short delay so quick updates don't flash it, and
+// hidden as soon as the server goes idle.  Shiny fires shiny:busy / shiny:idle
+// via jQuery, so the listeners are attached with jQuery (a native
+// addEventListener would miss them).
+(function () {
+    var overlay = null, showTimer = null;
+    var SHOW_DELAY_MS = 250;
+
+    function buildOverlay() {
+        overlay = document.createElement("div");
+        overlay.id = "egm-busy-overlay";
+        overlay.innerHTML =
+            '<div class="egm-busy-card">' +
+                '<div class="egm-busy-spinner"></div>' +
+                '<div class="egm-busy-text">Updating…</div>' +
+            '</div>';
+        document.body.appendChild(overlay);
+    }
+
+    function onBusy() {
+        if (!overlay) return;
+        clearTimeout(showTimer);
+        showTimer = setTimeout(function () { overlay.classList.add("visible"); },
+                               SHOW_DELAY_MS);
+    }
+
+    function onIdle() {
+        clearTimeout(showTimer);
+        if (overlay) overlay.classList.remove("visible");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        buildOverlay();
+        if (window.jQuery) {
+            jQuery(document).on("shiny:busy", onBusy);
+            jQuery(document).on("shiny:idle", onIdle);
+        }
+    });
+}());
+
+
 // ── Comparison plot minimum height ───────────────────────────────────────────
 //
 // R computes how many px are needed to prevent label/legend overlap and sends
