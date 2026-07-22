@@ -246,7 +246,8 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             doubleClick     = FALSE,
             modeBarButtonsToRemove = c(
                 "zoomIn2d", "zoomOut2d", "autoScale2d",
-                "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
+                "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines",
+                "pan","zoom"
             )
         )
 

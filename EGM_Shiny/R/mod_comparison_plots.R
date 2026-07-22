@@ -135,7 +135,8 @@ cp_config <- function(p) {
         modeBarButtonsToRemove = list(
             "select2d", "lasso2d",
             "zoomIn2d", "zoomOut2d", "autoScale2d",
-            "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines"
+            "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines",
+            "pan","zoom"
         )
     )
 }
