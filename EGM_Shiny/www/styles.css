@@ -1706,7 +1706,10 @@ body {
     /* Let the document grow with content so the page scrolls vertically. */
     html, body        { height: auto; }
     .container-fluid  { height: auto; }
-    .design-container { height: auto; min-height: 100vh; min-height: 100dvh; }
+    /* svh (small viewport) rather than dvh so panel heights stay fixed as the
+       mobile address bar shows/hides on scroll — a dynamic height would resize
+       the plot container and force the figure to re-fit repeatedly. */
+    .design-container { height: auto; min-height: 100vh; min-height: 100svh; }
 
     /* Bigger-than-desktop touch targets for the section collapse toggles and
        the theme switch, sized to match the "Information and Instructions"
@@ -1757,20 +1760,13 @@ body {
     .plot-section {
         width: auto !important;
         height: 100vh;
-        height: 100dvh;
+        height: 100svh;
     }
-    .papers-subpanel {
+    .papers-subpanel, .comparison-subpanel {
         flex: none !important;
         width: auto !important;
         height: 100vh;
-        height: 100dvh;
-        min-height: 0;
-    }
-    .comparison-subpanel {
-        flex: none !important;
-        width: auto !important;
-        height: 100vh;
-        height: 100dvh;
+        height: 100svh;
         min-height: 0;
     }
 
@@ -1818,7 +1814,7 @@ body {
 
     .comparison-plot-wrapper {
         height: 60vh;
-        height: 60dvh;
+        height: 60svh;
     }
 
     .comparison-plot-wrapper,

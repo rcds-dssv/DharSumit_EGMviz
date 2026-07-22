@@ -491,6 +491,50 @@ document.addEventListener("keydown", function(e) {
         });
     }
 
+    // Shrink the figure to fit its scroll container on mobile when it is only
+    // slightly too tall, so the whole plot is visible without an internal
+    // scroll.  R sizes the figure from cell counts alone (with a 34px per-row
+    // floor) and cannot know the device's available height, so the fit is done
+    // here against the wrapper's real height.  Only shrinks (never stretches),
+    // and only while each grid row stays legible — a genuinely tall figure
+    // (many categories) keeps its natural height and scrolls.  Desktop
+    // (>=900px) is untouched.
+    //
+    // The decision is cached per figure width (el._egmFit).  plotly_afterplot
+    // also fires on selection redraws and on window resizes (mobile address-bar
+    // show/hide) — none of which change the figure width — so those reuse the
+    // cached target and never recompute against a transient container height.
+    // Only a genuine responsive re-render (width change) measures afresh, which
+    // is what keeps the plot from resizing on scroll or after a selection.
+    function fitPlotHeight(el) {
+        if (window.innerWidth >= 900) return;
+        var fl = el._fullLayout;
+        if (!fl || !fl.width || !fl._size || !fl.yaxis || !fl.yaxis.range) return;
+        var w = fl.width;
+
+        if (!el._egmFit || el._egmFit.w !== w) {
+            var wrapper = document.getElementById("plot_wrapper");
+            if (!wrapper) return;
+            var cs     = getComputedStyle(wrapper);
+            var availH = wrapper.clientHeight -
+                         (parseFloat(cs.paddingTop)    || 0) -
+                         (parseFloat(cs.paddingBottom) || 0);
+            // Vertical margins (fixed top header + bottom) are height-independent.
+            var margins = fl.height - fl._size.h;
+            var nY      = fl.yaxis.range[1] - fl.yaxis.range[0];
+            var target  = null;  // null => leave the figure at its natural height
+            if (availH > 0 && nY > 0 &&
+                fl.height - availH > 2 &&            // overflows its container
+                (availH - margins) / nY >= 28) {     // rows stay legible when fitted
+                target = availH - 2;
+            }
+            el._egmFit = { w: w, target: target };
+        }
+
+        var t = el._egmFit.target;
+        if (t != null && Math.abs(fl.height - t) > 2) Plotly.relayout(el, { height: t });
+    }
+
     // Pin the corner annotations (axis titles + Total N) just inside the SVG's
     // left edge on mobile.  R positions them from an estimate of plotly's
     // y-label gutter, but the gutter is driven by measured SVG text width, which
@@ -545,10 +589,12 @@ document.addEventListener("keydown", function(e) {
             var el = wrapper.querySelector(".js-plotly-plot");
             if (!el) return;
             observer.disconnect();
+            fitPlotHeight(el);
             pinAnnotations(el);
             tagTotalN(el);
             syncStickyBar(el);
             el.on("plotly_afterplot", function () {
+                fitPlotHeight(el);
                 pinAnnotations(el);
                 tagTotalN(el);
                 syncStickyBar(el);
