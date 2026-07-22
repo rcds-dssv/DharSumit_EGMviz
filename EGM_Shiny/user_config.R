@@ -65,7 +65,9 @@ egm_definition <- list(
     plot_points_desired_max_px = 40,
     plot_points_desired_min_px = 1,
 
-    # Minimum pixel size of each grid cell (row height and column width) in the plot.  
+    # Pixel size of each grid cell (row height and column width) in the plot.
+    # This is the size on wide (desktop) screens; on narrow screens the figure
+    # scales cells down below these values so the whole map fits the viewport.
     plot_cell_width_px = 50,
     plot_cell_height_px = 50,
 

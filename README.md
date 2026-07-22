@@ -2,20 +2,22 @@
 
 An interactive R Shiny dashboard for exploring hearing-related research literature as an **Evidence Gap Map (EGM)**. Papers are plotted as bubbles on a 2D grid — Work Type × Theme — where bubble size reflects the number of papers at each intersection. Users can filter the dataset, select bubbles to inspect individual papers, and export citations in multiple formats.
 
+The interface is responsive and mobile-friendly: on wide screens the plot and paper panels sit side by side with draggable dividers; on narrow screens (phones and tablets) they stack into a single scrollable column.
+
 **Live app:** [shinyapps.io](http://j1c7eu-sumitdharnu.shinyapps.io/egm_shiny)
 
 ---
 
 ## Features
 
-- **Interactive EGM plot** — click or box/lasso-select bubbles to surface matching papers
+- **Interactive EGM plot** — click or box/lasso-select bubbles to surface matching papers (on touch devices, tap a bubble to select it, or drag to box/lasso-select several)
 - **Full-text search** — keyword search across title, authors, journal, and configurable metadata fields; results appear as orange dots on the map and drive the paper panel and comparison plots
 - **Filters** — narrow the map by study origin, research type, setting, and more; conditional filters stay hidden until a related parent filter takes a specific value (e.g. study design options only appear for observational research types)
 - **Paper cards** — scrollable list of selected papers with full citation and metadata; DOI links open in a new tab
 - **Comparison plots** — Count, Year, and Meta breakdown charts for the current selection (Year chart supports Stacked Bar and Line views)
 - **Export** — download selected papers as CSV, Excel, JSON, APA, AMA, Chicago, BibTeX, or RIS
 - **Light / dark theme** — toggled in the UI; preference saved in `localStorage`
-- **Collapsible / resizable panels** — drag handles between the plot and paper panels; header sections collapse with arrow buttons
+- **Collapsible / resizable panels** — drag handles between the plot and paper panels (desktop only); header sections collapse with arrow buttons (desktop and mobile)
 
 ---
 
@@ -29,7 +31,7 @@ DharSumit_EGMviz/
 │   ├── user_config.R       # ← all user-facing configuration (see below)
 │   ├── data/
 │   │   ├── AAHHC_Scoping_2026_final.csv   # active dataset (not included on GitHub)
-│   │   └── README.md               # data cleaning notes
+│   │   └── README.md                      # data cleaning notes
 │   ├── R/
 │   │   ├── mod_egm_plot.R          # plotly EGM figure builder
 │   │   ├── mod_filter.R            # filter dropdowns
@@ -42,8 +44,8 @@ DharSumit_EGMviz/
 │   └── www/
 │       ├── styles.css              # main stylesheet
 │       ├── styles_runtime.css      # generated at startup (colors, layout dimensions)
-│       ├── layout.js               # panel resize, collapse, theme toggle
-│       └── plot_interactions.js    # plotly click/lasso selection handlers
+│       ├── layout.js               # panel resize/collapse, theme toggle, sticky x-axis, responsive plot sizing, loading overlay
+│       └── plot_interactions.js    # plotly selection handlers — desktop click/lasso + mobile touch tap
 └── README.md
 ```
 
@@ -101,7 +103,7 @@ Nearly everything a developer would need to change when adapting this app to a n
 | `y_column` / `y_column_display` | Grid y-axis column name + display label |
 | `y_column_descriptions` | Optional named character vector mapping y-axis category values → plain-text descriptions; shown as a bulleted list under "Reading the Map" in the help modal in the order defined. `NULL` to omit. |
 | `plot_points_desired_max_px` / `plot_points_desired_min_px` | Desired max / min marker pixel size in the EGM figure |
-| `plot_cell_width_px` / `plot_cell_height_px` | Minimum pixel size (width / height) of each grid cell in the EGM figure |
+| `plot_cell_width_px` / `plot_cell_height_px` | Minimum desktop pixel size (width / height) of each grid cell in the EGM figure; mobile may descrease to fit plot on screen |
 | `filter_dropdown_list` / `_display` | Columns used for filter dropdowns |
 | `filter_conditional` | Optional list of parent/child filter dependencies; hides a dependent filter dropdown (and resets it to "All") until a specific parent filter value is chosen. `NULL` to disable |
 | `confidence_column_name` | Optional: numeric column (1/2/3); `NA` to disable |
@@ -131,7 +133,7 @@ The default theme is injected as an inline `<script>` tag by `app.R` so `layout.
 
 - **Module structure** — each `R/mod_*.R` file is a self-contained Shiny module with a `_ui()` and `_server()` function. `app.R` wires them together and owns the two shared reactive values: `egm_data` (the filtered dataset) and `reset_egm_trigger` (incremented on every filter change to clear selection state).
 - **Toggle vs. re-render** — filter changes trigger a full `renderPlotly` re-render of the EGM; toggle (layer visibility) changes use `plotlyProxy` / `restyle` so the figure is updated in place without a round-trip to R.
-- **Selection flow** — `plot_interactions.js` handles Ctrl/Cmd+click accumulation and applies `selectedpoints` visual dimming synchronously in the browser, then sends the accumulated selection to R via a custom Shiny input (`plotly_accumulated_selection`). `mod_papers.R` consumes this to render the paper cards table.
+- **Selection flow** — `plot_interactions.js` handles Ctrl/Cmd+click accumulation (desktop only) and applies `selectedpoints` visual dimming synchronously in the browser, then sends the accumulated selection to R via a custom Shiny input (`plotly_accumulated_selection`). `mod_papers.R` consumes this to render the paper cards table. On touch devices there is no Ctrl+click, so a single tap selects one cell (replacing any prior selection) and box/lasso drag is used to select several.
 - **Search flow** — `mod_search_server` filters `egm_data()$all$df` on every keystroke and updates an orange dot layer on the EGM via `plotlyProxy` (no re-render). `app.R` creates a `comparison_egm_data` reactive that substitutes search results into `egm_data$all$df` so the paper panel and comparison plots reflect only matched papers. Search and plot selection are mutually exclusive: activating one clears the other.
 - **Stable axis / sizing** — marker sizes and axis levels always reference `initial_egm_data` (the unfiltered dataset loaded at startup) so the grid and dot proportions stay consistent as filters are applied.
 
@@ -145,6 +147,7 @@ The following actions are taken in the code:
 - NA values in the x/y axis columns are replaced with `"Other"` at load time.
 - NA values in filter columns are replaced with `"Other"` at load time.
 - `"Other"` and `"None Given"` categories are sorted to the end of each axis.
+- All text used for axis labels and filtering are converted to title case in `app_config.R`.
 
 ---
 

@@ -139,6 +139,17 @@ server():
   - **Scroll handler** (separate IIFE in `layout.js`): shows/hides the bar when `scrollTop > 65` (threshold = wrapper padding 20 + empty space above colored rect 45). `left` is fixed at `paddingLeft` of `.plot-wrapper` (not tracking `scrollLeft`) so the clone stays horizontally aligned with the SVG at all scroll positions.
   - **CSS** (`styles.css`): three rules scoped to `#egm_sticky_xaxis` restore rendering of the clone (which sits outside `.plot-container.plotly` so main-plot rules don't apply): `svg { background: transparent }`, `.bg { fill: transparent }` (plotly's white fill rect), `text { fill: var(--color-egm-plot-text) }`.
 
+## Responsive / mobile layout
+
+The app is responsive. **Hard constraint: the desktop (wide-viewport) layout must stay byte-for-byte unchanged.** Every mobile change is scoped to the `@media (max-width: 900px)` block in `styles.css` and/or gated by `window.innerWidth < 900` in JS. CSS-first — touch R/JS only when necessary.
+
+- **Layout** — below 900px the side-by-side panels stack into one scrolling column; drag-resize dividers are hidden (the section-collapse arrows still work). Mobile panel heights use `svh` (not `dvh`) so the phone address bar showing/hiding on scroll doesn't resize the panels — a dynamic height would make the plot re-fit repeatedly.
+- **EGM figure sizing** — `layout.js` reports `egm_viewport_width` (jQuery `shiny:connected` + debounced `resize`) → `mod_plot_server` → `create_egm_figure(avail_width=)`. The grid scales by `hs = min(1, avail_width/natural_width)`, clamped to 1 so desktop is identical; fonts have legibility floors, y-labels wrap adaptively, and width is floored at 350px (horizontal scroll below that).
+- **Client-side post-render fixes** — in the `layout.js` `plotly_afterplot` hook, mobile only: `pinAnnotations()` repositions the corner axis-title / Total-N annotations from the actual rendered `_fullLayout._size` (device-independent; fixes drift seen on real phones but not in devtools). `fitPlotHeight()` shrinks the figure to fit its scroll container when it is only slightly too tall, **cached per figure width** so selection redraws and scroll/resize events don't re-fit (only a real width change refits).
+- **Touch selection** (`plot_interactions.js`) — a tap selects the nearest bubble (replacing the current selection); box/lasso drag multi-selects. Ctrl/Cmd+click accumulation is desktop-only.
+- **Pan/zoom disabled on all plots** — `fixedrange = TRUE` on both axes (EGM `layout()` + comparison `cp_layout()`) plus `scrollZoom = FALSE`; kills touch pan (incl. the axis-label drag gesture) and pinch-zoom. Box/lasso selection is unaffected.
+- **Loading overlay & hint** (`layout.js`) — a centered spinner shows on `shiny:busy` (after a 250ms delay) and hides on `shiny:idle` (desktop + mobile). A mobile-only "scroll down" hint fades in the first time a selection populates the papers panel (MutationObserver on `#egm-table_content`).
+
 ## Dependencies
 
 R packages: `shiny`, `dplyr`, `tidyr`, `forcats`, `plotly`, `stringr`, `shinyWidgets`, `writexl`, `jsonlite`, `scales`, `viridisLite`
@@ -148,3 +159,4 @@ R packages: `shiny`, `dplyr`, `tidyr`, `forcats`, `plotly`, `stringr`, `shinyWid
 - NA values in the x/y axis columns are replaced with `"Other"` at load time.
 - NA values in filter columns are replaced with `"Other"` at load time.
 - `"Other"` and `"None Given"` categories are always sorted to the end of axes (`fct_relevel` in `create_counts()`).
+- All text used for axis labels and filtering are converted to title case in `app_config.R`.
