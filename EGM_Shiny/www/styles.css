@@ -1753,15 +1753,27 @@ body {
     .resize-handle,
     .v-resize-handle { display: none !important; }
 
-    /* Plot panel uses ~the full screen height (its header/widgets + the figure);
-       the figure is fitted to the width in R so it doesn't force horizontal
-       scroll, and the wrapper scrolls vertically only when the grid is taller
-       than this.  !important clears any inline width left by the desktop drag
-       handle. */
+    /* Allow panels to use ~the full screen height (its header/widgets + the figure)*/
     .plot-section {
         width: auto !important;
         height: 100vh;
         height: 100dvh;
+    }
+    .papers-subpanel {
+        flex: none !important;
+        width: auto !important;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+    }
+    .comparison-subpanel {
+        flex: none !important;
+        border-top: 6px solid var(--color-container-border);
+        overflow: visible;
+        width: auto !important;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
     }
 
     /* Trim the plot padding on small screens so the figure gets more width. */
@@ -1806,36 +1818,11 @@ body {
         gap: 8px;
     }
 
-    /* Papers grow to their content up to a bounded height, then the list
-       scrolls inside — so a large selection can't bury the comparison plots
-       below it.  max-height + the base .paper-list (flex + overflow-y:auto +
-       min-height:0) gives grow-then-scroll.  !important clears the inline
-       flex-basis that layout.js / its ResizeObserver may have set. */
-    .papers-subpanel {
-        flex: none !important;
-        max-height: 70vh;
-        max-height: 70dvh;
-        min-height: 0;
-    }
-
-    /* Comparison plot needs a definite height for its height:100% chain to
-       resolve; the wrapper scrolls internally when the computed min-height is
-       taller than this. */
-    .comparison-subpanel {
-        flex: none !important;
-        border-top: 6px solid var(--color-container-border);
-        overflow: visible;
-    }
     .comparison-plot-wrapper {
         height: 60vh;
         height: 60dvh;
     }
-
-    /* Scroll-trap fix for the view-only comparison plot: hand one-finger pans
-       to the browser so a swipe scrolls the page instead of being captured by
-       plotly's touch handlers.  The EGM plot is intentionally left alone — its
-       one-finger drag is the current box-select gesture, so its mobile touch
-       behavior is handled with the EGM mobile-functionality work. */
+    
     .comparison-plot-wrapper,
     .comparison-plot-wrapper .js-plotly-plot .draglayer,
     .comparison-plot-wrapper .js-plotly-plot .nsewdrag {
