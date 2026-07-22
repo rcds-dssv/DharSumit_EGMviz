@@ -109,11 +109,13 @@ cp_layout <- function(p, xlab = "", ylab = "", show_legend = FALSE) {
         # labels so it stays clear of the horizontal legend placed below.
         xaxis = list(title        = list(text = xlab, font = list(size = 12),
                                          standoff = 10),
+                     fixedrange   = TRUE,   # disable pan / zoom (incl. pinch)
                      gridcolor    = "#cccccc",
                      linecolor    = "#cccccc",
                      zerolinecolor = "#cccccc",
                      tickfont     = list(color = "black")),
         yaxis = list(title        = list(text = ylab, font = list(size = 12)),
+                     fixedrange   = TRUE,   # disable pan / zoom (incl. pinch)
                      gridcolor    = "#cccccc",
                      linecolor    = "#cccccc",
                      zerolinecolor = "#cccccc",
@@ -132,6 +134,7 @@ cp_layout <- function(p, xlab = "", ylab = "", show_legend = FALSE) {
 cp_config <- function(p) {
     plotly::config(p,
         displaylogo = FALSE,
+        scrollZoom  = FALSE,
         modeBarButtonsToRemove = list(
             "select2d", "lasso2d",
             "zoomIn2d", "zoomOut2d", "autoScale2d",

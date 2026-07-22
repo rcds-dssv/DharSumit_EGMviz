@@ -244,6 +244,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
             responsive      = TRUE,
             displayModeBar  = TRUE,
             doubleClick     = FALSE,
+            scrollZoom      = FALSE,
             modeBarButtonsToRemove = c(
                 "zoomIn2d", "zoomOut2d", "autoScale2d",
                 "hoverClosestCartesian", "hoverCompareCartesian", "toggleSpikelines",
@@ -356,11 +357,12 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
     egm_spec <- egm_spec %>% layout(
         margin     = list(t = margin_t, b = 10, l = 0, r = 0, pad = 10),
         autosize   = FALSE,
-        dragmode   = if (any_dots_visible) "select" else "pan",
+        dragmode   = if (any_dots_visible) "select" else FALSE,
         showlegend = FALSE,
         font = list(color = "black"),
         xaxis = list(
             type      = "linear",
+            fixedrange = TRUE,   # disable pan / zoom (incl. axis-label drag and pinch)
             tickmode  = "array",
             tickvals  = seq(0, length(x_levels) - 1),
             ticktext  = x_levels,
@@ -375,6 +377,7 @@ create_egm_figure <- function(egm_data, plot_source_name, x_col, y_col, n_col,
         ),
         yaxis = list(
             type     = "linear",
+            fixedrange = TRUE,   # disable pan / zoom (incl. axis-label drag and pinch)
             tickmode = "array",
             tickvals = seq(0, length(y_levels) - 1),
             ticktext = y_levels,
